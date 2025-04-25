@@ -1,5 +1,6 @@
 """TODO: Add a description here."""
 
+from sys import prefix
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
@@ -16,18 +17,23 @@ class JointTrajectoryControllerClient(ActionClient):
             "joint_trajectory_controller/follow_joint_trajectory",
         )
         self._goal = FollowJointTrajectory.Goal()
-        namespace = self.node.get_namespace().strip("/")
-        if namespace == "":
-            self._goal.trajectory.joint_names = [f"fr3_joint{i}" for i in range(1, 8)]
-        else:
-            self._goal.trajectory.joint_names = [
-                f"{namespace}_fr3_joint{i}" for i in range(1, 8)
-            ]
+        self._prefix = (
+            f"{self.node.get_namespace().strip('/')}_"
+            if self.node.get_namespace()
+            else ""
+        )
 
     def send_joint_config(
-        self, joint_config: list, time_to_goal: float = 5.0, blocking: bool = True
+        self,
+        joint_names: list,
+        joint_config: list,
+        time_to_goal: float = 5.0,
+        blocking: bool = True,
     ):
         """Send joint configuration to the robot."""
+        self._goal.trajectory.joint_names = [
+            self._prefix + joint_name for joint_name in joint_names
+        ]
         self._goal.trajectory.header.stamp = self.node.get_clock().now().to_msg()
         self._goal.trajectory.points = []
         self._goal.trajectory.points.append(

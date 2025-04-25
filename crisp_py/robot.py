@@ -5,6 +5,12 @@ from dataclasses import dataclass, field
 
 import numpy as np
 import pinocchio as pin
+from rcl_interfaces.srv import (
+    GetParameterTypes,
+    GetParameters,
+    ListParameters,
+    SetParameters,
+)
 import rclpy
 from geometry_msgs.msg import PoseStamped, TransformStamped
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -26,13 +32,14 @@ class RobotConfig:
     base_frame: str
     target_frame: str
     home_config: list
+    joint_names: list
 
 
 @dataclass
 class FrankaConfig(RobotConfig):
     base_frame: str = "base"
-    # target_frame: str = "fr3_hand_tcp"
-    target_frame: str = "fr3_link8"
+    target_frame: str = "fr3_hand_tcp"
+    # target_frame: str = "fr3_link8"
     home_config: list = field(
         default_factory=lambda: [
             0,
@@ -42,6 +49,45 @@ class FrankaConfig(RobotConfig):
             0,
             np.pi / 2,
             np.pi / 4,
+        ]
+    )
+    joint_names: list = field(
+        default_factory=lambda: [
+            "fr3_joint1",
+            "fr3_joint2",
+            "fr3_joint3",
+            "fr3_joint4",
+            "fr3_joint5",
+            "fr3_joint6",
+            "fr3_joint7",
+        ]
+    )
+
+
+@dataclass
+class KinovaConfig(RobotConfig):
+    base_frame: str = "base_link"
+    target_frame: str = "end_effector_link"
+    home_config: list = field(
+        default_factory=lambda: [
+            0,
+            -np.pi / 4,
+            0,
+            -3 * np.pi / 4,
+            0,
+            np.pi / 2,
+            np.pi / 4,
+        ]
+    )
+    joint_names: list = field(
+        default_factory=lambda: [
+            "joint_1",
+            "joint_2",
+            "joint_3",
+            "joint_4",
+            "joint_5",
+            "joint_6",
+            "joint_7",
         ]
     )
 
@@ -93,11 +139,37 @@ class Robot:
             "default_controller", "cartesian_impedance_controller"
         ).value
 
-        self.node.create_timer(
-            1.0 / 10.0,
-            self._callback_get_end_effector_pose,
+        # self.node.create_timer(
+        #     1.0 / 100.0,
+        #     self._callback_get_end_effector_pose,
+        #     callback_group=ReentrantCallbackGroup(),
+        # )
+        self.node.create_subscription(
+            PoseStamped,
+            "current_pose",
+            self._callback_current_pose,
+            qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
         )
+
+        self.list_params_client = self.node.create_client(
+            ListParameters,
+            "cartesian_impedance_controller/list_parameters",
+            callback_group=ReentrantCallbackGroup(),
+        )
+
+        self.get_params_client = self.node.create_client(
+            GetParameters,
+            "cartesian_impedance_controller/get_parameters",
+            callback_group=ReentrantCallbackGroup(),
+        )
+
+        self.set_parameters_client = self.node.create_client(
+            SetParameters,
+            "cartesian_impedance_controller/set_parameters",
+            callback_group=ReentrantCallbackGroup(),
+        )
+
         self.node.create_timer(
             1.0 / self.publish_frequency,
             self._callback_publish_target_pose,
@@ -154,6 +226,11 @@ class Robot:
             return
         self._target_pose_publisher.publish(self._pose_to_pose_msg(self._target_pose))
 
+    def _callback_current_pose(self, msg: PoseStamped):
+        self._end_effector_pose = self._pose_msg_to_pose(msg)
+        if self._target_pose is None:
+            self._target_pose = self._end_effector_pose.copy()
+
     def _callback_get_end_effector_pose(self):
         """Get the current pose of the end-effector."""
         try:
@@ -171,7 +248,6 @@ class Robot:
         self._end_effector_pose = self._transform_to_pose(transform)
         if self._target_pose is None:
             self._target_pose = self._end_effector_pose
-        return self._end_effector_pose
 
     def move_to(self, position: iter = None, pose: pin.SE3 = None, speed: float = 0.05):
         """Move the end-effector to a given pose.
@@ -210,6 +286,7 @@ class Robot:
         """Home the robot."""
         self.controller_switcher_client.switch_controller("joint_trajectory_controller")
         self.joint_trajectory_controller_client.send_joint_config(
+            self.robot_config.joint_names,
             self.home_config if home_config is None else home_config,
             self.time_to_home,
             blocking=True,
@@ -238,6 +315,22 @@ class Robot:
                 transform.transform.translation.x,
                 transform.transform.translation.y,
                 transform.transform.translation.z,
+            ]),
+        )
+
+    def _pose_msg_to_pose(self, pose: PoseStamped) -> pin.SE3:
+        """Convert a transform to a pose."""
+        return pin.SE3(
+            pin.Quaternion(
+                x=pose.pose.orientation.x,
+                y=pose.pose.orientation.y,
+                z=pose.pose.orientation.z,
+                w=pose.pose.orientation.w,
+            ),
+            np.array([
+                pose.pose.position.x,
+                pose.pose.position.y,
+                pose.pose.position.z,
             ]),
         )
 
