@@ -2,7 +2,6 @@
 
 import pinocchio as pin
 import numpy as np
-from rcl_interfaces.srv import GetParameters, ListParameters
 
 # %%
 from crisp_py.robot import Robot
@@ -105,6 +104,7 @@ z_nocor = [ee_pose.translation[2] for ee_pose in ee_poses]
 
 # %%
 import matplotlib.pyplot as plt
+# %%
 
 plt.plot(y_ee, z_ee, label="current")
 plt.plot(y_nocor, z_nocor, label="no corriolis")

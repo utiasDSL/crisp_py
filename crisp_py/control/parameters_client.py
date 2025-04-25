@@ -1,0 +1,148 @@
+"""This is a simple client for the parameters service in ROS2 that can be used with a node."""
+
+import time
+
+from rclpy.node import Node
+from rcl_interfaces.msg import ParameterValue
+from rcl_interfaces.srv import GetParameters, ListParameters, SetParameters
+from rclpy.callback_groups import ReentrantCallbackGroup
+
+from rclpy.parameter import Parameter, parameter_value_to_python
+
+
+class ParametersClient:
+    def __init__(self, node: Node, target_node: str) -> None:
+        """
+        Initialize a ParametersClient to interact with a specific ROS2 node's parameters.
+
+        Args:
+            node (Node): The rclpy node that creates and manages this client.
+            target_node (str): The fully-qualified name of the target node to communicate with.
+        """
+        self.node = node
+        self.target_node = target_node
+        self.list_params_client = self.node.create_client(
+            ListParameters,
+            f"{target_node}/list_parameters",
+            callback_group=ReentrantCallbackGroup(),
+        )
+
+        self.get_params_client = self.node.create_client(
+            GetParameters,
+            f"{target_node}/get_parameters",
+            callback_group=ReentrantCallbackGroup(),
+        )
+
+        self.set_parameters_client = self.node.create_client(
+            SetParameters,
+            f"{target_node}/set_parameters",
+            callback_group=ReentrantCallbackGroup(),
+        )
+
+    def wait_until_ready(self, timeout_sec=5.0):
+        """
+        Wait until all parameter services are available or raise TimeoutError if they don't become ready in time.
+
+        Args:
+            timeout_sec (float): How many seconds to wait before giving up. Default is 5.0.
+
+        Raises:
+            TimeoutError: If the services are not ready within the timeout period.
+        """
+        t_start = time.time()
+        while (
+            not self.get_params_client.service_is_ready()
+            and not self.list_params_client.service_is_ready()
+            and not self.set_parameters_client.service_is_ready()
+        ):
+            time.sleep(0.01)
+            if time.time() - t_start > timeout_sec:
+                raise TimeoutError(
+                    "Waited too long for parameter services to be available."
+                )
+
+    def list_parameters(self) -> list[str]:
+        """
+        Retrieve a list of parameter names from the target node.
+
+        Returns:
+            list[str]: A list of parameter names available on the target node.
+
+        Raises:
+            AssertionError: If the list_parameters service is not ready.
+        """
+        assert self.list_params_client.service_is_ready(), f"Service for listing params is not ready, have you started the node {self.target_node}?"
+        response: ListParameters.Response = self.list_params_client.call(request=ListParameters.Request())
+        return [str(name) for name in response.result.names]
+
+    def get_parameters(self, param_names: list[str]) -> list:
+        """
+        Get parameter values as Python-native types from the target node.
+
+        Args:
+            param_names (list[str]): A list of parameter names to retrieve.
+
+        Returns:
+            list: A list of values converted to Python-native types.
+        """
+        return [
+            parameter_value_to_python(param_value) for param_value in self.get_parameter_values(param_names)
+        ]
+
+    def get_parameter_values(self, param_names: list[str]) -> list[ParameterValue]:
+        """
+        Get raw ParameterValue messages for the specified parameters from the target node.
+
+        Args:
+            param_names (list[str]): Names of the parameters to fetch.
+
+        Returns:
+            list[ParameterValue]: A list of ParameterValue objects corresponding to the requested parameters.
+
+        Raises:
+            AssertionError: If the get_parameters service is not ready.
+        """
+        assert self.get_params_client.service_is_ready(), f"Service for getting params is not ready, have you started the node {self.target_node}?"
+        request = GetParameters.Request()
+        request.names = param_names
+
+        response: GetParameters.Response = self.get_params_client.call(request)
+        return list(response.values)
+
+    def set_parameters(self, param_names: list[str], new_param_values: list) -> None:
+        """
+        Set parameters on the target node with new values.
+
+        This function first ensures the parameters exist, then attempts to set them. It raises
+        an error if any parameter fails to set.
+
+        Args:
+            param_names (list[str]): The names of the parameters to set.
+            new_param_values (list): The new values to assign to each parameter.
+
+        Raises:
+            AssertionError: If the number of names and values do not match or the service is not ready.
+            ValueError: If any of the parameters do not currently exist on the target node.
+            RuntimeError: If setting any parameter fails or no results are returned.
+        """
+        assert len(param_names) == len(new_param_values), "Length of names is different than values"
+        assert self.set_parameters_client.service_is_ready(), f"Service for setting params is not ready, have you started the node {self.target_node}?"
+        current_parameters = self.get_parameters(param_names)
+        if None in current_parameters:
+            raise ValueError(f"One of the passed elements in the array of params does not exist: {[(name, value) for name, value in zip(param_names, current_parameters)]}")
+
+        updated_params = []
+        for param_name, new_param_value in zip(param_names, new_param_values):
+            updated_param = Parameter(name=param_name, value=new_param_value).to_parameter_msg()
+            updated_params.append(updated_param)
+
+        request = SetParameters.Request()
+        request.parameters = updated_params
+        response = self.set_parameters_client.call(request=request)
+
+        succesful_results = [param_result.successful for param_result in response.results]
+        if False in succesful_results:
+            raise RuntimeError(f"One or multiple parameters could not be set: {[(name, result.successful, result.reason) for name, result in zip(param_names, response.results)]}")
+        if not len(succesful_results):
+            raise RuntimeError("No results from setting parameters...")
+

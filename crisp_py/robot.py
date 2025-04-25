@@ -207,9 +207,9 @@ class Robot:
 
     def set_target(self, position: iter = None, pose: pin.SE3 = None):
         """Sets directly the target pose of the end-effector to be published."""
-        assert position is not None or pose is not None, (
-            "Either position or pose must be provided."
-        )
+        assert (
+            position is not None or pose is not None
+        ), "Either position or pose must be provided."
 
         desired_pose = (
             pose.copy() if pose is not None else self._end_effector_pose.copy()
@@ -257,9 +257,9 @@ class Robot:
             pose: The pose to move to. If None, the position is used.
             speed: The speed of the movement. [m/s]
         """
-        assert position is not None or pose is not None, (
-            "Either position or pose must be provided."
-        )
+        assert (
+            position is not None or pose is not None
+        ), "Either position or pose must be provided."
 
         desired_pose = (
             pose.copy() if pose is not None else self._end_effector_pose.copy()
@@ -311,11 +311,13 @@ class Robot:
                 z=transform.transform.rotation.z,
                 w=transform.transform.rotation.w,
             ),
-            np.array([
-                transform.transform.translation.x,
-                transform.transform.translation.y,
-                transform.transform.translation.z,
-            ]),
+            np.array(
+                [
+                    transform.transform.translation.x,
+                    transform.transform.translation.y,
+                    transform.transform.translation.z,
+                ]
+            ),
         )
 
     def _pose_msg_to_pose(self, pose: PoseStamped) -> pin.SE3:
@@ -327,11 +329,13 @@ class Robot:
                 z=pose.pose.orientation.z,
                 w=pose.pose.orientation.w,
             ),
-            np.array([
-                pose.pose.position.x,
-                pose.pose.position.y,
-                pose.pose.position.z,
-            ]),
+            np.array(
+                [
+                    pose.pose.position.x,
+                    pose.pose.position.y,
+                    pose.pose.position.z,
+                ]
+            ),
         )
 
     def _pose_to_pose_msg(self, pose: pin.SE3) -> PoseStamped:

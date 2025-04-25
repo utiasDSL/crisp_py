@@ -28,8 +28,6 @@ pkg-config = "*"
 make = "*"
 ninja = "*"
 pinocchio = ">=3.5.0,<4"
-ipython = ">=9.1.0,<10"
-bpython = ">=0.25,<0.26"
 
 [target.linux.dependencies]
 libgl-devel = "*"
