@@ -59,9 +59,7 @@ class ControllerSwitcherClient:
     def get_controller_list(self):
         """Get a list of all controllers using a service."""
         if not self.list_client.wait_for_service(timeout_sec=5.0):
-            self.node.get_logger().error(
-                "Timed out waiting for controller list service."
-            )
+            self.node.get_logger().error("Timed out waiting for controller list service.")
             return []
         else:
             self.node.get_logger().debug("Got controller list service.")
@@ -69,9 +67,7 @@ class ControllerSwitcherClient:
         future = self.list_client.call_async(ListControllers.Request())
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for controller list...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for controller list...", throttle_duration_sec=1.0)
 
         response = future.result()
 
@@ -84,9 +80,7 @@ class ControllerSwitcherClient:
         future = self.load_client.call_async(request)
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for load controller answer...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for load controller answer...", throttle_duration_sec=1.0)
         response = future.result()
 
         return response.ok
@@ -98,16 +92,12 @@ class ControllerSwitcherClient:
         future = self.configure_client.call_async(request)
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for configure controller answer...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for configure controller answer...", throttle_duration_sec=1.0)
         response = future.result()
 
         return response.ok
 
-    def _switch_controller(
-        self, to_deactivate: list[str], to_activate: list[str]
-    ) -> bool:
+    def _switch_controller(self, to_deactivate: list[str], to_activate: list[str]) -> bool:
         """Switch to a different ros2_controller using a service."""
         request = SwitchController.Request()
         request.deactivate_controllers = to_deactivate
@@ -119,9 +109,7 @@ class ControllerSwitcherClient:
         future = self.switch_client.call_async(request)
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for switch controller answer...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for switch controller answer...", throttle_duration_sec=1.0)
         response = future.result()
 
         return response.ok
@@ -138,21 +126,11 @@ class ControllerSwitcherClient:
         """
         controllers = self.get_controller_list()
 
-        active_controllers = [
-            controller.name
-            for controller in controllers
-            if controller.state == "active"
-        ]
-        inactive_controllers = [
-            controller.name
-            for controller in controllers
-            if controller.state == "inactive"
-        ]
+        active_controllers = [controller.name for controller in controllers if controller.state == "active"]
+        inactive_controllers = [controller.name for controller in controllers if controller.state == "inactive"]
 
         if controller_name in active_controllers:
-            self.node.get_logger().info(
-                f"Controller {controller_name} is already active."
-            )
+            self.node.get_logger().info(f"Controller {controller_name} is already active.")
             return
 
         if controller_name not in inactive_controllers:
@@ -165,9 +143,7 @@ class ControllerSwitcherClient:
 
             ok = self.configure_controller(controller_name)
             if not ok:
-                self.node.get_logger().error(
-                    f"Failed to configure controller {controller_name}."
-                )
+                self.node.get_logger().error(f"Failed to configure controller {controller_name}.")
                 raise RuntimeError(f"Failed to configure controller {controller_name}.")
 
         to_deactivate = []
@@ -180,9 +156,7 @@ class ControllerSwitcherClient:
         ok = self._switch_controller(to_deactivate, to_activate)
 
         if not ok:
-            self.node.get_logger().error(
-                f"Failed to switch to controller {controller_name}."
-            )
+            self.node.get_logger().error(f"Failed to switch to controller {controller_name}.")
             raise RuntimeError(f"Failed to switch to controller {controller_name}.")
 
         return True

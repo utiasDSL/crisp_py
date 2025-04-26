@@ -1,6 +1,5 @@
 """TODO: Add a description here."""
 
-from sys import prefix
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node

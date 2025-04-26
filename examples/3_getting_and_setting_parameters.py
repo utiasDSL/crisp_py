@@ -38,14 +38,17 @@ except TimeoutError:
 
 # %%
 
-client.list_parameters()
+print(client.list_parameters())
 
 # %%
 parameter_names = ["task.k_pos_x"]
 parameter_values = [300.0]
 
 # %%
+print(client.get_parameters(parameter_names))
+
+# %%
 client.set_parameters(parameter_names, parameter_values)
 
 # %%
-client.get_parameters(parameter_names)
+print(client.get_parameters(parameter_names))

@@ -34,8 +34,6 @@ class GripperClient(ABC):
         """Waits until the gripper is fully ready to operate."""
         ...
 
-    # === Implemented functions ===
-
     def grasp(
         self,
         width: float,
@@ -56,6 +54,7 @@ class GripperClient(ABC):
         """
         ...
 
+    # === Implemented functions ===
     def close(self, **grasp_kwargs):
         """Close the gripper.
 

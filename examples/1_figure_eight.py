@@ -1,9 +1,8 @@
 """Try to follow a "figure eight" target on the yz plane."""
 
-import pinocchio as pin
+# %%
 import numpy as np
 
-# %%
 from crisp_py.robot import Robot
 
 robot = Robot(namespace="right")
@@ -11,32 +10,30 @@ robot.wait_until_ready()
 
 # %%
 print(robot.end_effector_pose)
+print(robot.joint_values)
 
 # %%
 print("Going to home position...")
 robot.home()
 homing_pose = robot.end_effector_pose.copy()
 
+
 # %%
 # Paremeters for the circle
 radius = 0.2  # [m]
-center = [0.4, 0.0, 0.4]
+center = np.array([0.4, 0.0, 0.4])
 ctrl_freq = 50.0
 sin_freq_y = 0.25  # rot / s
 sin_freq_z = 0.125  # rot / s
 max_time = 8.0
-# %%
 
+# %%
 robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
 
 # %%
 # The move_to function will publish a pose to /target_pose while interpolation linearly
-starting_pose = pin.SE3(
-    homing_pose.rotation,
-    np.array(center),
-)
 
-robot.move_to(pose=starting_pose, speed=0.15)
+robot.move_to(position=center, speed=0.15)
 
 # %%
 # The set_target will directly publish the pose to /target_pose
