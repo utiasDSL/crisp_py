@@ -1,4 +1,5 @@
-# crisp_py (pronounced /krɪsp pi/): A python package to interface with robots using crisp_controllers
+# crisp_py */krɪsp pi/*
+A python package to interface with robots using crisp_controllers.
 
 ## Getting started
 
