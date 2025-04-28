@@ -18,7 +18,7 @@ class JointTrajectoryControllerClient(ActionClient):
         self._goal = FollowJointTrajectory.Goal()
         self._prefix = (
             f"{self.node.get_namespace().strip('/')}_"
-            if self.node.get_namespace()
+            if self.node.get_namespace().strip('/') != ""
             else ""
         )
 

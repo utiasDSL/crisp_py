@@ -31,7 +31,7 @@ params_values = [
     20.0,
     20.0,
     20.0,
-    1.0,
+    5.0,
     "kinematic",
 ]
 robot.cartesian_controller_parameters_client.set_parameters(params_names, params_values)
@@ -73,7 +73,7 @@ params_values = [
     0.0,
     0.0,
     0.0,
-    1.0,
+    3.0,
     "none",
 ]
 robot.cartesian_controller_parameters_client.set_parameters(params_names, params_values)

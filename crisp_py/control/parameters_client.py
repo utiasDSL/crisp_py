@@ -1,6 +1,7 @@
 """This is a simple client for the parameters service in ROS2 that can be used with a node."""
 
 import time
+from typing import Any
 
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterValue
@@ -109,7 +110,7 @@ class ParametersClient:
         response: GetParameters.Response = self.get_params_client.call(request)
         return list(response.values)
 
-    def set_parameters(self, param_names: list[str], new_param_values: list) -> None:
+    def set_parameters(self, params: list[tuple[str, Any]]) -> None:
         """
         Set parameters on the target node with new values.
 
@@ -117,16 +118,15 @@ class ParametersClient:
         an error if any parameter fails to set.
 
         Args:
-            param_names (list[str]): The names of the parameters to set.
-            new_param_values (list): The new values to assign to each parameter.
+            params: List of tuples of param names to change and the new param values
 
         Raises:
             AssertionError: If the number of names and values do not match or the service is not ready.
             ValueError: If any of the parameters do not currently exist on the target node.
             RuntimeError: If setting any parameter fails or no results are returned.
         """
-        assert len(param_names) == len(new_param_values), "Length of names is different than values"
         assert self.set_parameters_client.service_is_ready(), f"Service for setting params is not ready, have you started the node {self.target_node}?"
+        param_names, new_param_values = zip(*params)
         current_parameters = self.get_parameters(param_names)
         if None in current_parameters:
             raise ValueError(f"One of the passed elements in the array of params does not exist: {[(name, value) for name, value in zip(param_names, current_parameters)]}")
