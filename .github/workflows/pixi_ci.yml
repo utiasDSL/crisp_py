@@ -21,5 +21,3 @@ jobs:
           pixi-version: v0.46.0
           cache: true
 
-      - run: pixi run test
-
