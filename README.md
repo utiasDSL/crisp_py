@@ -10,10 +10,9 @@ pixi shell -e humble  # or jazzy
 ```
 You are good to go now.
 
-## How to crisp_py
+## How to crisp
 First import some necessary packages that we are going to use
 ```python
-import numpy as np
 from crisp_py.robot import Robot
 ```
 
