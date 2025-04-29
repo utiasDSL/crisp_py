@@ -14,27 +14,17 @@ robot.controller_switcher_client.switch_controller("cartesian_impedance_controll
 print(robot.cartesian_controller_parameters_client.list_parameters())
 
 # %%
-params_names = [
-    "task.k_pos_x",
-    "task.k_pos_y",
-    "task.k_pos_z",
-    "task.k_rot_x",
-    "task.k_rot_y",
-    "task.k_rot_z",
-    "nullspace.stiffness",
-    "nullspace.projector_type",
+params = [
+    ("task.k_pos_x", 400.0),
+    ("task.k_pos_y", 400.0),
+    ("task.k_pos_z", 400.0),
+    ("task.k_rot_x", 10.0),
+    ("task.k_rot_y", 10.0),
+    ("task.k_rot_z", 10.0),
+    ("nullspace.stiffness", 1.0),
+    ("nullspace.projector_type", "kinematic"),
 ]
-params_values = [
-    500.0,
-    500.0,
-    500.0,
-    20.0,
-    20.0,
-    20.0,
-    5.0,
-    "kinematic",
-]
-robot.cartesian_controller_parameters_client.set_parameters(params_names, params_values)
+robot.cartesian_controller_parameters_client.set_parameters(params)
 
 # %%
 max_time = 8.0
@@ -56,24 +46,14 @@ while t < max_time:
 
 # %%
 # Or archive pure joint control with:
-params_names = [
-    "task.k_pos_x",
-    "task.k_pos_y",
-    "task.k_pos_z",
-    "task.k_rot_x",
-    "task.k_rot_y",
-    "task.k_rot_z",
-    "nullspace.stiffness",
-    "nullspace.projector_type",
+params = [
+    ("task.k_pos_x", 0.0),
+    ("task.k_pos_y", 0.0),
+    ("task.k_pos_z", 0.0),
+    ("task.k_rot_x", 0.0),
+    ("task.k_rot_y", 0.0),
+    ("task.k_rot_z", 0.0),
+    ("nullspace.stiffness", 5.0),
+    ("nullspace.projector_type", "none"),
 ]
-params_values = [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    3.0,
-    "none",
-]
-robot.cartesian_controller_parameters_client.set_parameters(params_names, params_values)
+robot.cartesian_controller_parameters_client.set_parameters(params)

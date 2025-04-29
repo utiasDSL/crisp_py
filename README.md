@@ -14,13 +14,14 @@ You are good to go now.
 First import some necessary packages that we are going to use
 ```python
 from crisp_py.robot import Robot
+from crisp_py.robot_config import FrankaConfig, KinovaConfig, IiwaConfig
 ```
 
 and be sure that the robot is started and running with all controllers ready. (Check the `crisp_controller_demos`)
 
 Now you can start the robot and wait until it is ready. There is a timeout, and it will fail if the robot is not available.
 ```python
-robot = Robot()
+robot = Robot(robot_config=FrankaConfig())  # Default is Franka
 robot.wait_until_ready()
 ```
 
@@ -56,6 +57,7 @@ joint_trajectory_controller: active
 Finally you can switch controller. This call will make sure that all controllers that use commands interfaces are deactivated and your controller is ready to use:
 
 ```python
+robot.reset_targets()
 robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
 # robot.controller_switcher_client.switch_controller("gravity_compensation")
 ```
@@ -76,14 +78,13 @@ robot.cartesian_controller_parameters_client.list_parameters()
 Then modify them:
 ```python
 params = [
-    ("task.k_pos_x", 500.0),
-    ("task.k_pos_y", 500.0),
-    ("task.k_pos_z", 500.0),
+    ("task.k_pos_x", 400.0),
+    ("task.k_pos_y", 400.0),
+    ("task.k_pos_z", 400.0),
     ("task.k_rot_x", 20.0),
     ("task.k_rot_y", 20.0),
     ("task.k_rot_z", 20.0),
     ("nullspace.stiffness", 5.0),
-    ("nullspace.weights.fr3_joint1.value", 5.0),
 ]
 
 robot.cartesian_controller_parameters_client.set_parameters(params)
@@ -100,7 +101,7 @@ robot.cartesian_controller_parameters_client.set_parameters(params)
 The `move_to` function will publish a pose to `/target_pose` while interpolating linearly to it. It is blocking.
 ```python
 x, y, z = robot.end_effector_pose.translation
-robot.move_to(position=[x+0.2, y, z], speed=0.15)
+robot.move_to(position=[x-0.1, y, z], speed=0.15)
 ```
 
 The `set_target` function will directly set the pose as a target and it will get publish (check the robot config to see the publish frequency)

@@ -110,3 +110,37 @@ class KinovaConfig(RobotConfig):
             np.pi / 4,
         ]
     )
+
+
+@dataclass
+class IiwaConfig(RobotConfig):
+    """Configuration specific to KUKA Iiwa robots.
+
+    Provides default values for frame names, joint names, and home configuration
+    specifically for Iiwa robots.
+    """
+
+    joint_names: list = field(
+        default_factory=lambda: [
+            "joint_a1",
+            "joint_a2",
+            "joint_a3",
+            "joint_a4",
+            "joint_a5",
+            "joint_a6",
+            "joint_a7",
+        ]
+    )
+    home_config: list = field(
+        default_factory=lambda: [
+            0,
+            -np.pi / 4,
+            0,
+            -3 * np.pi / 4,
+            0,
+            np.pi / 2,
+            np.pi / 4,
+        ]
+    )
+    base_frame: str = "iiwa_base"
+    target_frame: str = "tool0"
