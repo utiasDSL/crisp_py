@@ -62,7 +62,7 @@ class Robot:
             self.node = node
         self.config = robot_config if robot_config else FrankaConfig()
 
-        self._prefix = f"{namespace}_" if namespace != "" else ""
+        self._prefix = f"{namespace}_" if namespace else ""
 
         self.controller_switcher_client = ControllerSwitcherClient(self.node)
         self.joint_trajectory_controller_client = JointTrajectoryControllerClient(self.node)
@@ -258,6 +258,7 @@ class Robot:
         """Convert a pose to a pose message."""
         joint_msg = JointState()
         joint_msg.header.frame_id = self.config.base_frame
+        joint_msg.header.stamp = self.node.get_clock().now().to_msg()
         joint_msg.name = [self._prefix + joint_name for joint_name in self.config.joint_names]
         joint_msg.position = q.tolist()
         joint_msg.velocity = dq.tolist() if dq is not None else [0.0] * len(q)
@@ -271,7 +272,7 @@ class Robot:
         """
         assert position is not None or pose is not None, "Either position or pose must be provided."
 
-        desired_pose = pose.copy() if pose is not None else self._current_pose.copy()
+        desired_pose = pose.copy() if pose is not None else self._target_pose.copy()
         if position is not None:
             assert len(position) == 3, "Position must be a 3D vector."
             desired_pose.translation = np.array(position)
