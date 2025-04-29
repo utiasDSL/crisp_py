@@ -78,8 +78,8 @@ Then modify them:
 params = [
     ("task.k_pos_x", 500.0),
     ("task.k_pos_y", 500.0),
-    ("task.k_pos_z", 20.0),
-    ("task.k_rot_x", 500.0),
+    ("task.k_pos_z", 500.0),
+    ("task.k_rot_x", 20.0),
     ("task.k_rot_y", 20.0),
     ("task.k_rot_z", 20.0),
     ("nullspace.stiffness", 5.0),
