@@ -207,7 +207,7 @@ class Robot:
 
         self._target_pose = desired_pose
 
-    def home(self, home_config=None, switch_to_default_controller: bool = True):
+    def home(self, home_config=None):
         """Home the robot."""
         self.controller_switcher_client.switch_controller("joint_trajectory_controller")
         self.joint_trajectory_controller_client.send_joint_config(
@@ -221,8 +221,8 @@ class Robot:
         self._target_pose = None
         self._target_joint = None
 
-        if switch_to_default_controller:
-            self.controller_switcher_client.switch_controller(self.config.default_controller)
+        # if switch_to_default_controller:
+        #     self.controller_switcher_client.switch_controller(self.config.default_controller)
 
     def _pose_msg_to_pose(self, pose: PoseStamped) -> pin.SE3:
         """Convert a transform to a pose."""
