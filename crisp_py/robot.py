@@ -127,6 +127,10 @@ class Robot:
         return self._current_pose
 
     @property
+    def target_pose(self):
+        return self._target_pose
+
+    @property
     def joint_values(self):
         return self._current_joint
 
