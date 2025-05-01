@@ -1,15 +1,20 @@
 """Simple example using dual arm setup.
 
-Note: for a better dual arm teleop setup, check the next example.
+Note: for a better dual arm teleop setup, it would be better to simply map the /left/joint_states
+to the /right/joints_states. But this setup is a bit easier to understand and play with.
 """
 
 # %%
 from crisp_py.robot import Robot
+from crisp_py.robot_config import FrankaConfig
 import numpy as np
 
 # %%
-left_arm = Robot(namespace="left")
-right_arm = Robot(namespace="right")
+faster_publishing_config = FrankaConfig()
+faster_publishing_config.publish_frequency = 200.0
+
+left_arm = Robot(robot_config=faster_publishing_config, namespace="left")
+right_arm = Robot(robot_config=faster_publishing_config, namespace="right")
 left_arm.wait_until_ready()
 right_arm.wait_until_ready()
 
@@ -33,7 +38,7 @@ def sync(left_arm, right_arm):
     right_arm.set_target(pose=left_arm.end_effector_pose)
 
 
-right_arm.node.create_timer(1.0 / 50.0, lambda: sync(left_arm, right_arm))
+right_arm.node.create_timer(1.0 / 100.0, lambda: sync(left_arm, right_arm))
 
 # %%
 max_time = 7.0
