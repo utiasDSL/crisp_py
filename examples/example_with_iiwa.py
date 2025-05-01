@@ -18,9 +18,9 @@ robot.home()
 # %%
 
 params = [
-    ("task.k_pos_x", 1500.0),
-    ("task.k_pos_y", 1500.0),
-    ("task.k_pos_z", 1500.0),
+    ("task.k_pos_x", 2000.0),
+    ("task.k_pos_y", 2000.0),
+    ("task.k_pos_z", 2000.0),
     ("task.k_rot_x", 50.0),
     ("task.k_rot_y", 50.0),
     ("task.k_rot_z", 50.0),
