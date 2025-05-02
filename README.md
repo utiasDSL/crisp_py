@@ -1,5 +1,11 @@
 # crisp_py */krɪsp pi/*
-A python package to interface with robots using crisp_controllers.
+
+<img src="https://github.com/user-attachments/assets/284983f8-2311-4699-86ab-06fc2ea9d5af" alt="CRISP Controllers Logo" width="120" align="right"/>
+
+<a href="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml"><img src="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml/badge.svg"/></a>
+
+A python package to interface with robots using [crisp_controllers](https://github.com/utiasDSL/crisp_controllers) or any ROS2 manipulator with a similar interface!
+Set target poses and joints, reconfigure stiffness and other controller parameters dynamically, deactivate and activate `ros2_controllers` and more!
 
 ## Getting started
 
@@ -17,9 +23,9 @@ from crisp_py.robot import Robot
 from crisp_py.robot_config import FrankaConfig, KinovaConfig, IiwaConfig
 ```
 
-and be sure that the robot is started and running with all controllers ready. (Check the `crisp_controller_demos`)
+Start the ROS2 robot stack in a separate terminal. For example, launch one of the robots provided in the [crisp_controllers_demos](https://github.com/utiasDSL/crisp_controllers_demos).
 
-Now you can start the robot and wait until it is ready. There is a timeout, and it will fail if the robot is not available.
+Now you can start the robot and wait until it is ready (to be sure that we received the current state of the robot). There is a timeout, and it will fail if the robot is not available.
 ```python
 robot = Robot(robot_config=FrankaConfig())  # Default is Franka
 robot.wait_until_ready()
