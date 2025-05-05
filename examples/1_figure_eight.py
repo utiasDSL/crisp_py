@@ -5,7 +5,7 @@ import numpy as np
 
 from crisp_py.robot import Robot
 
-# robot = Robot(namespace="right")
+# robot = Robot(namespace="left")
 robot = Robot()
 robot.wait_until_ready()
 
