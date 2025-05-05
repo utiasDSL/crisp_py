@@ -53,7 +53,7 @@ params = [
     ("task.k_rot_z", 100.0),
     ("nullspace.stiffness", 0.0),
     ("nullspace.projector_type", "kinematic"),
-    ("use_operational_space", True),
+    ("use_operational_space", False),
     ("use_local_jacobian", True),
 ]
 robot.cartesian_controller_parameters_client.set_parameters(params)
@@ -112,49 +112,41 @@ print(len(ee_poses))
 print(len(target_poses))
 
 # %%
+x_t = [target_pose_sample.translation[0] for target_pose_sample in target_poses]
 y_t = [target_pose_sample.translation[1] for target_pose_sample in target_poses]
 z_t = [target_pose_sample.translation[2] for target_pose_sample in target_poses]
+rx_t = [pin.log3(target_pose_sample.rotation)[0] for target_pose_sample in target_poses]
+ry_t = [pin.log3(target_pose_sample.rotation)[1] for target_pose_sample in target_poses]
+rz_t = [pin.log3(target_pose_sample.rotation)[2] for target_pose_sample in target_poses]
 
 # %%
-# === Normal params ===
-y_ee = [ee_pose.translation[1] for ee_pose in ee_poses]
-z_ee = [ee_pose.translation[2] for ee_pose in ee_poses]
+x_ee = np.array([ee_pose_sample.translation[0] for ee_pose_sample in ee_poses])
+y_ee = np.array([ee_pose_sample.translation[1] for ee_pose_sample in ee_poses])
+z_ee = np.array([ee_pose_sample.translation[2] for ee_pose_sample in ee_poses])
+rx_ee = np.array([pin.log3(ee_pose_sample.rotation)[0] for ee_pose_sample in ee_poses])
+ry_ee = np.array([pin.log3(ee_pose_sample.rotation)[1] for ee_pose_sample in ee_poses])
+rz_ee = np.array([pin.log3(ee_pose_sample.rotation)[2] for ee_pose_sample in ee_poses])
 
 # %%
 import matplotlib.pyplot as plt
 # %%
 
-plt.plot(y_ee, z_ee, label="current")
-plt.plot(y_t, z_t, label="target", linestyle="--")
-plt.xlabel("$y$")
-plt.ylabel("$z$")
+se_x = (x_ee - x_t) ** 2
+se_y = (y_ee - y_t) ** 2
+se_z = (z_ee - z_t) ** 2
+se_rx = (rx_ee - rx_t) ** 2
+se_ry = (ry_ee - ry_t) ** 2
+se_rz = (rz_ee - rz_t) ** 2
+
+fig, ax = plt.subplots(2, 1, figsize=(8, 10))
+ax[0].plot(ts, se_x, label="SE x")
+ax[0].plot(ts, se_y, label="SE y")
+ax[0].plot(ts, se_z, label="SE y")
+ax[1].plot(ts, se_rx, label="SE rx")
+ax[1].plot(ts, se_ry, label="SE ry")
+ax[1].plot(ts, se_rz, label="SE rz")
+
 plt.legend()
-plt.show()
-
-# %%
-plt.plot(ts, z_ee, label="current")
-plt.plot(ts, z_t, label="target", linestyle="--")
-plt.xlabel("$t$")
-plt.ylabel("$z$")
-plt.legend()
-plt.show()
-
-# %%
-fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-ax[0].plot(y_ee, z_ee, label="current")
-ax[0].plot(y_t, z_t, label="target", linestyle="--")
-ax[0].set_xlabel("$y$")
-ax[0].set_ylabel("$z$")
-# ax[0].legend()
-ax[1].plot(ts, z_ee, label="current")
-ax[1].plot(ts, z_t, label="target", linestyle="--")
-ax[1].set_xlabel("$t$")
-ax[1].legend()
-
-for a in ax:
-    a.grid()
-
-fig.tight_layout()
 
 plt.show()
 

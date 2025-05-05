@@ -5,7 +5,7 @@ import threading
 import numpy as np
 import pinocchio as pin
 import rclpy
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, WrenchStamped
 from sensor_msgs.msg import JointState
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
@@ -74,9 +74,13 @@ class Robot:
         self._target_pose = None
         self._current_joint = None
         self._target_joint = None
+        self._target_wrench = None
 
         self._target_pose_publisher = self.node.create_publisher(
             PoseStamped, self.config.target_pose_topic, qos_profile_system_default
+        )
+        self._target_wrench_publisher = self.node.create_publisher(
+            WrenchStamped, "target_wrench", qos_profile_system_default
         )
         self._target_joint_publisher = self.node.create_publisher(
             JointState, self.config.target_joint_topic, qos_profile_system_default
@@ -104,6 +108,11 @@ class Robot:
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
             self._callback_publish_target_joint,
+            ReentrantCallbackGroup(),
+        )
+        self.node.create_timer(
+            1.0 / self.config.publish_frequency,
+            self._callback_publish_target_wrench,
             ReentrantCallbackGroup(),
         )
         if spin_node:
@@ -139,9 +148,10 @@ class Robot:
         return self._current_pose is not None
 
     def reset_targets(self):
-        """Reset the target pose and joint to be None."""
+        """Reset the target pose, joint, and wrench to be None."""
         self._target_pose = None
         self._target_joint = None
+        self._target_wrench = None
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
         """Wait until the end-effector pose is available."""
@@ -170,6 +180,42 @@ class Robot:
         if self._target_joint is None:
             return
         self._target_joint_publisher.publish(self._joint_to_joint_msg(self._target_joint))
+
+    def _callback_publish_target_wrench(self):
+        """Publish the target wrench if it exists."""
+        if self._target_wrench is None:
+            return
+        self._target_wrench_publisher.publish(self._wrench_to_wrench_msg(self._target_wrench))
+
+    def set_target_wrench(self, force: iter = None, torque: iter = None):
+        """Sets the target wrench (force/torque) to be published.
+
+        Args:
+            force (iter, optional): Force vector [fx, fy, fz] in N. If None, zeros are used.
+            torque (iter, optional): Torque vector [tx, ty, tz] in Nm. If None, zeros are used.
+        """
+        if force is None:
+            force = [0.0, 0.0, 0.0]
+        if torque is None:
+            torque = [0.0, 0.0, 0.0]
+
+        assert len(force) == 3, "Force must be a 3D vector"
+        assert len(torque) == 3, "Torque must be a 3D vector"
+
+        self._target_wrench = {"force": np.array(force), "torque": np.array(torque)}
+
+    def _wrench_to_wrench_msg(self, wrench: dict) -> WrenchStamped:
+        """Convert a wrench dictionary to a WrenchStamped message."""
+        wrench_msg = WrenchStamped()
+        wrench_msg.header.frame_id = self.config.base_frame
+        wrench_msg.header.stamp = self.node.get_clock().now().to_msg()
+        wrench_msg.wrench.force.x = wrench["force"][0]
+        wrench_msg.wrench.force.y = wrench["force"][1]
+        wrench_msg.wrench.force.z = wrench["force"][2]
+        wrench_msg.wrench.torque.x = wrench["torque"][0]
+        wrench_msg.wrench.torque.y = wrench["torque"][1]
+        wrench_msg.wrench.torque.z = wrench["torque"][2]
+        return wrench_msg
 
     def _callback_current_pose(self, msg: PoseStamped):
         """Save the current pose."""
@@ -237,11 +283,13 @@ class Robot:
                 z=pose.pose.orientation.z,
                 w=pose.pose.orientation.w,
             ),
-            np.array([
-                pose.pose.position.x,
-                pose.pose.position.y,
-                pose.pose.position.z,
-            ]),
+            np.array(
+                [
+                    pose.pose.position.x,
+                    pose.pose.position.y,
+                    pose.pose.position.z,
+                ]
+            ),
         )
 
     def _pose_to_pose_msg(self, pose: pin.SE3) -> PoseStamped:
