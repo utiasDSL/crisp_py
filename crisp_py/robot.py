@@ -141,7 +141,7 @@ class Robot:
 
     @property
     def joint_values(self):
-        return self._current_joint
+        return self._current_joint.copy() if self._current_joint is not None else None
 
     def is_ready(self):
         """Returns True if the end-effector pose is available."""
