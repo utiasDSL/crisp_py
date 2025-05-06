@@ -29,9 +29,28 @@ left_arm.home()
 right_arm.home()
 
 # %%
+params_names = left_arm.cartesian_controller_parameters_client.list_parameters()
+i = 0
+for param_name in params_names:
+    print(param_name, end="\n" if i % 2 == 1 else ", ")
+    i += 1
+
+# %%
 
 left_arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
 right_arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
+
+right_arm.cartesian_controller_parameters_client.set_parameters(
+    [
+        ("task.d_pos_x", 0.0),
+        ("task.d_pos_y", 0.0),
+        ("task.d_pos_z", 0.0),
+        ("task.d_rot_x", 0.0),
+        ("task.d_rot_y", 0.0),
+        ("task.d_rot_z", 0.0),
+    ]
+)
+
 
 # %%
 def sync(left_arm, right_arm):
