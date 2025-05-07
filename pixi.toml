@@ -18,7 +18,8 @@ channels = [
 ]
 
 [activation]
-scripts = ["set_domain_id.sh"]
+scripts = ["set_ros_env.sh"]
+
 
 [dependencies]
 python = "*"
