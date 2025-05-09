@@ -8,26 +8,26 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 
-from crisp_py.control.controller_switcher import ControllerSwitcherClient
+# from crisp_py.control.controller_switcher import ControllerSwitcherClient
 
 
 class GripperConfig:
-    command_topic: str = "position_controller/commands"
-    joint_state_topic: str = "gripper/joint_state"
+    command_topic: str = "gripper_position_controller/commands"
+    joint_state_topic: str = "joint_states"
     min_width: float = 0.0
     max_width: float = 0.08  # [m]
 
 
 class Gripper:
     """Interface for gripper wrapper."""
+    THREADS_REQUIRED = 2
 
     def __init__(
         self,
         node: Node = None,
         namespace: str = "",
-        config: GripperConfig = None,
+        gripper_config: GripperConfig = None,
         spin_node: bool = True,
-        gripper_config=None,
     ):
         """Initialize the gripper client.
 
@@ -42,10 +42,13 @@ class Gripper:
             self.node = rclpy.create_node("gripper_client", namespace=namespace)
         else:
             self.node = node
+        self.config = gripper_config if gripper_config else GripperConfig()
 
         self._prefix = f"{namespace}_" if namespace else ""
+        self._width = None
+        self._torque = None
 
-        self.controller_switcher_client = ControllerSwitcherClient(self.node)
+        # self.controller_switcher_client = ControllerSwitcherClient(self.node)
         # self.gripper_parameter_client = ParametersClient(
         #     self.node, target_node=todo
         # )
@@ -58,17 +61,17 @@ class Gripper:
         )
         self.node.create_subscription(
             JointState,
-            self.config.current_joint_topic,
-            self._callback_current_joint,
+            self.config.joint_state_topic,
+            self._callback_joint_state,
             qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
         )
 
-        self.node.create_timer(
-            1.0 / self.config.publish_frequency,
-            self._callback_publish_target_pose,
-            ReentrantCallbackGroup(),
-        )
+        # self.node.create_timer(
+        #     1.0 / self.config.publish_frequency,
+        #     self._callback_publish_target,
+        #     ReentrantCallbackGroup(),
+        # )
 
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
@@ -92,11 +95,15 @@ class Gripper:
         return self.config.max_width
 
     @property
-    def width(self) -> float | None:
-        """Returns the current width of the gripper or None if not initialized."""
-        return
+    def torque(self) -> float | None:
+        """Returns the current torque of the gripper or None if not initialized."""
+        return self._torque
 
     @property
+    def width(self) -> float | None:
+        """Returns the current width of the gripper or None if not initialized."""
+        return self._width
+
     def is_ready(self) -> bool:
         """Returns True if the gripper is fully ready to operate."""
         return self.width is not None
@@ -109,6 +116,16 @@ class Gripper:
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
                 raise TimeoutError("Timeout waiting for gripper to be ready.")
+
+    # def _callback_publish_target(self):
+    #     msg = Float64MultiArray()
+    #     msg.data = [self.target]
+    #     self._command_publisher.publish(msg)
+
+    def _callback_joint_state(self, msg: JointState):
+        """TODO"""
+        self._width = msg.position[0]
+        self._torque = msg.effort[0]
 
     def set_target(
         self,

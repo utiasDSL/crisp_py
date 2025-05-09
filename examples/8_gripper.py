@@ -3,15 +3,28 @@
 # %%
 from crisp_py.gripper.gripper import Gripper
 
-# robot = Robot(namespace="left")
-robot = Robot()
-robot.wait_until_ready()
+leader_gripper = Gripper(namespace="leader")
+follower_gripper = Gripper(namespace="follower")
+leader_gripper.wait_until_ready()
+follower_gripper.wait_until_ready()
 
 # %%
-print(robot.end_effector_pose)
-print(robot.joint_values)
+print(follower_gripper.width)
+print(leader_gripper.width)
+
 
 # %%
-print("Going to home position...")
-robot.home()
-homing_pose = robot.end_effector_pose.copy()
+follower_gripper.set_target(leader_gripper.width)
+
+# %%
+
+freq = 50.0
+rate = follower_gripper.node.create_rate(freq)
+dt = 1.0 / freq
+
+t = 0.0
+while True: 
+    follower_gripper.set_target(leader_gripper.width)
+    rate.sleep()
+    t += dt
+
