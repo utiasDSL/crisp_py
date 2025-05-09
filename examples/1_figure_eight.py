@@ -6,17 +6,17 @@ import numpy as np
 from crisp_py.robot import Robot
 
 # robot = Robot(namespace="left")
-robot = Robot()
-robot.wait_until_ready()
+left_arm = Robot()
+left_arm.wait_until_ready()
 
 # %%
-print(robot.end_effector_pose)
-print(robot.joint_values)
+print(left_arm.end_effector_pose)
+print(left_arm.joint_values)
 
 # %%
 print("Going to home position...")
-robot.home()
-homing_pose = robot.end_effector_pose.copy()
+left_arm.home()
+homing_pose = left_arm.end_effector_pose.copy()
 
 
 # %%
@@ -29,12 +29,12 @@ sin_freq_z = 0.125  # rot / s
 max_time = 8.0
 
 # %%
-robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
+left_arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
 
 # %%
 # The move_to function will publish a pose to /target_pose while interpolation linearly
 
-robot.move_to(position=center, speed=0.15)
+left_arm.move_to(position=center, speed=0.15)
 
 # %%
 # The set_target will directly publish the pose to /target_pose
@@ -44,8 +44,8 @@ ts = []
 
 print("Starting to draw a circle...")
 t = 0.0
-target_pose = robot.end_effector_pose.copy()
-rate = robot.node.create_rate(ctrl_freq)
+target_pose = left_arm.end_effector_pose.copy()
+rate = left_arm.node.create_rate(ctrl_freq)
 
 while t < max_time:
     x = center[0]
@@ -53,12 +53,12 @@ while t < max_time:
     z = radius * np.sin(2 * np.pi * sin_freq_z * t) + center[2]
     target_pose.translation = np.array([x, y, z])
 
-    robot.set_target(pose=target_pose)
+    left_arm.set_target(pose=target_pose)
 
     rate.sleep()
 
-    ee_poses.append(robot.end_effector_pose.copy())
-    target_poses.append(robot._target_pose.copy())
+    ee_poses.append(left_arm.end_effector_pose.copy())
+    target_poses.append(left_arm._target_pose.copy())
     ts.append(t)
 
     t += 1.0 / ctrl_freq
@@ -68,8 +68,8 @@ while t < max_time + 1.0:
 
     rate.sleep()
 
-    ee_poses.append(robot.end_effector_pose.copy())
-    target_poses.append(robot._target_pose.copy())
+    ee_poses.append(left_arm.end_effector_pose.copy())
+    target_poses.append(left_arm._target_pose.copy())
     ts.append(t)
 
     t += 1.0 / ctrl_freq
@@ -149,9 +149,9 @@ plt.show()
 # %%
 
 print("Going back home.")
-robot.home()
+left_arm.home()
 
 # %%
-robot.shutdown()
+left_arm.shutdown()
 
 # %%
