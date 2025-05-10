@@ -116,6 +116,18 @@ class Gripper:
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
                 raise TimeoutError("Timeout waiting for gripper to be ready.")
+            
+    def is_open(self, open_threshold: float = 0.07) -> bool:
+        """Returns True if the gripper is open."""
+        return self.width > open_threshold
+    
+    def close(self):
+        """Close the gripper."""
+        self.set_target(target=0.0)
+
+    def open(self):
+        """Open the gripper."""
+        self.set_target(target=0.08)
 
     # def _callback_publish_target(self):
     #     msg = Float64MultiArray()
@@ -124,7 +136,7 @@ class Gripper:
 
     def _callback_joint_state(self, msg: JointState):
         """TODO"""
-        self._width = msg.position[0]
+        self._width = msg.position[0] + msg.position[1]
         self._torque = msg.effort[0]
 
     def set_target(

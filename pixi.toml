@@ -29,6 +29,8 @@ pkg-config = "*"
 make = "*"
 ninja = "*"
 pinocchio = ">=3.5.0,<4"
+gymnasium = ">=0.26.3,<2"
+scipy = ">=1.15.2,<2"
 
 [target.linux.dependencies]
 libgl-devel = "*"
