@@ -14,12 +14,13 @@ from std_msgs.msg import Float64MultiArray
 class GripperConfig:
     command_topic: str = "gripper_position_controller/commands"
     joint_state_topic: str = "joint_states"
-    min_width: float = 0.0
-    max_width: float = 0.08  # [m]
+    min_width: float = None  # [m]
+    max_width: float = None  # [m]
 
 
 class Gripper:
     """Interface for gripper wrapper."""
+
     THREADS_REQUIRED = 2
 
     def __init__(
