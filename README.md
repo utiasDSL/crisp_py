@@ -7,6 +7,8 @@
 A python package to interface with robots using [crisp_controllers](https://github.com/utiasDSL/crisp_controllers) or any ROS2 manipulator with a similar interface!
 Set target poses and joints, reconfigure stiffness and other controller parameters dynamically, deactivate and activate `ros2_controllers` and more!
 
+![crisp_py](https://github.com/user-attachments/assets/e4cbf5fd-6ba7-4d7c-917a-bbb78d79ab10)
+
 ## Getting started
 
 Install pixi and create an environment to work with the robot:
