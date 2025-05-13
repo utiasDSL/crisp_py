@@ -14,8 +14,10 @@ from std_msgs.msg import Float64MultiArray
 class GripperConfig:
     command_topic: str = "gripper_position_controller/commands"
     joint_state_topic: str = "joint_states"
-    min_width: float = None  # [m]
-    max_width: float = None  # [m]
+
+    def __init__(self, min_value, max_value):
+        self.min_value = min_value
+        self.max_value = max_value
 
 
 class Gripper:
@@ -43,10 +45,10 @@ class Gripper:
             self.node = rclpy.create_node("gripper_client", namespace=namespace)
         else:
             self.node = node
-        self.config = gripper_config if gripper_config else GripperConfig()
+        self.config = gripper_config if gripper_config else GripperConfig(min_value=0.0, max_value=1.0)
 
         self._prefix = f"{namespace}_" if namespace else ""
-        self._width = None
+        self._value = None
         self._torque = None
 
         # self.controller_switcher_client = ControllerSwitcherClient(self.node)
@@ -86,14 +88,14 @@ class Gripper:
             executor.spin_once(timeout_sec=0.1)
 
     @property
-    def min_width(self) -> float:
+    def min_value(self) -> float:
         """Returns the minimum width of the gripper."""
-        return self.config.min_width
+        return self.config.min_value
 
     @property
-    def max_width(self) -> float:
+    def max_value(self) -> float:
         """Returns the minimum width of the gripper."""
-        return self.config.max_width
+        return self.config.max_value
 
     @property
     def torque(self) -> float | None:
@@ -101,13 +103,18 @@ class Gripper:
         return self._torque
 
     @property
-    def width(self) -> float | None:
-        """Returns the current width of the gripper or None if not initialized."""
-        return self._width
+    def value(self) -> float | None:
+        """Returns the current value of the gripper or None if not initialized."""
+        return self._normalize(self._value) if self._value is not None else None
+
+    @property
+    def raw_value(self) -> float | None:
+        """Returns the current raw value of the gripper or None if not initialized."""
+        return self._value
 
     def is_ready(self) -> bool:
         """Returns True if the gripper is fully ready to operate."""
-        return self.width is not None
+        return self.value is not None
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
         """Wait until the gripper is available."""
@@ -118,24 +125,35 @@ class Gripper:
             if timeout <= 0:
                 raise TimeoutError("Timeout waiting for gripper to be ready.")
 
-    # def _callback_publish_target(self):
-    #     msg = Float64MultiArray()
-    #     msg.data = [self.target]
-    #     self._command_publisher.publish(msg)
-
     def _callback_joint_state(self, msg: JointState):
         """TODO"""
-        self._width = msg.position[0]
+        self._value = msg.position[0]
         self._torque = msg.effort[0]
 
     def set_target(
         self,
         target: float,
+        *,
+        epsilon: float = 0.1,
     ):
         """Grasp with the gripper by setting a target. This can be a position, velocity or effort depending on the active controller.
         Args:
             width (float): The width of the gripper.
         """
+        assert 0.0 - epsilon <= target <= 1.0 + epsilon, (
+            f"The target should be normalized between 0 and 1, but is currently {target}"
+        )
         msg = Float64MultiArray()
-        msg.data = [target]
+        msg.data = [self._unnormalize(target)]
         self._command_publisher.publish(msg)
+
+    def _normalize(self, unormalized_value: float):
+        """Normalize a raw value between 0.0 and 1.0."""
+        return (unormalized_value - self.min_value) / (self.max_value - self.min_value)
+
+    def _unnormalize(self, normalized_value: float):
+        """Normalize a raw value between 0.0 and 1.0."""
+        return (self.max_value - self.min_value) * normalized_value + self.min_value
+
+    def shutdown(self):
+        self.node.destroy_node()

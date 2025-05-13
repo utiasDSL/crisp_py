@@ -11,20 +11,21 @@ import yaml
 # %%
 from crisp_py.gripper import Gripper
 
-gripper = Gripper()
+gripper = Gripper(namespace="follower")
 gripper.wait_until_ready()
 
 # %%
 
-print("--- Move the gripper to the open position ---")
+print("--- Move the gripper to the closed position ---")
 input()
-min_width = gripper.width
-# min_width = 0.0
+min_value = gripper.raw_value
 
-print("--- Now move the gripper to the close position ---")
+print("--- Now move the gripper to the open position ---")
 input()
-max_width = gripper.width
-# max_width = 0.5
+max_value = gripper.raw_value
+
+# %%
+print(f"Measured min_value is {min_value} and max_value is {max_value}")
 
 # %% Saving to a valid config file
 this_file_path = Path(__file__).parent.parent
@@ -34,7 +35,9 @@ print(f"Saving config file to: {this_file_path / 'config' / config_file}")
 
 with open(this_file_path / "config" / config_file, "w") as file:
     gripper_config = {
-        "min_width": min_width,
-        "max_width": max_width,
+        "min_value": min_value,
+        "max_value": max_value,
     }
     yaml.dump(gripper_config, file)
+
+gripper.shutdown()
