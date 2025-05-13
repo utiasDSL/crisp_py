@@ -5,17 +5,21 @@ import time
 from pathlib import Path
 
 import yaml
+
 from crisp_py.gripper.gripper import Gripper, GripperConfig
 
 project_root_path = Path("/home/lsy_franka/repos/crisp_py")
 
-right_config = None, None
+right_config = None
 with open(project_root_path / "config" / "gripper_right_config.yaml", "r") as file:
-    right_config = GripperConfig(**yaml.safe_load(file))
+    right_config = GripperConfig()
+    config = yaml.safe_load(file)
+    right_config.min_value = config.get("min_value")
+    right_config.max_value = config.get("max_value")
 
 # %%
 
-gripper = Gripper(namespace="follower", gripper_config=right_config)
+gripper = Gripper(gripper_config=right_config)
 gripper.wait_until_ready()
 
 # %%
@@ -28,7 +32,6 @@ while t < 10.0:
     rate.sleep()
     t += 1.0 / freq
 
-
 # %%
 
 # Almost fully open
@@ -38,3 +41,21 @@ time.sleep(3.0)
 
 # Almost fully closed
 gripper.set_target(0.1)
+
+# %%
+try:
+    gripper.reboot()
+except RuntimeError as e:
+    print(e)
+
+# %%
+try:
+    gripper.enable_torque()
+except RuntimeError as e:
+    print(e)
+
+# %%
+try:
+    gripper.disable_torque()
+except RuntimeError as e:
+    print(e)

@@ -6,17 +6,17 @@ import numpy as np
 import pinocchio as pin
 import rclpy
 from geometry_msgs.msg import PoseStamped, WrenchStamped
-from sensor_msgs.msg import JointState
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
+from sensor_msgs.msg import JointState
 
-from crisp_py.robot_config import FrankaConfig, RobotConfig
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import (
     JointTrajectoryControllerClient,
 )
 from crisp_py.control.parameters_client import ParametersClient
+from crisp_py.robot_config import FrankaConfig, RobotConfig
 
 
 class Robot:

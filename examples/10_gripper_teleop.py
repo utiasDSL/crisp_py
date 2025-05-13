@@ -4,6 +4,7 @@
 from pathlib import Path
 
 import yaml
+
 from crisp_py.gripper.gripper import Gripper, GripperConfig
 
 project_root_path = Path("/home/lsy_franka/repos/crisp_py")

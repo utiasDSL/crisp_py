@@ -1,23 +1,32 @@
 """Generic class for a gripper based on a simple ros2 topic."""
 
+import re
 import threading
+
 import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
-from rclpy.callback_groups import ReentrantCallbackGroup
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
+from std_srvs.srv import SetBool, Trigger
 
 # from crisp_py.control.controller_switcher import ControllerSwitcherClient
 
 
 class GripperConfig:
+    """Gripper default config.
+
+    Can be extented to be used with other grippers.
+    """
+
+    min_value: float
+    max_value: float
     command_topic: str = "gripper_position_controller/commands"
     joint_state_topic: str = "joint_states"
-
-    def __init__(self, min_value, max_value):
-        self.min_value = min_value
-        self.max_value = max_value
+    reboot_service: str = "reboot_gripper"
+    enable_torque_service: str = "dynamixel_hardware_interface/set_dxl_torque"
 
 
 class Gripper:
@@ -27,9 +36,9 @@ class Gripper:
 
     def __init__(
         self,
-        node: Node = None,
+        node: Node | None = None,
         namespace: str = "",
-        gripper_config: GripperConfig = None,
+        gripper_config: GripperConfig | None = None,
         spin_node: bool = True,
     ):
         """Initialize the gripper client.
@@ -37,15 +46,20 @@ class Gripper:
         Args:
             node (Node, optional): ROS2 node to use. If None, creates a new node.
             namespace (str, optional): ROS2 namespace for the gripper.
+            gripper_config (GripperConfig, optional): configuration for the gripper class.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
         """
-        if node is None:
-            if not rclpy.ok():
-                rclpy.init()
-            self.node = rclpy.create_node("gripper_client", namespace=namespace)
-        else:
-            self.node = node
-        self.config = gripper_config if gripper_config else GripperConfig(min_value=0.0, max_value=1.0)
+        if not rclpy.ok() and node is None:
+            rclpy.init()
+
+        self.node = (
+            rclpy.create_node(
+                node_name="gripper_client", namespace=namespace, parameter_overrides=[]
+            )
+            if not node
+            else node
+        )
+        self.config = gripper_config if gripper_config else GripperConfig()
 
         self._prefix = f"{namespace}_" if namespace else ""
         self._value = None
@@ -76,13 +90,18 @@ class Gripper:
         #     ReentrantCallbackGroup(),
         # )
 
+        self.reboot_client = self.node.create_client(Trigger, self.config.reboot_service)
+        self.enable_torque_client = self.node.create_client(
+            SetBool, self.config.enable_torque_service
+        )
+
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
 
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
-        executor = rclpy.executors.MultiThreadedExecutor(num_threads=self.THREADS_REQUIRED)
+        executor = MultiThreadedExecutor(num_threads=self.THREADS_REQUIRED)
         executor.add_node(self.node)
         while rclpy.ok():
             executor.spin_once(timeout_sec=0.1)
@@ -126,34 +145,94 @@ class Gripper:
                 raise TimeoutError("Timeout waiting for gripper to be ready.")
 
     def _callback_joint_state(self, msg: JointState):
-        """TODO"""
+        """Save the latest joint state values.
+
+        Note: we assume that the gripper value is the first element of the joint message.
+
+        Args:
+            msg (JointState): the message containing the joint state.
+        """
         self._value = msg.position[0]
         self._torque = msg.effort[0]
 
-    def set_target(
-        self,
-        target: float,
-        *,
-        epsilon: float = 0.1,
-    ):
+    def set_target(self, target: float, *, epsilon: float = 0.1, send_raw_target: bool = False):
         """Grasp with the gripper by setting a target. This can be a position, velocity or effort depending on the active controller.
+
         Args:
-            width (float): The width of the gripper.
+            target (float): The target value for the gripper between 0 and 1 from closed to open respectively.
+            epsilon (float): allowed zone around the target limits that are allowed to be set.
+            send_raw_target(bool): if true, simply publish the target that has been set as an argument without parsing.
         """
-        assert 0.0 - epsilon <= target <= 1.0 + epsilon, (
-            f"The target should be normalized between 0 and 1, but is currently {target}"
-        )
         msg = Float64MultiArray()
-        msg.data = [self._unnormalize(target)]
+        if not send_raw_target:
+            assert 0.0 - epsilon <= target <= 1.0 + epsilon, (
+                f"The target should be normalized between 0 and 1, but is currently {target}"
+            )
+            msg.data = [self._unnormalize(target)]
+        else:
+            msg.data = [target]
         self._command_publisher.publish(msg)
 
-    def _normalize(self, unormalized_value: float):
+    def _normalize(self, unormalized_value: float) -> float:
         """Normalize a raw value between 0.0 and 1.0."""
         return (unormalized_value - self.min_value) / (self.max_value - self.min_value)
 
-    def _unnormalize(self, normalized_value: float):
+    def _unnormalize(self, normalized_value: float) -> float:
         """Normalize a raw value between 0.0 and 1.0."""
         return (self.max_value - self.min_value) * normalized_value + self.min_value
 
     def shutdown(self):
-        self.node.destroy_node()
+        """Shutdown the node and allow the robot to be instantiated again."""
+        if self.node:
+            self.node.destroy_node()
+
+    def reboot(self, block: bool = False):
+        """Reboot the gripper if the reboot service is available.
+
+        Args:
+            block: if block is set to True, then we wait until a response arrives.
+        """
+        if not self.reboot_client.service_is_ready:
+            raise RuntimeError(
+                f"Trying to reboot the client but the service {self.config.reboot_service} is not available. Is the gripper running? Does your gripper support rebooting?"
+            )
+
+        if block:
+            self.reboot_client.call(Trigger.Request())
+        else:
+            self.reboot_client.call_async(Trigger.Request())
+
+    def enable_torque(self, block: bool = False):
+        """Enable torque holding in the gripper.
+
+        Args:
+            block: if block is set to True, then we wait until a response arrives.
+        """
+        self._set_torque_holding(enable=True, block=block)
+
+    def disable_torque(self, block: bool = False):
+        """Disable torque holding in the gripper to allow free movement.
+
+        Args:
+            block: if block is set to True, then we wait until a response arrives.
+        """
+        self._set_torque_holding(enable=False, block=block)
+
+    def _set_torque_holding(self, enable: bool, block: bool = False):
+        """Reboot the gripper if the reboot service is available.
+
+        Args:
+            enable: whether or not we enable the torque holding in the motor.
+            block: if block is set to True, then we wait until a response arrives.
+        """
+        if not self.enable_torque_client.service_is_ready:
+            raise RuntimeError(
+                f"Trying to enable torque the client but the service {self.config.enable_torque_service} is not available. Is the gripper running? Does your gripper support toggling reboot?"
+            )
+
+        req = SetBool.Request()
+        req.data = enable
+        if block:
+            self.enable_torque_client.call(req)
+        else:
+            self.enable_torque_client.call_async(req)
