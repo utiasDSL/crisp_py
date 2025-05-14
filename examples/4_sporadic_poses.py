@@ -1,9 +1,9 @@
 """Try to follow a "figure eight" target on the yz plane."""
 
 # %%
+import matplotlib.pyplot as plt
 import numpy as np
 import pinocchio as pin
-import matplotlib.pyplot as plt
 
 from crisp_py.robot import Robot
 

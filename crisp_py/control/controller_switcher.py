@@ -1,14 +1,14 @@
 """Script to switch to a different ros2_controller."""
 
 import rclpy
-from rclpy.node import Node
-from rclpy.callback_groups import ReentrantCallbackGroup
 from controller_manager_msgs.srv import (
-    SwitchController,
+    ConfigureController,
     ListControllers,
     LoadController,
-    ConfigureController,
+    SwitchController,
 )
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.node import Node
 
 
 class ControllerSwitcherClient:
