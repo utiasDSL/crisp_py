@@ -102,6 +102,7 @@ z_nocor = [ee_pose.translation[2] for ee_pose in ee_poses]
 
 # %%
 import matplotlib.pyplot as plt
+
 # %%
 
 plt.plot(y_ee, z_ee, label="current")

@@ -2,9 +2,11 @@
 
 # %%
 import threading
+
 import rclpy
-from crisp_py.control.parameters_client import ParametersClient
 from rclpy.executors import MultiThreadedExecutor
+
+from crisp_py.control.parameters_client import ParametersClient
 
 # %%
 rclpy.init()

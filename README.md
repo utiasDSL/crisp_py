@@ -162,3 +162,11 @@ Once you are done, you can shutdown the robot (or simply kill the terminal/proce
 ```python
 robot.shutdown()
 ```
+## How to grasp
+
+```python
+from crisp_py.gripper import Gripper, GripperConfig
+gripper_config = GripperConfig()
+gripper = Gripper()
+```
+

@@ -1,9 +1,9 @@
 """TODO: Add a description here."""
 
 import rclpy
+from control_msgs.action import FollowJointTrajectory
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
 
 

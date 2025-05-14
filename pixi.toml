@@ -20,7 +20,6 @@ channels = [
 [activation]
 scripts = ["set_ros_env.sh"]
 
-
 [dependencies]
 python = "*"
 compilers = "*"
@@ -60,5 +59,4 @@ colcon-common-extensions = "*"
 rosdep = "*"
 
 [pypi-dependencies]
-ruff = ">=0.11.4, <0.12"
-
+crisp_py = { path = ".", editable = true }
