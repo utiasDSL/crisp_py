@@ -2,6 +2,7 @@
 
 import time
 from typing import Any
+import yaml
 
 from rcl_interfaces.msg import ParameterValue
 from rcl_interfaces.srv import GetParameters, ListParameters, SetParameters
@@ -85,6 +86,7 @@ class ParametersClient:
             parameter_value_to_python(param_value) for param_value in self.get_parameter_values(param_names)
         ]
 
+
     def get_parameter_values(self, param_names: list[str]) -> list[ParameterValue]:
         """Get raw ParameterValue messages for the specified parameters from the target node.
 
@@ -139,3 +141,17 @@ class ParametersClient:
         if not len(succesful_results):
             raise RuntimeError("No results from setting parameters...")
 
+    def save_param_config(self, file_path: str = "data.yaml"):
+        """Save the current params to a file to be loaded later."""
+        param_names = self.list_parameters()
+        param_values = self.get_parameters(param_names)
+        params_dict = {param_name: param_value for param_name, param_value in zip(param_names, param_values)}
+        with open(file_path, 'w') as outfile:
+            yaml.safe_dump(params_dict, outfile)
+
+    def load_param_config(self, file_path):
+        params_dict = {}
+        with open(file_path, 'r') as input_file:
+            params_dict: dict = yaml.safe_load(input_file)
+        params: list = [(name, value) for name, value in params_dict.items()]
+        self.set_parameters(params)

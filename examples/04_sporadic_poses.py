@@ -117,21 +117,9 @@ robot.cartesian_controller_parameters_client.set_parameters(
         ("task.k_pos_x", 500.0),
         ("task.k_pos_y", 500.0),
         ("task.k_pos_z", 500.0),
-        ("task.k_rot_x", 30.0),
-        ("task.k_rot_y", 30.0),
-        ("task.k_rot_z", 30.0),
-        ("task.d_pos_x", 500.0),
-        ("task.d_pos_y", 500.0),
-        ("task.d_pos_z", 500.0),
-        ("task.d_rot_x", 20.0),
-        ("task.d_rot_y", 20.0),
-        ("task.d_rot_z", 20.0),
-        ("task.error_clip.x", 20.0),
-        ("task.error_clip.y", 20.0),
-        ("task.error_clip.z", 20.0),
-        ("task.error_clip.rx", 5.0),
-        ("task.error_clip.ry", 5.0),
-        ("task.error_clip.rz", 5.0),
+        ("task.k_rot_x", 20.0),
+        ("task.k_rot_y", 20.0),
+        ("task.k_rot_z", 20.0),
         ("nullspace.stiffness", 1.0),
         ("nullspace.projector_type", "kinematic"),
         ("use_operational_space", False),
@@ -142,7 +130,6 @@ ts, ee_poses, target_poses = drive_trajectory()
 dx, dy, dz, drx, dry, drz = get_error(target_poses, ee_poses)
 
 # %%
-# Drive the clipper trajectory
 robot.cartesian_controller_parameters_client.set_parameters(
     [
         ("task.k_pos_x", 1500.0),
@@ -159,12 +146,12 @@ robot.cartesian_controller_parameters_client.set_parameters(
         ("task.d_rot_y", 1.0),
         ("task.d_rot_z", 1.0),
         # ===
-        ("task.error_clip.x", 0.02),
-        ("task.error_clip.y", 0.02),
-        ("task.error_clip.z", 0.02),
-        ("task.error_clip.rx", 0.15),
-        ("task.error_clip.ry", 0.15),
-        ("task.error_clip.rz", 0.15),
+        ("task.error_clip.x", 0.01),
+        ("task.error_clip.y", 0.01),
+        ("task.error_clip.z", 0.01),
+        ("task.error_clip.rx", 0.05),
+        ("task.error_clip.ry", 0.05),
+        ("task.error_clip.rz", 0.05),
         # ===
         ("nullspace.stiffness", 0.0),
         ("nullspace.projector_type", "kinematic"),

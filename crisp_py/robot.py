@@ -12,9 +12,7 @@ from rclpy.qos import qos_profile_system_default
 from sensor_msgs.msg import JointState
 
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
-from crisp_py.control.joint_trajectory_controller_client import (
-    JointTrajectoryControllerClient,
-)
+from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
 
@@ -232,7 +230,9 @@ class Robot:
         for joint_name, joint_position in zip(msg.name, msg.position):
             if joint_name.removeprefix(self._prefix) not in self.config.joint_names:
                 continue
-            self._current_joint[self.config.joint_names.index(joint_name.removeprefix(self._prefix))] = joint_position
+            self._current_joint[
+                self.config.joint_names.index(joint_name.removeprefix(self._prefix))
+            ] = joint_position
 
     def move_to(self, position: iter = None, pose: pin.SE3 = None, speed: float = 0.05):
         """Move the end-effector to a given pose by interpolating linearly between the poses.
@@ -257,14 +257,14 @@ class Robot:
 
         self._target_pose = desired_pose
 
-    def home(self, home_config=None):
+    def home(self, home_config: list[float] | None = None, blocking: bool = True):
         """Home the robot."""
         self.controller_switcher_client.switch_controller("joint_trajectory_controller")
         self.joint_trajectory_controller_client.send_joint_config(
             self.config.joint_names,
             self.config.home_config if home_config is None else home_config,
             self.config.time_to_home,
-            blocking=True,
+            blocking=blocking,
         )
 
         # Set to none to avoid publishing the previous target pose after activating the next controller
@@ -283,13 +283,7 @@ class Robot:
                 z=pose.pose.orientation.z,
                 w=pose.pose.orientation.w,
             ),
-            np.array(
-                [
-                    pose.pose.position.x,
-                    pose.pose.position.y,
-                    pose.pose.position.z,
-                ]
-            ),
+            np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z]),
         )
 
     def _pose_to_pose_msg(self, pose: pin.SE3) -> PoseStamped:
@@ -306,7 +300,9 @@ class Robot:
         pose_msg.pose.orientation.w = q.w
         return pose_msg
 
-    def _joint_to_joint_msg(self, q: np.array, dq: np.array = None, tau: np.array = None) -> JointState:
+    def _joint_to_joint_msg(
+        self, q: np.array, dq: np.array = None, tau: np.array = None
+    ) -> JointState:
         """Convert a pose to a pose message."""
         joint_msg = JointState()
         joint_msg.header.frame_id = self.config.base_frame

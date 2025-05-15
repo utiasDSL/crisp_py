@@ -1,0 +1,47 @@
+limit_error: true
+limit_torques: true
+
+max_delta_tau: 0.5
+
+nullspace.projector_type: none  # So we are directly controlling the joints!
+nullspace.stiffness: 0.0
+nullspace.damping: 10.0
+nullspace.max_tau: 5.0
+nullspace.regularization: 1.0e-06
+nullspace.weights.right_fr3_joint1.value: 15.0
+nullspace.weights.right_fr3_joint2.value: 15.0
+nullspace.weights.right_fr3_joint3.value: 8.0
+nullspace.weights.right_fr3_joint4.value: 8.0
+nullspace.weights.right_fr3_joint5.value: 8.0
+nullspace.weights.right_fr3_joint6.value: 5.0
+nullspace.weights.right_fr3_joint7.value: 5.0
+
+stop_commands: false
+
+# We set the task gains to 0
+task.k_pos_x: 0.0
+task.k_pos_y: 0.0
+task.k_pos_z: 0.0
+task.k_rot_x: 0.0
+task.k_rot_y: 0.0
+task.k_rot_z: 0.0
+task.d_pos_x: -1.0
+task.d_pos_y: -1.0
+task.d_pos_z: -1.0
+task.d_rot_x: -1.0
+task.d_rot_y: -1.0
+task.d_rot_z: -1.0
+
+task.error_clip.rx: 0.5
+task.error_clip.ry: 0.5
+task.error_clip.rz: 0.5
+task.error_clip.x: 0.1
+task.error_clip.y: 0.1
+task.error_clip.z: 0.1
+
+use_coriolis_compensation: true
+use_friction: true
+use_gravity_compensation: false
+use_local_jacobian: true
+use_operational_space: false
+use_sim_time: false
