@@ -18,11 +18,27 @@ print("Going to home position...")
 robot.home()
 homing_pose = robot.end_effector_pose.copy()
 
+params = [
+    ("task.k_pos_x", 400.0),
+    ("task.k_pos_y", 400.0),
+    ("task.k_pos_z", 400.0),
+    ("task.k_rot_x", 15.0),
+    ("task.k_rot_y", 15.0),
+    ("task.k_rot_z", 15.0),
+    ("task.d_pos_x", 25.0),
+    ("task.d_pos_y", 25.0),
+    ("task.d_pos_z", 25.0),
+    ("task.d_rot_x", 10.0),
+    ("task.d_rot_y", 10.0),
+    ("task.d_rot_z", 10.0),
+]
+robot.cartesian_controller_parameters_client.set_parameters(params)
+
 
 # %%
 # Paremeters for the circle
 radius = 0.2  # [m]
-center = np.array([0.4, 0.0, 0.4])
+center = np.array([0.4, 0, 0.4])
 ctrl_freq = 50.0
 sin_freq_y = 0.25  # rot / s
 sin_freq_z = 0.125  # rot / s
@@ -30,6 +46,7 @@ max_time = 8.0
 
 # %%
 robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
+
 
 # %%
 # The move_to function will publish a pose to /target_pose while interpolation linearly
