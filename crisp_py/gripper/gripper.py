@@ -1,7 +1,7 @@
 """Generic class for a gripper based on a simple ros2 topic."""
 
-import re
 import threading
+from dataclasses import dataclass
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -15,6 +15,7 @@ from std_srvs.srv import SetBool, Trigger
 # from crisp_py.control.controller_switcher import ControllerSwitcherClient
 
 
+@dataclass
 class GripperConfig:
     """Gripper default config.
 
@@ -59,7 +60,9 @@ class Gripper:
             if not node
             else node
         )
-        self.config = gripper_config if gripper_config else GripperConfig()
+        self.config = (
+            gripper_config if gripper_config else GripperConfig(min_value=0.0, max_value=1.0)
+        )
 
         self._prefix = f"{namespace}_" if namespace else ""
         self._value = None
