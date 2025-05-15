@@ -1,21 +1,20 @@
 limit_error: true
 limit_torques: true
 
-max_delta_tau: 0.2
+max_delta_tau: 0.5
 
-# nullspace stiffness is set to 0 but a different value might make more sense to keep the arm upright.
+nullspace.projector_type: none  # So we are directly controlling the joints!
 nullspace.stiffness: 0.0
-nullspace.damping: -1.0
+nullspace.damping: 10.0
 nullspace.max_tau: 5.0
-nullspace.projector_type: kinematic
 nullspace.regularization: 1.0e-06
-# nullspace.weights.left_fr3_joint1.value: 1.0
-# nullspace.weights.left_fr3_joint2.value: 1.0
-# nullspace.weights.left_fr3_joint3.value: 1.0
-# nullspace.weights.left_fr3_joint4.value: 1.0
-# nullspace.weights.left_fr3_joint5.value: 1.0
-# nullspace.weights.left_fr3_joint6.value: 1.0
-# nullspace.weights.left_fr3_joint7.value: 1.0
+nullspace.weights.right_fr3_joint1.value: 15.0
+nullspace.weights.right_fr3_joint2.value: 15.0
+nullspace.weights.right_fr3_joint3.value: 8.0
+nullspace.weights.right_fr3_joint4.value: 8.0
+nullspace.weights.right_fr3_joint5.value: 8.0
+nullspace.weights.right_fr3_joint6.value: 5.0
+nullspace.weights.right_fr3_joint7.value: 5.0
 
 stop_commands: false
 

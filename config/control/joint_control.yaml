@@ -1,43 +1,13 @@
-filter.dq: 0.5
-filter.output_torque: 0.5
-filter.q: 0.5
-filter.target_pose: 0.1
-
-friction.fp1:
-- 0.54615
-- 0.87224
-- 0.64068
-- 1.2794
-- 0.83904
-- 0.30301
-- 0.56489
-friction.fp2:
-- 5.1181
-- 9.0657
-- 10.136
-- 5.5903
-- 8.3469
-- 17.133
-- 10.336
-friction.fp3:
-- 0.039533
-- 0.025882
-- -0.04607
-- 0.036194
-- 0.026226
-- -0.021047
-- 0.0035526
-
 limit_error: true
 limit_torques: true
 
 max_delta_tau: 0.5
 
-# nullspace stiffness is set to 0 but a different value might make more sense to keep the arm upright.
+nullspace.projector_type: none  # So we are directly controlling the joints!
+
 nullspace.stiffness: 5.0
 nullspace.damping: 1.0
 nullspace.max_tau: 5.0
-nullspace.projector_type: none
 nullspace.regularization: 1.0e-06
 nullspace.weights.right_fr3_joint1.value: 15.0
 nullspace.weights.right_fr3_joint2.value: 15.0
