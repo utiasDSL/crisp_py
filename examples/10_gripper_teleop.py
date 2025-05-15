@@ -11,16 +11,16 @@ project_root_path = Path("/home/lsy_franka/repos/crisp_py")
 
 left_config, right_config = None, None
 with open(project_root_path / "config" / "gripper_left_config.yaml", "r") as file:
-    left_config = GripperConfig()
     config = yaml.safe_load(file)
-    left_config.min_value = config.get("min_value")
-    left_config.max_value = config.get("max_value")
+    left_config = GripperConfig(
+        min_value=config.get("min_value"), max_value=config.get("max_value")
+    )
 
 with open(project_root_path / "config" / "gripper_right_config.yaml", "r") as file:
-    right_config = GripperConfig()
     config = yaml.safe_load(file)
-    right_config.min_value = config.get("min_value")
-    right_config.max_value = config.get("max_value")
+    right_config = GripperConfig(
+        min_value=config.get("min_value"), max_value=config.get("max_value")
+    )
 
 # %%
 
