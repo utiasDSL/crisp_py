@@ -9,65 +9,83 @@ import rclpy
 from rclpy.node import Node
 import numpy as np
 
-from franka_gripper.msg import GraspActionGoal, MoveActionGoal
+'''from franka_gripper.msg import GraspActionGoal, MoveActionGoal
+#replace: ???
+from franka_msgs.action import Grasp'''
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import TwistStamped
 from std_msgs.msg import Float64MultiArray, Float64
+from crisp_py.robot import Robot
+
 # from ruamel.yaml import YAML
 
 
 class TeleopController(Node):
     """Controller class for PS4 teleoperation of Franka robot"""
     
-    def __init__(self, command_topic='command'):
+    def __init__(self, command_topic='command', arm=None):
         self.vel_scale = 0.1
         self.yaw_scale = 2.0
         self.vel_vec = np.zeros(6)
+        hz = 100 # init rate frequency
+        self.arm = arm
+        arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
+        arm.cartesian_controller_parameters_client.load_param_config(
+            file_path="config/control/joint_velocity_control.yaml"
+            #file_path="config/control/default_operational_space_controller.yaml"
+        )
         
         # Initialize ROS node and load config
-        rclpy.init()
-        node = TeleopController()
+        #self.node = rclpy.create_node('teleop_controller')
+        super().__init__('teleop_controller')
+        
         #rclpy.init_node('teleop_pub', anonymous=True)
         #self.config = self.load_config()
-        self.hz = self.declare_parameter('/teleop/hz', default=100)
+        self.hz = self.declare_parameter('/teleop/hz', hz)
 
         self.command_topic = command_topic
         
         # Initialize publishers
         self.setup_publishers()
-        self.setup_gripper()
-        #self.rate = rclpy.Rate(self.hz)
-        self.timer_ = node.create_timer(self.hz, self.timer_callback)
+        '''self.setup_gripper()'''
+        self.rate = arm.node.create_rate(hz) #prev self.hz parameter
+        #self.timer_ = node.create_timer(self.hz, self.timer_callback)
+
+        self.create_timer(0.01, self.publish_velocity)
+        self.create_timer(0.01, self.record_keypress)
 
         # Initialize data recording
-        self.time_start = rclpy.get_time()
+        self.time_start = self.get_clock().now().nanoseconds * 1e-9
         self.key_press_list = []
-        
+        self.get_logger().info("Teleoperation started: 3D position control via PS4 controller")
+
         # Button state tracking to avoid repeated commands
         self.prev_grasp_button = 0
         self.prev_release_button = 0
 
-    def load_config(self):
-        """Load configuration from YAML file"""
-        file_path = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(file_path, '../../../config/config.yml')
+    """Don't need this hopefully"""
+
+    # def load_config(self):
+    #     """Load configuration from YAML file"""
+    #     file_path = os.path.dirname(os.path.abspath(__file__))
+    #     config_path = os.path.join(file_path, '../../../config/config.yml')
         
-        yaml = YAML()
-        yaml.preserve_quotes = True
+    #     yaml = YAML()
+    #     yaml.preserve_quotes = True
         
-        with open(config_path, 'r') as file:
-            return yaml.load(file)
+    #     with open(config_path, 'r') as file:
+    #         return yaml.load(file)
 
     def setup_publishers(self):
         """Initialize ROS publishers"""
         #self.vel_publisher = rclpy.Publisher('/teleop_custom', Float64MultiArray, queue_size=1)
-        self.cmd_pub = self.create_publisher(TwistStamped, '/cartesian_velocity_controller/commands', 10)
+        self.cmd_pub = self.create_publisher(Float64MultiArray, '/cartesian_velocity_controller/commands', 10)
         # Use queue_size=1 for gripper to avoid buffering commands
-        self.grasp_publisher = rclpy.Publisher('/franka_gripper/grasp/goal', GraspActionGoal, queue_size=1)
+        '''self.grasp_publisher = self.create_publisher(GraspActionGoal, '/franka_gripper/grasp/goal', queue_size=1)'''
         
         # Wait for velocity controller to be ready
         wait_topic = f"/custom_joint1_velocity_controller/{self.command_topic}"
-        rclpy.wait_for_message(wait_topic, Float64)
+        self.arm.wait_until_ready()
         
         # Setup joystick subscriber
         #rclpy.Subscriber('/joy', Joy, self.joy_callback)
@@ -89,8 +107,8 @@ class TeleopController(Node):
         # For now, we'll use a flag and assume the gripper starts open
         self.grasp_state = False
         
-        rclpy.loginfo("Gripper initialized. Assuming starting position is OPEN.")
-        rclpy.loginfo("Press L2 to close gripper, R2 to open gripper.")
+        self.get_logger().info("Gripper initialized. Assuming starting position is OPEN.")
+        self.get_logger().info("Press L2 to close gripper, R2 to open gripper.")
 
     def joy_callback(self, data: Joy):
         """Process joystick input"""
@@ -100,20 +118,20 @@ class TeleopController(Node):
         arrow_up_down = data.axes[-1]  # up and down buttons, z direction 
         
         # Angular velocities
-        right_stick_x = -data.axes[3]  # Right stick horizontal, roll
-        right_stick_y = data.axes[4]  # Right stick vertical, pitch
+        right_stick_x = -data.axes[2]  # Right stick horizontal, roll
+        right_stick_y = data.axes[3]  # Right stick vertical, pitch
         
         # Yaw control
-        triangle = data.buttons[2]  # triangle button, positive yaw
+        triangle = data.buttons[3]  # triangle button, positive yaw
         cross = data.buttons[0]     # cross button, negative yaw
         yaw = (triangle - cross) * self.yaw_scale
         
         # Gripper control - detect button state changes
-        grasp_button = data.axes[-3]  # L2 button
-        release_button = data.axes[2]  # R2 button
+        grasp_button = data.axes[4]  # L2 button
+        release_button = data.axes[5]  # R2 button
         
         # Emergency stop
-        stop_button = float(data.buttons[3])
+        stop_button = float(data.buttons[2]) # Square button
         
         # Update velocity command
         self.vel_vec = (1.0 - stop_button) * np.array([
@@ -122,7 +140,7 @@ class TeleopController(Node):
         ]) * self.vel_scale
         
         # Handle gripper commands with improved logic
-        self.handle_gripper(grasp_button, release_button)
+        '''self.handle_gripper(grasp_button, release_button)'''
         
         # Update previous button states
         self.prev_grasp_button = grasp_button
@@ -136,7 +154,7 @@ class TeleopController(Node):
         
         if grasp_pressed:
             # Button to close the gripper is pressed
-            rclpy.loginfo("Closing gripper to width %.3f", self.grasp_width)
+            self.get_logger().info("Closing gripper to width %.3f", self.grasp_width)
             self.grasp_msg.goal.width = self.grasp_width
             self.grasp_publisher.publish(self.grasp_msg)
             self.grasp_state = True
@@ -150,14 +168,22 @@ class TeleopController(Node):
     def publish_velocity(self):
         """Publish velocity command"""
         #msg = Float64MultiArray()
-        msg  TwistedStamped()
-        msg.header.stamp = self.get_clock().now().to_msg()
+        #print("pubbing vel")
+        #msg = TwistStamped()
+        #msg.header.stamp = self.get_clock().now().to_msg()
+        # msg.twist.linear.x = float(self.vel_vec[0])
+        # msg.twist.linear.y = float(self.vel_vec[1])
+        # msg.twist.linear.z = float(self.vel_vec[2])
+        # msg.twist.angular.x = float(self.vel_vec[3])
+        # msg.twist.angular.y = float(self.vel_vec[4])
+        # msg.twist.angular.z = float(self.vel_vec[5])
+        msg = Float64MultiArray()
         msg.data = self.vel_vec.tolist()
-        self.vel_publisher.publish(msg)
+        self.cmd_pub.publish(msg)
 
     def record_keypress(self):
         """Record keypress data"""
-        time_now = rclpy.get_time()
+        time_now = self.get_clock().now().nanoseconds * 1e-9
         self.key_press_list.append(
             f'{[self.vel_vec.tolist()], [time_now - self.time_start], [self.time_start]}'
         )
@@ -165,9 +191,20 @@ class TeleopController(Node):
     def shutdown(self):
         """Clean shutdown procedure"""
         # Stop the robot
+        self.get_logger().info("Shutting down robot")
+        # msg = TwistStamped()
+        # msg.header.stamp = self.get_clock().now().to_msg()
+        # # Could put this in a stop_msg variable
+        # msg.twist.linear.x = 0.0
+        # msg.twist.linear.y = 0.0
+        # msg.twist.linear.z = 0.0
+        # msg.twist.angular.x = 0.0
+        # msg.twist.angular.y = 0.0
+        # msg.twist.angular.z = 0.0
+
         msg = Float64MultiArray()
         msg.data = [0.0] * 6
-        self.vel_publisher.publish(msg)
+        self.cmd_pub.publish(msg)
         
         # Save recorded data if needed
         # if hasattr(self, 'config') and self.config['CBF']['Saving_data']['is_save_data']:
@@ -176,27 +213,42 @@ class TeleopController(Node):
         #         for keypress in self.key_press_list:
         #             f.write(f'{keypress}\n')
 
-    def run(self):
-        """Main control loop"""
-        rclpy.loginfo("Teleoperation: 3D position end-effector\nps4 CONTROLLER")
-        
-        try:
-            while not rclpy.is_shutdown():
-                self.publish_velocity()
-                self.record_keypress()
-                self.rate.sleep()
-                
-        except rclpy.ROSInterruptException:
-            pass
-        finally:
-            self.shutdown()
+def main(args=None): #previously run(self)
+    """Main control loop"""
+    #self.get_logger().info("Teleoperation: 3D position end-effector\nps4 CONTROLLER")
+    
+    rclpy.init(args=args)
+    arm = Robot(namespace="") # is this the right place for this
+    controller = TeleopController(command_topic='command',arm=arm)
+    print("hello")
+    try:
+        rclpy.spin(controller)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        controller.destroy_node()
+        rclpy.shutdown()
+
+
+    # try:
+    #     while not rclpy.is_shutdown():
+    #         self.publish_velocity()
+    #         self.record_keypress()
+    #         self.rate.sleep()
+            
+    # except KeyboardInterrupt:
+    #     pass
+    # finally:
+    #     self.shutdown()
 
 
 if __name__ == '__main__':
-    try:
-        # command_topic = 'command'
-        command_topic = 'uncertified_command'
-        controller = TeleopController(command_topic=command_topic)
-        controller.run()
-    except rclpy.ROSInterruptException:
-        pass
+    main()
+    
+    # try:
+    #     # command_topic = 'command'
+    #     command_topic = 'uncertified_command'
+    #     controller = TeleopController(command_topic=command_topic)
+    #     controller.run()
+    # except KeyboardInterrupt:
+    #     pass

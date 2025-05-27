@@ -13,6 +13,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64MultiArray
 
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
@@ -101,6 +102,13 @@ class Robot:
             self._callback_current_joint,
             qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
+        )
+        self.node.create_subscription(
+            Float64MultiArray,
+            'cartesian_velocity_controller/commands',
+            self._teleop_callback,
+            qos_profile_system_default,
+            callback_group=ReentrantCallbackGroup(), #huh
         )
 
         self.node.create_timer(
@@ -212,7 +220,6 @@ class Robot:
     def set_target_joint_velocity(self, dq: np.array):
         assert len(dq) == self.nq, "Joint velocity state must be of size nq."
         self._target_joint_velocity = dq
-        #print("target vel:", self._target_joint_velocity, dq)
 
     def _callback_publish_target_pose(self):
         if self._target_pose is None:
@@ -222,7 +229,7 @@ class Robot:
     def _callback_publish_target_joint(self):
         if self._target_joint is None and self._target_joint_velocity is None:
             return
-        #print("HELO:",self._target_joint_velocity)
+        # good print(self._target_joint_velocity)
         self._target_joint_publisher.publish(self._joint_to_joint_msg(self._target_joint, self._target_joint_velocity))
 
     def _callback_publish_target_wrench(self):
@@ -278,6 +285,12 @@ class Robot:
             if joint_name.removeprefix(self._prefix) not in self.config.joint_names:
                 continue
             self._current_joint[self.config.joint_names.index(joint_name.removeprefix(self._prefix))] = joint_position
+
+    def _teleop_callback(self, msg: Float64MultiArray):
+        """Callback for teleoperation commands"""
+        self.ee_velocity_command = np.array(msg.data).reshape(6)
+        #print(self.ee_velocity_command)
+        self.get_vel(self.ee_velocity_command)
 
     def move_to(self, position: iter = None, pose: pin.SE3 = None, speed: float = 0.05):
         """Move the end-effector to a given pose by interpolating linearly between the poses.
