@@ -12,10 +12,11 @@ import numpy as np
 from franka_gripper.msg import GraspActionGoal, MoveActionGoal
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import TwistStamped
-from ruamel.yaml import YAML
+from std_msgs.msg import Float64MultiArray, Float64
+# from ruamel.yaml import YAML
 
 
-class TeleopController:
+class TeleopController(Node):
     """Controller class for PS4 teleoperation of Franka robot"""
     
     def __init__(self, command_topic='command'):
@@ -26,20 +27,20 @@ class TeleopController:
         # Initialize ROS node and load config
         rclpy.init()
         node = TeleopController()
-        #rospy.init_node('teleop_pub', anonymous=True)
-        self.config = self.load_config()
-        self.hz = rospy.get_param('/teleop/hz', default=100)
+        #rclpy.init_node('teleop_pub', anonymous=True)
+        #self.config = self.load_config()
+        self.hz = self.declare_parameter('/teleop/hz', default=100)
 
         self.command_topic = command_topic
         
         # Initialize publishers
         self.setup_publishers()
         self.setup_gripper()
-        #self.rate = rospy.Rate(self.hz)
-        self.timer_ = self.create_timer(self.hz, self.timer_callback)
+        #self.rate = rclpy.Rate(self.hz)
+        self.timer_ = node.create_timer(self.hz, self.timer_callback)
 
         # Initialize data recording
-        self.time_start = rospy.get_time()
+        self.time_start = rclpy.get_time()
         self.key_press_list = []
         
         # Button state tracking to avoid repeated commands
@@ -59,17 +60,17 @@ class TeleopController:
 
     def setup_publishers(self):
         """Initialize ROS publishers"""
-        #self.vel_publisher = rospy.Publisher('/teleop_custom', Float64MultiArray, queue_size=1)
+        #self.vel_publisher = rclpy.Publisher('/teleop_custom', Float64MultiArray, queue_size=1)
         self.cmd_pub = self.create_publisher(TwistStamped, '/cartesian_velocity_controller/commands', 10)
         # Use queue_size=1 for gripper to avoid buffering commands
-        self.grasp_publisher = rospy.Publisher('/franka_gripper/grasp/goal', GraspActionGoal, queue_size=1)
+        self.grasp_publisher = rclpy.Publisher('/franka_gripper/grasp/goal', GraspActionGoal, queue_size=1)
         
         # Wait for velocity controller to be ready
         wait_topic = f"/custom_joint1_velocity_controller/{self.command_topic}"
-        rospy.wait_for_message(wait_topic, Float64)
+        rclpy.wait_for_message(wait_topic, Float64)
         
         # Setup joystick subscriber
-        #rospy.Subscriber('/joy', Joy, self.joy_callback)
+        #rclpy.Subscriber('/joy', Joy, self.joy_callback)
         self.subscription = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
 
     def setup_gripper(self):
@@ -88,8 +89,8 @@ class TeleopController:
         # For now, we'll use a flag and assume the gripper starts open
         self.grasp_state = False
         
-        rospy.loginfo("Gripper initialized. Assuming starting position is OPEN.")
-        rospy.loginfo("Press L2 to close gripper, R2 to open gripper.")
+        rclpy.loginfo("Gripper initialized. Assuming starting position is OPEN.")
+        rclpy.loginfo("Press L2 to close gripper, R2 to open gripper.")
 
     def joy_callback(self, data: Joy):
         """Process joystick input"""
@@ -135,13 +136,13 @@ class TeleopController:
         
         if grasp_pressed:
             # Button to close the gripper is pressed
-            rospy.loginfo("Closing gripper to width %.3f", self.grasp_width)
+            rclpy.loginfo("Closing gripper to width %.3f", self.grasp_width)
             self.grasp_msg.goal.width = self.grasp_width
             self.grasp_publisher.publish(self.grasp_msg)
             self.grasp_state = True
         elif release_pressed:
             # Button to open the gripper is pressed
-            rospy.loginfo("Opening gripper to width %.3f", self.release_width)
+            rclpy.loginfo("Opening gripper to width %.3f", self.release_width)
             self.grasp_msg.goal.width = self.release_width
             self.grasp_publisher.publish(self.grasp_msg)
             self.grasp_state = False
@@ -156,7 +157,7 @@ class TeleopController:
 
     def record_keypress(self):
         """Record keypress data"""
-        time_now = rospy.get_time()
+        time_now = rclpy.get_time()
         self.key_press_list.append(
             f'{[self.vel_vec.tolist()], [time_now - self.time_start], [self.time_start]}'
         )
@@ -169,23 +170,23 @@ class TeleopController:
         self.vel_publisher.publish(msg)
         
         # Save recorded data if needed
-        if hasattr(self, 'config') and self.config['CBF']['Saving_data']['is_save_data']:
-            save_path = self.config['CBF']['save_path']
-            with open(save_path, 'a') as f:
-                for keypress in self.key_press_list:
-                    f.write(f'{keypress}\n')
+        # if hasattr(self, 'config') and self.config['CBF']['Saving_data']['is_save_data']:
+        #     save_path = self.config['CBF']['save_path']
+        #     with open(save_path, 'a') as f:
+        #         for keypress in self.key_press_list:
+        #             f.write(f'{keypress}\n')
 
     def run(self):
         """Main control loop"""
-        rospy.loginfo("Teleoperation: 3D position end-effector\nps4 CONTROLLER")
+        rclpy.loginfo("Teleoperation: 3D position end-effector\nps4 CONTROLLER")
         
         try:
-            while not rospy.is_shutdown():
+            while not rclpy.is_shutdown():
                 self.publish_velocity()
                 self.record_keypress()
                 self.rate.sleep()
                 
-        except rospy.ROSInterruptException:
+        except rclpy.ROSInterruptException:
             pass
         finally:
             self.shutdown()
@@ -197,5 +198,5 @@ if __name__ == '__main__':
         command_topic = 'uncertified_command'
         controller = TeleopController(command_topic=command_topic)
         controller.run()
-    except rospy.ROSInterruptException:
+    except rclpy.ROSInterruptException:
         pass

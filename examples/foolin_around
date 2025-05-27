@@ -18,31 +18,33 @@ print("Going to home position...")
 left_arm.home()
 homing_pose = left_arm.end_effector_pose.copy()
 
-params = [
-    ("task.k_pos_x", 400.0),
-    ("task.k_pos_y", 400.0),
-    ("task.k_pos_z", 400.0),
-    ("task.k_rot_x", 15.0),
-    ("task.k_rot_y", 15.0),
-    ("task.k_rot_z", 15.0),
-    ("task.d_pos_x", 25.0),
-    ("task.d_pos_y", 25.0),
-    ("task.d_pos_z", 25.0),
-    ("task.d_rot_x", 10.0),
-    ("task.d_rot_y", 10.0),
-    ("task.d_rot_z", 10.0),
-]
-left_arm.cartesian_controller_parameters_client.set_parameters(params)
+# params = [
+#     ("task.k_pos_x", 400.0),
+#     ("task.k_pos_y", 400.0),
+#     ("task.k_pos_z", 400.0),
+#     ("task.k_rot_x", 45.0),
+#     ("task.k_rot_y", 45.0),
+#     ("task.k_rot_z", 45.0),
+#     ("task.d_pos_x", 10.0),
+#     ("task.d_pos_y", 10.0),
+#     ("task.d_pos_z", 10.0),
+#     ("task.d_rot_x", 5.0),
+#     ("task.d_rot_y", 5.0),
+#     ("task.d_rot_z", 5.0),
+# ]
+# left_arm.cartesian_controller_parameters_client.set_parameters(params)
 
 
 # %%
 # Paremeters for the circle
-radius = 0.2  # [m]
+radius = 0.1  # [m]
 center = np.array([0.4, 0, 0.4])
 ctrl_freq = 50.0
 sin_freq_y = 0.25  # rot / s
 sin_freq_z = 0.125  # rot / s
+sin_freq_x = 0.15
 max_time = 8.0
+speed = 0.25
 
 # %%
 left_arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
@@ -67,11 +69,12 @@ print("Starting to draw a circle...")
 t = 0.0
 target_pose = left_arm.end_effector_pose.copy()
 rate = left_arm.node.create_rate(ctrl_freq)
+print(target_pose.translation[0])
 
 while t < max_time:
-    x = center[0]
-    y = radius * np.sin(2 * np.pi * sin_freq_y * t) + center[1]
-    z = radius * np.sin(2 * np.pi * sin_freq_z * t) + center[2]
+    x = center[0] #+ radius * np.sin((2*np.pi *sin_freq_x * t) - ((np.pi)/2))
+    y = center[1] + radius * np.sin((2 * np.pi * sin_freq_x * t) - ((np.pi)/2))
+    z = center[2] + radius * np.sin(2 * np.pi * sin_freq_x * t)
     target_pose.translation = np.array([x, y, z])
 
     left_arm.set_target(pose=target_pose)
@@ -83,6 +86,21 @@ while t < max_time:
     ts.append(t)
 
     t += 1.0 / ctrl_freq
+
+t = 0.0
+#x movement
+while t < max_time:
+    current_pose = left_arm.end_effector_pose.copy()
+    current_pose.translation[0] += 0.1*speed
+    left_arm.set_target(pose=current_pose)
+
+    rate.sleep()
+    ee_poses.append(left_arm.end_effector_pose.copy())
+    target_poses.append(left_arm._target_pose.copy())
+    ts.append(t)
+    t += 1.0 /ctrl_freq
+
+
 
 while t < max_time + 1.0:
     # Just wait a bit for the end effector to settle

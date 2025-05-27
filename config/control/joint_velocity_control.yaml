@@ -1,20 +1,20 @@
 limit_error: true
 limit_torques: true
 
-max_delta_tau: 0.5
+max_delta_tau: 3.0
 
 nullspace.projector_type: none  # So we are directly controlling the joints!
 nullspace.stiffness: 0.0
-nullspace.damping: 10.0
+nullspace.damping: 5.0
 nullspace.max_tau: 5.0
 nullspace.regularization: 1.0e-06
-nullspace.weights.right_fr3_joint1.value: 15.0
-nullspace.weights.right_fr3_joint2.value: 15.0
-nullspace.weights.right_fr3_joint3.value: 8.0
-nullspace.weights.right_fr3_joint4.value: 8.0
-nullspace.weights.right_fr3_joint5.value: 8.0
-nullspace.weights.right_fr3_joint6.value: 5.0
-nullspace.weights.right_fr3_joint7.value: 5.0
+nullspace.weights.fr3_joint1.value: 15.0
+nullspace.weights.fr3_joint2.value: 15.0
+nullspace.weights.fr3_joint3.value: 8.0
+nullspace.weights.fr3_joint4.value: 8.0
+nullspace.weights.fr3_joint5.value: 8.0
+nullspace.weights.fr3_joint6.value: 5.0
+nullspace.weights.fr3_joint7.value: 5.0
 
 stop_commands: false
 
@@ -25,12 +25,12 @@ task.k_pos_z: 0.0
 task.k_rot_x: 0.0
 task.k_rot_y: 0.0
 task.k_rot_z: 0.0
-task.d_pos_x: -1.0
-task.d_pos_y: -1.0
-task.d_pos_z: -1.0
-task.d_rot_x: -1.0
-task.d_rot_y: -1.0
-task.d_rot_z: -1.0
+task.d_pos_x: 10.0
+task.d_pos_y: 10.0
+task.d_pos_z: 10.0
+task.d_rot_x: 1.0
+task.d_rot_y: 1.0
+task.d_rot_z: 1.0
 
 task.error_clip.rx: 0.5
 task.error_clip.ry: 0.5

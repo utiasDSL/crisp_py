@@ -2,6 +2,9 @@
 
 import threading
 
+import roboticstoolbox as rtb
+import qpsolvers as qp
+
 import numpy as np
 import pinocchio as pin
 import rclpy
@@ -72,6 +75,7 @@ class Robot:
         self._target_pose = None
         self._current_joint = None
         self._target_joint = None
+        self._target_joint_velocity = None
         self._target_wrench = None
 
         self._target_pose_publisher = self.node.create_publisher(
@@ -83,6 +87,7 @@ class Robot:
         self._target_joint_publisher = self.node.create_publisher(
             JointState, self.config.target_joint_topic, qos_profile_system_default
         )
+        #print(self.config.current_pose_topic)
         self.node.create_subscription(
             PoseStamped,
             self.config.current_pose_topic,
@@ -115,6 +120,40 @@ class Robot:
         )
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
+
+        #Init Optimization matrices
+        self.initialize_optimization_matrices(Y=0.01, ps=0.05, pi=0.9)
+        self.robot = rtb.models.Panda()
+    
+    def initialize_optimization_matrices(self, Y, ps, pi):
+        """Pre-allocate matrices for optimization"""
+        n = self.nq
+
+        self.Y = Y # Gain term for control minimization
+        self.Q = np.eye(self.nq + 6)
+        self.Q[:self.nq, :self.nq] *= self.Y
+
+        self.ps = ps  # Minimum approach angle
+        self.pi = pi  # Influence angle
+        
+        # Equality constraint matrices
+        self.Aeq = np.zeros((6, n + 6))
+        self.Aeq[:, n:] = np.eye(6)  # Right side is constant identity matrix
+        self.beq = np.zeros(6)
+        
+        # Inequality constraint matrices
+        self.Ain = np.zeros((n + 6, n + 6))
+        self.bin = np.zeros(n + 6)
+        
+        # Objective function vectors
+        self.c = np.zeros(n + 6)
+        
+        # Bounds
+        self.lb = np.zeros(n + 6)
+        self.ub = np.zeros(n + 6)
+        # Set constant parts of bounds
+        self.lb[n:] = -10 * np.ones(6) * 1e5  # set to a large value; basically unconstrained
+        self.ub[n:] = 10 * np.ones(6) * 1e5  # set to a large value; basically unconstrained
 
     def _spin_node(self):
         if not rclpy.ok():
@@ -149,6 +188,7 @@ class Robot:
         """Reset the target pose, joint, and wrench to be None."""
         self._target_pose = None
         self._target_joint = None
+        self._target_joint_velocity = None
         self._target_wrench = None
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
@@ -169,15 +209,21 @@ class Robot:
         assert len(q) == self.nq, "Joint state must be of size nq."
         self._target_joint = q
 
+    def set_target_joint_velocity(self, dq: np.array):
+        assert len(dq) == self.nq, "Joint velocity state must be of size nq."
+        self._target_joint_velocity = dq
+        #print("target vel:", self._target_joint_velocity, dq)
+
     def _callback_publish_target_pose(self):
         if self._target_pose is None:
             return
         self._target_pose_publisher.publish(self._pose_to_pose_msg(self._target_pose))
 
     def _callback_publish_target_joint(self):
-        if self._target_joint is None:
+        if self._target_joint is None and self._target_joint_velocity is None:
             return
-        self._target_joint_publisher.publish(self._joint_to_joint_msg(self._target_joint))
+        #print("HELO:",self._target_joint_velocity)
+        self._target_joint_publisher.publish(self._joint_to_joint_msg(self._target_joint, self._target_joint_velocity))
 
     def _callback_publish_target_wrench(self):
         """Publish the target wrench if it exists."""
@@ -217,6 +263,7 @@ class Robot:
 
     def _callback_current_pose(self, msg: PoseStamped):
         """Save the current pose."""
+        #print(f"received msg: {msg}")
         self._current_pose = self._pose_msg_to_pose(msg)
         if self._target_pose is None:
             self._target_pose = self._current_pose.copy()
@@ -230,9 +277,7 @@ class Robot:
         for joint_name, joint_position in zip(msg.name, msg.position):
             if joint_name.removeprefix(self._prefix) not in self.config.joint_names:
                 continue
-            self._current_joint[
-                self.config.joint_names.index(joint_name.removeprefix(self._prefix))
-            ] = joint_position
+            self._current_joint[self.config.joint_names.index(joint_name.removeprefix(self._prefix))] = joint_position
 
     def move_to(self, position: iter = None, pose: pin.SE3 = None, speed: float = 0.05):
         """Move the end-effector to a given pose by interpolating linearly between the poses.
@@ -257,19 +302,20 @@ class Robot:
 
         self._target_pose = desired_pose
 
-    def home(self, home_config: list[float] | None = None, blocking: bool = True):
+    def home(self, home_config=None):
         """Home the robot."""
         self.controller_switcher_client.switch_controller("joint_trajectory_controller")
         self.joint_trajectory_controller_client.send_joint_config(
             self.config.joint_names,
             self.config.home_config if home_config is None else home_config,
             self.config.time_to_home,
-            blocking=blocking,
+            blocking=True,
         )
 
         # Set to none to avoid publishing the previous target pose after activating the next controller
         self._target_pose = None
         self._target_joint = None
+        self._target_joint_velocity = None
 
         # if switch_to_default_controller:
         #     self.controller_switcher_client.switch_controller(self.config.default_controller)
@@ -283,7 +329,13 @@ class Robot:
                 z=pose.pose.orientation.z,
                 w=pose.pose.orientation.w,
             ),
-            np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z]),
+            np.array(
+                [
+                    pose.pose.position.x,
+                    pose.pose.position.y,
+                    pose.pose.position.z,
+                ]
+            ),
         )
 
     def _pose_to_pose_msg(self, pose: pin.SE3) -> PoseStamped:
@@ -300,17 +352,16 @@ class Robot:
         pose_msg.pose.orientation.w = q.w
         return pose_msg
 
-    def _joint_to_joint_msg(
-        self, q: np.array, dq: np.array = None, tau: np.array = None
-    ) -> JointState:
+    def _joint_to_joint_msg(self, q: np.array, dq: np.array = None, tau: np.array = None) -> JointState:
         """Convert a pose to a pose message."""
         joint_msg = JointState()
         joint_msg.header.frame_id = self.config.base_frame
         joint_msg.header.stamp = self.node.get_clock().now().to_msg()
         joint_msg.name = [self._prefix + joint_name for joint_name in self.config.joint_names]
-        joint_msg.position = q.tolist()
-        joint_msg.velocity = dq.tolist() if dq is not None else [0.0] * len(q)
-        joint_msg.effort = tau.tolist() if tau is not None else [0.0] * len(q)
+        joint_msg.position = q.tolist() if q is not None else [0.0] * self.nq
+        joint_msg.velocity = dq.tolist() if dq is not None else [0.0] * self.nq
+        joint_msg.effort = tau.tolist() if tau is not None else [0.0] * self.nq
+        #print(joint_msg)
         return joint_msg
 
     def _parse_pose_or_position(self, position: iter = None, pose: pin.SE3 = None) -> pin.SE3:
@@ -331,3 +382,35 @@ class Robot:
         """Shutdown the node."""
         self.node.destroy_node()
         rclpy.shutdown()
+
+
+#Processing cartesian velocities
+
+    def get_vel(self, cart_vel):
+        joint_velocities = self.differential_ik(cart_vel)
+        self.set_target_joint_velocity(joint_velocities)
+
+    def differential_ik(self, cart_vel):
+        """Differential inverse kinematics using QP solver"""    
+        self.robot.q = self._current_joint    
+        # Update equality constraints
+        self.Aeq[:, :self.nq] = self.robot.jacob0(self._current_joint)
+        self.beq[:] = cart_vel.reshape(6)
+        
+        # Update inequality constraints for joint limits
+        Ain_joint, bin_joint = self.robot.joint_velocity_damper(self.ps, self.pi, self.nq)
+        self.Ain[:self.nq, :self.nq] = Ain_joint
+        self.bin[:self.nq] = bin_joint
+        
+        # Update objective function
+        self.c[:self.nq] = np.zeros(self.nq) #-self.robot.jacobm().reshape(self.nq) * 0.0  # set to 0; has no effect on the solution
+        
+        # Update variable bounds
+        self.lb[:self.nq] = -self.robot.qdlim[:self.nq] # * 1e5
+        self.ub[:self.nq] = self.robot.qdlim[:self.nq] # * 1e5
+        
+        # Solve QP
+        qd = qp.solve_qp(self.Q, self.c, self.Ain, self.bin, self.Aeq, self.beq, 
+                        lb=self.lb, ub=self.ub, solver='quadprog') # also qpiq, others available to download
+        
+        return qd[:self.nq] if qd is not None else np.zeros(self.nq)
