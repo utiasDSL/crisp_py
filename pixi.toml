@@ -33,7 +33,7 @@ pinocchio = ">=3.5.0,<4"
 libgl-devel = "*"
 
 [environments]
-humble = { features = ["humble"] }
+default = { features = ["humble"] }
 jazzy = { features = ["jazzy"] }
 
 # humble
