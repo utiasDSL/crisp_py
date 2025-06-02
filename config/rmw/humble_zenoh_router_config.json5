@@ -40,7 +40,9 @@
     ///
     /// See https://docs.rs/zenoh/latest/zenoh/config/struct.EndPoint.html
     endpoints: [
-      // "<proto>/<address>"
+      // NOTE: set here the addresses of other machines so that the host router connects to it.
+      // "<proto>/<address of machine 1:port>"
+      // "<proto>/<address of machine 2:port>"
       "tcp/10.157.163.155:7447"
     ],
 
