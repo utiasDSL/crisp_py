@@ -1,0 +1,2 @@
+[0.065s] [34mcolcon[0m [1;30mDEBUG[0m [32mCommand line arguments: ['/home/quisty/repos/crisp_py/.pixi/envs/humble/bin/colcon', 'mixin'][0m
+[0.065s] [34mcolcon[0m [1;30mDEBUG[0m [32mParsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='mixin', subverb_name=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x7fd6be7e31d0>, verb_extension=<colcon_mixin.verb.mixin.MixinVerb object at 0x7fd6be7cdc10>, main=<bound method MixinVerb.main of <colcon_mixin.verb.mixin.MixinVerb object at 0x7fd6be7cdc10>>)[0m

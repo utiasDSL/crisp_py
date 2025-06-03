@@ -1,0 +1,123 @@
+CBF:
+  is_wandb: false
+  is_replay: false   # replay teleop cmd
+  is_sequence_replay_exp: false
+  cbf_on: true    # whether the certified joint vel cmd is used 
+  is_cbf:
+  - false      # whether positional semantic constraint is activated 
+  - true      # collision with env
+  - false      # collision self
+  # hz: 45
+  threshold: -0.0001    # under which value the CBF condition is considered violated
+  Saving_data:
+    is_save_data: true
+    is_save_cbf_condition: true
+    is_save_cbf_dhdq: true
+  # save_path: '../../../data/record/cbf_experiments/corl_review/superquadrics/pick_and_place/'
+  # save_path: '../../../data/record/cbf_experiments/corl_review/superquadrics/replay_sequences/new/'
+  # save_path: '../../../data/record/cbf_experiments/corl_review/superquadrics/teleoperation/test/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/test/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion_simple/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion_stove/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion_egg/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion_egg2/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/sf_kitchen_collision/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/sf_kitchen_metal_cup/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/sf_kitchen_plastic_collision/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/sf_kitchen_plastic_semantics/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion_kitchen_power_strip/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion_kitchen_spray_can/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_metal_cup_collision_2/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_metal_cup_nominal/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_metal_cup_semantics/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_plastic_collision/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_plastic_semantics/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_plastic_nominal/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_eggs_collision/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/sf_kitchen_eggs_semantic/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/diffusion_microwave_simple/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/diffusion_stove/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/diffusion_egg/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/teleoperation/data_for_diffusion_egg2/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/kitchen_power_strip_nominal/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/kitchen_power_strip_collision/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/kitchen_power_strip_semantics/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/kitchen_spray_can_nominal/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/kitchen_spray_can_collision/'
+  # save_path: '../../../data/record/cbf_experiments/ral_review/superquadrics/rollouts/kitchen_spray_can_semantics/'
+  save_path: '../../../data/record/cbf_experiments/iros/dummy/'
+  # save_path: 'data/record/cbf_experiments/recollect/test/'
+  Scene:   # folder name for reading & saving data 
+    # scene: 'books'
+    # scene: 'kitchen'
+    scene: 'kitchen_2'
+    # scene: 'kitchen_3'
+    # scene: 'kitchen_5'
+    # object: 'sponge'
+    # ref_object: 'sponge'
+    # scene: 'empty'
+    # object: 'none'
+    # ref_object: 'candle'
+    # object: 'metal_cup'
+    # ref_object: 'metal_cup'
+    # object: 'plastic_container'
+    # ref_object: 'plastic_container'
+    # object: 'bottle_of_water'
+    # ref_object: 'bottle_of_water'
+    # object: 'fork'
+    # ref_object: 'fork'
+    object: 'spray_can'
+    ref_object: 'spray_can'
+
+  # radius_ee: 0.08
+  # radius_ee: 0.05
+  radius_ee: 0.11
+  radius_link: 0.12
+  # radius_ee: 0.0
+  # radius_link: 0.0
+
+  Experiment_replay:  # replay teleoperation commmand sequences experiment
+    trial_index: 5
+    run_index: 4
+    # run_index: 1 - baseline, 2 - colision, 3 - semantic with positional, 4 - semantic wo positional
+
+  Task_specific:
+    ee_R_des:   # desired end-effector orientation
+    - [1, 0.0, 0.0]
+    - [0.0, -1, 0.0]
+    - [0.0, 0.0, -1]
+
+  Simulation:
+    robot_model: 'panda'
+    camera_view_1: [1.5, 1.5, 1.0]
+    camera_view_2: [0.0, 0.5, 0.0]
+    vel_scale_ee: 0.07   # velocity scale
+    lowpass:    # lowpass filter
+      order: 4
+      cutoff_freq: 3
+
+  Real:
+    robot_model: 'fr3'
+    vel_scale_ee: 0.07
+    lowpass:    # lowpass filter
+      order: 3
+      cutoff_freq: 1.75
+
+  Plot:
+    is_simulation: false
+    cbf_value: false
+    cbf_condition: false
+    joint_vel: true
+    joint_angle: true
+    teleop_cmd: false
+    jacob_det: true
+    cbf_dhdq: false
+
+  time_stamp: '20250228_031809'
+# Control_device: 
+#   device: 'joystick'   # 'keyboard', 'joystick'
+ConceptGraphs:
+  table_min_bound: [-0.3, -0.75, -0.1]
+  table_max_bound: [1.0, 0.75, 0]
+  excluded_objects: ['robot', 'robot_arm']

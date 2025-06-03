@@ -47,7 +47,7 @@ ee_poses = []
 target_poses = []
 ts = []
 ctrl_freq = 20
-v = 0.1
+v = 0.125
 w = 0.25
 
 print("Starting to move...")

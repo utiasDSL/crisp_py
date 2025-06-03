@@ -5,16 +5,16 @@ max_delta_tau: 3.0
 
 nullspace.projector_type: none  # So we are directly controlling the joints!
 nullspace.stiffness: 0.0
-nullspace.damping: 2.0
-nullspace.max_tau: 5.0
+nullspace.damping: 2.5
+nullspace.max_tau: 2.5
 nullspace.regularization: 1.0e-06
-nullspace.weights.fr3_joint1.value: 15.0
-nullspace.weights.fr3_joint2.value: 15.0
+nullspace.weights.fr3_joint1.value: 8.0
+nullspace.weights.fr3_joint2.value: 8.0
 nullspace.weights.fr3_joint3.value: 8.0
 nullspace.weights.fr3_joint4.value: 8.0
 nullspace.weights.fr3_joint5.value: 8.0
-nullspace.weights.fr3_joint6.value: 5.0
-nullspace.weights.fr3_joint7.value: 5.0
+nullspace.weights.fr3_joint6.value: 8.0
+nullspace.weights.fr3_joint7.value: 8.0
 
 stop_commands: false
 

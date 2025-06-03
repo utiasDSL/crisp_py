@@ -4,6 +4,8 @@ import threading
 
 import roboticstoolbox as rtb
 import qpsolvers as qp
+import yaml
+from pathlib import Path
 
 import numpy as np
 import pinocchio as pin
@@ -19,6 +21,7 @@ from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
+from crisp_py.control.low_pass_filter import LowPassFilter
 
 
 class Robot:
@@ -132,6 +135,22 @@ class Robot:
         #Init Optimization matrices
         self.initialize_optimization_matrices(Y=0.01, ps=0.05, pi=0.9)
         self.robot = rtb.models.Panda()
+
+        #Open CBF for LPF settings
+        project_root_path = Path("/home/quisty/repos/crisp_py")
+        with open(project_root_path / "config" / "cbf.yml", "r") as file:
+            self.cbf = yaml.safe_load(file)
+
+        #Init vel filter
+        self.vel_scale_ee = self.cbf['CBF']['Real']['vel_scale_ee']
+        self.cutoff_freq = self.cbf['CBF']['Real']['lowpass']['cutoff_freq']
+        self.lowpass_order = self.cbf['CBF']['Real']['lowpass']['order']
+        self.hz = self.cbf.get('hz', 45)
+        self.velocity_filter = LowPassFilter(
+            cutoff_freq=self.cutoff_freq,
+            sample_time=1.0/self.hz,
+            order=self.lowpass_order
+        )
     
     def initialize_optimization_matrices(self, Y, ps, pi):
         """Pre-allocate matrices for optimization"""
@@ -199,7 +218,7 @@ class Robot:
         self._target_joint_velocity = None
         self._target_wrench = None
 
-    def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
+    def wait_until_ready(self, timeout: float = 20.0, check_frequency: float = 10.0):
         """Wait until the end-effector pose is available."""
         rate = self.node.create_rate(check_frequency)
         while not self.is_ready():
@@ -400,7 +419,9 @@ class Robot:
 #Processing cartesian velocities
 
     def get_vel(self, cart_vel):
-        joint_velocities = self.differential_ik(cart_vel)
+        filtered_velocities = self.velocity_filter.filter(cart_vel)
+        joint_velocities = self.differential_ik(filtered_velocities)
+        
         self.set_target_joint_velocity(joint_velocities)
 
     def differential_ik(self, cart_vel):
@@ -424,6 +445,6 @@ class Robot:
         
         # Solve QP
         qd = qp.solve_qp(self.Q, self.c, self.Ain, self.bin, self.Aeq, self.beq, 
-                        lb=self.lb, ub=self.ub, solver='quadprog') # also qpiq, others available to download
+                        lb=self.lb, ub=self.ub, solver='piqp') # also quadprog, others available to download
         
         return qd[:self.nq] if qd is not None else np.zeros(self.nq)

@@ -24,8 +24,8 @@ class TeleopController(Node):
     """Controller class for PS4 teleoperation of Franka robot"""
     
     def __init__(self, command_topic='command', arm=None):
-        self.vel_scale = 0.1
-        self.yaw_scale = 2.0
+        self.vel_scale = 0.125
+        self.yaw_scale = 5
         self.vel_vec = np.zeros(6)
         hz = 100 # init rate frequency
         self.arm = arm

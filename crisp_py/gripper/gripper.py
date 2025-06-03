@@ -25,7 +25,7 @@ class GripperConfig:
     min_value: float
     max_value: float
     command_topic: str = "gripper_position_controller/commands"
-    joint_state_topic: str = "joint_states"
+    joint_state_topic: str = "fr3_gripper/joint_states"
     reboot_service: str = "reboot_gripper"
     enable_torque_service: str = "dynamixel_hardware_interface/set_dxl_torque"
 
@@ -155,6 +155,7 @@ class Gripper:
         Args:
             msg (JointState): the message containing the joint state.
         """
+        #print('wow') #called
         self._value = msg.position[0]
         self._torque = msg.effort[0]
 
@@ -174,6 +175,7 @@ class Gripper:
             msg.data = [self._unnormalize(target)]
         else:
             msg.data = [target]
+        print(msg.data)
         self._command_publisher.publish(msg)
 
     def _normalize(self, unormalized_value: float) -> float:
