@@ -2,7 +2,7 @@
 preview = ["pixi-build"]
 authors = ["Daniel San José Pro <42489409+danielsanjosepro@users.noreply.github.com>"]
 channels = ["https://fast.prefix.dev/conda-forge"]
-name = "crisp_py"
+name = "crips_py"
 platforms = ["linux-64"]
 version = "0.1.0"
 
@@ -20,22 +20,15 @@ channels = [
 [activation]
 scripts = ["set_ros_env.sh"]
 
-[activation.env]
-ROS_DOMAIN_ID="101"
-
 [dependencies]
-python = ">=3.11.12,<3.13"
+python = "*"
 compilers = "*"
-cmake = ">=4.0.2,<5"
-pkg-config = ">=0.29.2,<0.30"
+cmake = "*"
+pkg-config = "*"
 make = "*"
-ninja = ">=1.12.1,<2"
+ninja = "*"
 pinocchio = ">=3.5.0,<4"
-pip = "*"
-libusb = ">=1.0.29,<2"
-pybind11 = ">=2.13.6,<3"
-
-[target.linux.dependencies]
+target.linux.dependencies]
 libgl-devel = "*"
 
 [environments]

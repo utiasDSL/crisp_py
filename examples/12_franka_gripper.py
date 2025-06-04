@@ -8,7 +8,7 @@ import yaml
 
 from crisp_py.gripper.gripper import Gripper, GripperConfig
 
-project_root_path = Path("/home/lsy_franka/repos/crisp_py")
+project_root_path = Path("/home/quisty/repos/crisp_py")
 
 config = None
 with open(project_root_path / "config" / "gripper_franka.yaml", "r") as file:
@@ -17,7 +17,7 @@ with open(project_root_path / "config" / "gripper_franka.yaml", "r") as file:
 
 # %%
 
-gripper = Gripper(gripper_config=config, namespace="gripper")
+gripper = Gripper(gripper_config=config, namespace="")
 gripper.wait_until_ready()
 
 # %%
@@ -30,3 +30,6 @@ time.sleep(3.0)
 
 # Almost fully closed
 gripper.set_target(0.0)
+
+time.sleep(3.0)
+gripper.set_target(1.0)

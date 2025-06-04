@@ -19,12 +19,12 @@ nullspace.weights.fr3_joint7.value: 8.0
 stop_commands: false
 
 # We set the task gains to 0
-task.k_pos_x: 0.0
-task.k_pos_y: 0.0
-task.k_pos_z: 0.0
-task.k_rot_x: 0.0
-task.k_rot_y: 0.0
-task.k_rot_z: 0.0
+task.k_pos_x: 00.0
+task.k_pos_y: 00.0
+task.k_pos_z: 00.0
+task.k_rot_x: 00.0
+task.k_rot_y: 00.0
+task.k_rot_z: 00.0
 task.d_pos_x: 10.0
 task.d_pos_y: 10.0
 task.d_pos_z: 10.0

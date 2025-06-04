@@ -8,12 +8,12 @@ nullspace.stiffness: 5.0
 stop_commands: false
 
 
-task.k_pos_x: 2500.0
-task.k_pos_y: 2500.0
-task.k_pos_z: 2500.0
-task.k_rot_x: 200.0
-task.k_rot_y: 200.0
-task.k_rot_z: 200.0
+task.k_pos_x: 20.0
+task.k_pos_y: 20.0
+task.k_pos_z: 20.0
+task.k_rot_x: 2.0
+task.k_rot_y: 2.0
+task.k_rot_z: 2.0
 
 task.d_pos_x: 100.0
 task.d_pos_y: 100.0

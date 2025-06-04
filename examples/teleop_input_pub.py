@@ -8,6 +8,9 @@ import os
 import rclpy
 from rclpy.node import Node
 import numpy as np
+import time
+from pathlib import Path
+import yaml
 
 '''from franka_gripper.msg import GraspActionGoal, MoveActionGoal
 #replace: ???
@@ -16,6 +19,7 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import TwistStamped
 from std_msgs.msg import Float64MultiArray, Float64
 from crisp_py.robot import Robot
+from crisp_py.gripper.gripper import Gripper, GripperConfig
 
 # from ruamel.yaml import YAML
 
@@ -24,16 +28,28 @@ class TeleopController(Node):
     """Controller class for PS4 teleoperation of Franka robot"""
     
     def __init__(self, command_topic='command', arm=None):
-        self.vel_scale = 0.125
-        self.yaw_scale = 5
+        self.base_vel_scale = 0.125
+        self.base_yaw_scale = 5
         self.vel_vec = np.zeros(6)
         hz = 100 # init rate frequency
         self.arm = arm
-        arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
+
+        self.controller_file_path = "config/control/joint_velocity_control.yaml"
+        self.controller_type = "cartesian_impedance_controller"
+
+        arm.controller_switcher_client.switch_controller(self.controller_type)
         arm.cartesian_controller_parameters_client.load_param_config(
-            file_path="config/control/joint_velocity_control.yaml"
+            file_path=self.controller_file_path
             #file_path="config/control/default_operational_space_controller.yaml"
         )
+
+        # Initialize Gripper config
+        project_root_path = Path("/home/quisty/repos/crisp_py")
+
+        self.gripper_config = None
+        with open(project_root_path / "config" / "gripper_franka.yaml", "r") as file:
+            self.gripper_config = yaml.safe_load(file)
+            self.gripper_config = GripperConfig(min_value=self.gripper_config.get("min_value"), max_value=self.gripper_config.get("max_value"))
         
         # Initialize ROS node and load config
         #self.node = rclpy.create_node('teleop_controller')
@@ -47,7 +63,7 @@ class TeleopController(Node):
         
         # Initialize publishers
         self.setup_publishers()
-        '''self.setup_gripper()'''
+        self.setup_gripper()
         self.rate = arm.node.create_rate(hz) #prev self.hz parameter
         #self.timer_ = node.create_timer(self.hz, self.timer_callback)
 
@@ -62,6 +78,7 @@ class TeleopController(Node):
         # Button state tracking to avoid repeated commands
         self.prev_grasp_button = 0
         self.prev_release_button = 0
+        self.prev_home_button = 0
 
     """Don't need this hopefully"""
 
@@ -93,15 +110,18 @@ class TeleopController(Node):
 
     def setup_gripper(self):
         """Initialize gripper command messages"""
-        self.grasp_msg = GraspActionGoal()
-        self.grasp_msg.goal.epsilon.inner = 0.01
-        self.grasp_msg.goal.epsilon.outer = 0.01
-        self.grasp_msg.goal.force = 0.001
-        self.grasp_msg.goal.speed = 0.05
+        self.gripper = Gripper(gripper_config=self.gripper_config, namespace="")
+        self.gripper.wait_until_ready()
+
+        # self.grasp_msg = GraspActionGoal()
+        # self.grasp_msg.goal.epsilon.inner = 0.01
+        # self.grasp_msg.goal.epsilon.outer = 0.01
+        # self.grasp_msg.goal.force = 0.001
+        # self.grasp_msg.goal.speed = 0.05
         
         # Gripper widths
-        self.grasp_width = 0.012  # container
-        self.release_width = 0.08
+        self.grasp_width = 0.0 #0.012  # container
+        self.release_width = 1.0 #0.08
         
         # Try to get actual gripper state if possible (implementation depends on your setup)
         # For now, we'll use a flag and assume the gripper starts open
@@ -124,7 +144,7 @@ class TeleopController(Node):
         # Yaw control
         triangle = data.buttons[3]  # triangle button, positive yaw
         cross = data.buttons[0]     # cross button, negative yaw
-        yaw = (triangle - cross) * self.yaw_scale
+        yaw = (triangle - cross) * self.base_yaw_scale
         
         # Gripper control - detect button state changes
         grasp_button = data.axes[4]  # L2 button
@@ -132,7 +152,17 @@ class TeleopController(Node):
         
         # Emergency stop
         stop_button = float(data.buttons[2]) # Square button
-        
+
+        # Home
+        home_button = data.buttons[1] # Circle
+
+        # Speed Control
+        increase_button = data.buttons[10] #R1
+        decrease_button = data.buttons[9] #L1
+        self.speed_control(increase_button, decrease_button)
+
+        # Pad press is buttons[11]
+
         # Update velocity command
         self.vel_vec = (1.0 - stop_button) * np.array([
             left_stick_x, left_stick_y, arrow_up_down,
@@ -140,11 +170,24 @@ class TeleopController(Node):
         ]) * self.vel_scale
         
         # Handle gripper commands with improved logic
-        '''self.handle_gripper(grasp_button, release_button)'''
+        self.handle_gripper(grasp_button, release_button)
+
+        # Handle homing
+        self.handle_homing(home_button)
         
         # Update previous button states
         self.prev_grasp_button = grasp_button
         self.prev_release_button = release_button
+        self.prev_home_button = home_button
+
+    def speed_control(self, increase_button, decrease_button):
+        # Handle speed control
+        if(increase_button):
+            self.vel_scale = self.base_vel_scale*1.5
+        elif(decrease_button):
+            self.vel_scale = self.base_vel_scale*0.5
+        else:
+            self.vel_scale = self.base_vel_scale
 
     def handle_gripper(self, grasp_button, release_button):
         """Handle gripper open/close commands with improved logic"""
@@ -154,16 +197,29 @@ class TeleopController(Node):
         
         if grasp_pressed:
             # Button to close the gripper is pressed
-            self.get_logger().info("Closing gripper to width %.3f", self.grasp_width)
-            self.grasp_msg.goal.width = self.grasp_width
-            self.grasp_publisher.publish(self.grasp_msg)
+            self.get_logger().info("Closing gripper to width ")#%.3f", self.grasp_width)
+            # self.grasp_msg.goal.width = self.grasp_width
+            # self.grasp_publisher.publish(self.grasp_msg)
+            self.gripper.set_target(self.grasp_width) #can add epsilon as arg?
             self.grasp_state = True
         elif release_pressed:
             # Button to open the gripper is pressed
-            rclpy.loginfo("Opening gripper to width %.3f", self.release_width)
-            self.grasp_msg.goal.width = self.release_width
-            self.grasp_publisher.publish(self.grasp_msg)
+            self.get_logger().info("Opening gripper to width ")#%.3f", self.release_width)
+            # self.grasp_msg.goal.width = self.release_width
+            # self.grasp_publisher.publish(self.grasp_msg)
+            self.gripper.set_target(self.release_width) #can add epsilon as arg??
             self.grasp_state = False
+
+    def handle_homing(self, home_button):
+        # Check for button press changes to avoid repeated commands
+        home_pressed = home_button > 0 and self.prev_home_button < 1
+        if home_pressed:
+            # Home button pressed
+            self.get_logger().info("Going home")
+            self.arm.home()
+            # Reset controller
+            self.arm.controller_switcher_client.switch_controller(self.controller_type)
+            self.get_logger().info("Controller Reset")
 
     def publish_velocity(self):
         """Publish velocity command"""
@@ -219,7 +275,10 @@ def main(args=None): #previously run(self)
     
     rclpy.init(args=args)
     arm = Robot(namespace="") # is this the right place for this
+    arm.home()
+
     controller = TeleopController(command_topic='command',arm=arm)
+
     print("hello")
     try:
         rclpy.spin(controller)
