@@ -22,7 +22,16 @@ pixi shell -e humble  # or jazzy
 > The default `ROS_DOMAIN_ID` and `ROS_LOCALHOST_ONLY` are set to 100 and 0 respectively. If you want to override them, add a `.ros_env.sh` script
 > to the project where you export this environment variables, e.g. `export ROS_DOMAIN_ID=42 && export ROS_LOCALHOST_ONLY=1`. The script will be sourced at activation and is ignored by git.
 > More information on this topic can be found [here](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html).
-> If you work with multiple machines, then set inside of `.ros_env.sh` also the middleware options for cyclonedds which seems to work for multiple machines: `export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp export CYCLONEDDS_URI=file:///path/to/this/repo/cyclone_config.xml`
+> We recommend using [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling). It is easy to configure, in particular
+> for multi-machine setups.
+> ```bash
+> #/usr/bin/env bash
+> export ROS_DOMAIN_ID=XXX
+> export ROS_LOCALHOST_ONLY=X
+> export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+> export ZENOH_ROUTER_CONFIG_URI=/path/to/crisp_py/zenoh_router_config.json5  # define here the zenoh_router_config
+> ```
+
 
 You are good to go!
 

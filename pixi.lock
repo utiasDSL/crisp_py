@@ -444,6 +444,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxkbcommon-1.8.1-hc4a0caf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxml2-2.13.7-h4bc477f_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxslt-1.1.39-h76b75d6_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libzenohc-1.1.1-h4b02e4b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzip-1.11.2-h6991a6a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/loguru-0.7.2-py311h38be061_2.conda
@@ -725,6 +726,7 @@ environments:
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-rmw-fastrtps-shared-cpp-6.2.7-np126py311h2c3b307_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-rmw-implementation-2.8.4-np126py311h2c3b307_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-rmw-implementation-cmake-6.1.2-np126py311h2c3b307_7.conda
+      - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-rmw-zenoh-cpp-0.1.0-np126py311h44fb4ef_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-robot-state-publisher-3.0.3-np126py311h2c3b307_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-ros-base-0.10.0-np126py311h2c3b307_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-ros-core-0.10.0-np126py311h2c3b307_7.conda
@@ -860,6 +862,7 @@ environments:
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-velocity-controllers-2.40.0-np126py311h2c3b307_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-visualization-msgs-4.2.4-np126py311h2c3b307_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-yaml-cpp-vendor-8.0.2-np126py311h2c3b307_7.conda
+      - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-zenoh-cpp-vendor-0.1.0-np126py311h44fb4ef_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-zstd-vendor-0.15.13-np126py311h2c3b307_7.conda
       - conda: https://prefix.dev/robostack-humble/linux-64/ros2-distro-mutex-0.6.0-humble_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rosdep-0.25.1-pyhd8ed1ab_1.conda
@@ -937,6 +940,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-h7f98852_2.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/yaml-cpp-0.8.0-h59595ed_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/yarl-1.20.0-py311h2dc5d0c_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/zenoh-rust-abi-1.1.1.1.75.0-hfb157bb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.21.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zlib-1.3.1-hb9d3cd8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
@@ -7110,6 +7114,19 @@ packages:
   purls: []
   size: 254297
   timestamp: 1701628814990
+- conda: https://conda.anaconda.org/conda-forge/linux-64/libzenohc-1.1.1-h4b02e4b_1.conda
+  sha256: 2ca5588d807e31dcd4c1329c35e3716281ab304e5568702ab5fcf8d3e2f1be14
+  md5: d52cbbfe5ec4e82d0822a20501467026
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
+  - libstdcxx >=13
+  - zenoh-rust-abi >=1.1.1.1.75.0,<1.1.1.1.75.1.0a0
+  channel: https://fast.prefix.dev/conda-forge
+  license: Apache-2.0 OR EPL-2.0
+  purls: []
+  size: 10784701
+  timestamp: 1737576498149
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libzip-1.11.2-h6991a6a_0.conda
   sha256: 991e7348b0f650d495fb6d8aa9f8c727bdf52dabf5853c0cc671439b160dce48
   md5: a7b27c075c9b7f459f1c022090697cba
@@ -13354,6 +13371,32 @@ packages:
   license: BSD-3-Clause
   size: 27146
   timestamp: 1736208432657
+- conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-rmw-zenoh-cpp-0.1.0-np126py311h44fb4ef_7.conda
+  sha256: 561129630d0ca945d259ac34a7fe5d661eb6a2ae1ed4d365d38e4a6a1c526659
+  md5: 7ff9f30ffcee4bdf5c7dbad5ac86a659
+  depends:
+  - python
+  - ros-humble-ament-index-cpp
+  - ros-humble-fastcdr
+  - ros-humble-rcpputils
+  - ros-humble-rcutils
+  - ros-humble-rmw
+  - ros-humble-ros-workspace
+  - ros-humble-rosidl-typesupport-fastrtps-c
+  - ros-humble-rosidl-typesupport-fastrtps-cpp
+  - ros-humble-zenoh-cpp-vendor
+  - ros2-distro-mutex 0.6.* humble_*
+  - libstdcxx >=13
+  - libgcc >=13
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
+  - libzenohc >=1.1.1,<1.1.2.0a0
+  - python_abi 3.11.* *_cp311
+  - ros2-distro-mutex >=0.6.0,<0.7.0a0
+  - numpy >=1.26.4,<2.0a0
+  license: BSD-3-Clause
+  size: 272053
+  timestamp: 1737594122393
 - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-robot-state-publisher-3.0.3-np126py311h2c3b307_7.conda
   sha256: a04e232d30a7fac7146a7a36776dd61fb6176c39193699f1fe4409276529e455
   md5: 64734374ee4c9bf82d8fd78dffe7d8f2
@@ -16412,6 +16455,26 @@ packages:
   license: BSD-3-Clause
   size: 21823
   timestamp: 1736207365699
+- conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-zenoh-cpp-vendor-0.1.0-np126py311h44fb4ef_7.conda
+  sha256: ca43c310e3bacbf89feae7072f2ea7d0bd2f706caa42284973ecd6aa214149b0
+  md5: 3c5a190814a299fee791ce3a79d5f314
+  depends:
+  - python
+  - ros-humble-ros-workspace
+  - ros2-distro-mutex 0.6.* humble_*
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
+  - libstdcxx >=13
+  - libgcc >=13
+  - ros2-distro-mutex >=0.6.0,<0.7.0a0
+  - python_abi 3.11.* *_cp311
+  - numpy >=1.26.4,<2.0a0
+  - libzenohc >=1.1.1,<1.1.2.0a0
+  constrains:
+  - __glibc >=2.17
+  license: BSD-3-Clause
+  size: 24235
+  timestamp: 1737594102878
 - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-zstd-vendor-0.15.13-np126py311h2c3b307_7.conda
   sha256: da2d53b05255ca1dccb9352714e17c0587b9cb78b0465b288f7dd7e72696c516
   md5: bd744a023f60b32cd93d921bb894ec08
@@ -25677,6 +25740,16 @@ packages:
   - pkg:pypi/yarl?source=hash-mapping
   size: 155644
   timestamp: 1744972769206
+- conda: https://conda.anaconda.org/conda-forge/linux-64/zenoh-rust-abi-1.1.1.1.75.0-hfb157bb_0.conda
+  sha256: 92135243e714e8a1f2099bec27da569bf0e81968c4e1295941f4ac1df8760ef1
+  md5: b67ae5c044d63e29582d7e2a844d3c7a
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  channel: https://fast.prefix.dev/conda-forge
+  license: Apache-2.0 OR EPL-2.0
+  purls: []
+  size: 47420
+  timestamp: 1737131280756
 - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.21.0-pyhd8ed1ab_1.conda
   sha256: 567c04f124525c97a096b65769834b7acb047db24b15a56888a322bf3966c3e1
   md5: 0c3cc595284c5e8f0f9900a9b228a332

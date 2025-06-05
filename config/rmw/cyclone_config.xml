@@ -1,0 +1,14 @@
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain>
+    <General>
+      <AllowMulticast>true</AllowMulticast>
+      <Interfaces>
+        <NetworkInterface name="enx607d0937fb24" />
+      </Interfaces>
+    </General>
+    <Discovery>
+      <ParticipantIndex>auto</ParticipantIndex>
+    </Discovery>
+  </Domain>
+</CycloneDDS>
+
