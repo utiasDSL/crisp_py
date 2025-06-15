@@ -4,11 +4,11 @@ authors = ["Daniel San José Pro <42489409+danielsanjosepro@users.noreply.github
 channels = ["https://fast.prefix.dev/conda-forge"]
 name = "crisp_py"
 platforms = ["linux-64"]
-version = "1.0.0"
+version = "1.0.5"
 
 # [package]
 # name = "crisp_py"
-# version = "1.0.0"
+# version = "1.0.5"
 
 # [package.build]
 # backend = { name = "pixi-build-python", version = "0.1.*" }
@@ -27,7 +27,7 @@ cmake = "*"
 pkg-config = "*"
 make = "*"
 ninja = "*"
-pinocchio = ">=3.5.0,<4"
+pinocchio = ">=1.0.5,<4"
 
 [target.linux.dependencies]
 libgl-devel = "*"
