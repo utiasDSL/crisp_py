@@ -5,7 +5,7 @@ description = "Simple python interface to control robots that use crisp_controll
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pin",
+    "pin<3.0.0",
     "numpy"
 ]
 
