@@ -74,3 +74,4 @@ push            = false
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
 "crisp_py/__init__.py" = ["{version}"]
+"pixi.toml" = ["{version}"]
