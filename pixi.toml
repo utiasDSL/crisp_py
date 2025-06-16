@@ -6,17 +6,6 @@ name = "crisp_py"
 platforms = ["linux-64"]
 version = "1.0.7"
 
-# [package]
-# name = "crisp_py"
-# version = "1.0.7"
-
-# [package.build]
-# backend = { name = "pixi-build-python", version = "0.1.*" }
-# channels = [
-#   "https://prefix.dev/pixi-build-backends",
-#   "https://prefix.dev/conda-forge",
-# ]
-
 [activation]
 scripts = ["set_ros_env.sh"]
 
@@ -34,6 +23,7 @@ libgl-devel = "*"
 [environments]
 humble = { features = ["humble", "crisp-py"] }
 jazzy = { features = ["jazzy", "crisp-py"] }
+humble-dev = { features = ["humble", "dev", "crisp-py"] }
 dev = { features = ["dev"] }
 humble-clean = { features = ["humble"] }
 
@@ -61,9 +51,12 @@ colcon-common-extensions = "*"
 rosdep = "*"
 
 [feature.dev.pypi-dependencies]
-twine = "*"
-build = "*"
+ruff= "*"
 bumpver = "*"
+build = "*"
+twine = "*"
 
 [feature.crisp-py.pypi-dependencies]
 crisp_py = { path = ".", editable = false }
+# crisp_py = "1.0.x"  # if added from pypi
+

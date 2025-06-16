@@ -7,3 +7,7 @@ crisp_py.egg-info
 build/lib/crisp_py
 build/lib/crisp_py
 dist
+
+# pixi environments
+.pixi
+*.egg-info

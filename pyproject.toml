@@ -9,11 +9,9 @@ dependencies = [
     "numpy"
 ]
 
-[project.optional-dependencies]
-dev = ["twine", "build", "bumpver"]
-
 [tool.ruff]
 exclude = [
+    "examples",
     ".git",
     ".git-rewrite",
     ".ipynb_checkpoints",
