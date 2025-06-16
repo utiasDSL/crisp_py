@@ -30,7 +30,11 @@ class Pose:
 
     def copy(self) -> "Pose":
         """Create a copy of this pose."""
-        return Pose(self.position.copy(), self.orientation.__copy__())
+        return Pose(self.position.copy(), Rotation.from_quat(self.orientation.as_quat()))
+
+    def __str__(self) -> str:
+        """Return a string representation of a Pose."""
+        return f"Pos: {np.array2string(self.position, suppress_small=True, precision=2, floatmode='fixed')},\n Orientation: {np.array2string(self.orientation.as_matrix(), suppress_small=True, precision=2, floatmode='fixed')}"
 
 
 class Robot:
