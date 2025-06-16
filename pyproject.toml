@@ -1,6 +1,6 @@
 [project]
 name = "crisp_py"
-version = "1.0.8"
+version = "1.0.9"
 description = "Simple python interface to control robots that use crisp_controllers and other ROS2 components."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -62,7 +62,7 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.bumpver]
-current_version = "1.0.8"
+current_version = "1.0.9"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message  = "Bump version {old_version} -> {new_version}"
 commit          = true
