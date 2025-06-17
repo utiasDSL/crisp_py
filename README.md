@@ -35,7 +35,7 @@ pixi install
 pixi shell -e humble  # or jazzy
 ```
 
-> [!INFO]  
+> [!NOTE]  
 > This will activate an environment where `ros2` is sourced, so you are able to use the `roscli`, `rqt`, `rviz` and more!
 > The default `ROS_DOMAIN_ID` and `ROS_LOCALHOST_ONLY` are set to 100 and 0 respectively. If you want to override them, add a `scripts/personal_ros_env.sh` script
 > to the project where you export this environment variables, e.g. `export ROS_DOMAIN_ID=42 && export ROS_LOCALHOST_ONLY=1`. The script will be sourced at activation and is ignored by git.
