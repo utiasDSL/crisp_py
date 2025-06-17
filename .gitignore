@@ -11,3 +11,5 @@ dist
 # pixi environments
 .pixi
 *.egg-info
+build/lib/build/lib/build/lib
+scripts/personal_ros_env.sh

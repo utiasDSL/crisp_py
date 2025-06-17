@@ -1,6 +1,6 @@
 #/usr/bin/env sh
 
-ROS_ENV_FILE=".ros_env.sh"
+ROS_ENV_FILE="personal_ros_env.sh"
 
 if [ -f "$ROS_ENV_FILE" ]; then
     echo "$ROS_ENV_FILE already exists. Sourcing it..."
