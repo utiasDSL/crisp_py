@@ -18,7 +18,7 @@ Simply add it to your project with
 pip install crisp-py
 ```
 be sure that ROS2 is installed in your system. We recommend to use [robostack](https://robostack.github.io/) in combination with [pixi](https://pixi.sh/latest/).
-You can check [crisp_gym]() or this repo to see how to set it up.
+You can check [crisp_gym](https://github.com/utiasDSL/crisp_gym) or this repo to see how to set it up.
 Try importing `crisp_py` to check if everything is working.
 ```bash
 python
@@ -33,7 +33,7 @@ pixi install
 pixi shell -e humble  # or jazzy
 ```
 
-> [!INFO]  
+> [!NOTE]  
 > This will activate an environment where `ros2` is sourced, so you are able to use the `roscli`, `rqt`, `rviz` and more!
 > The default `ROS_DOMAIN_ID` and `ROS_LOCALHOST_ONLY` are set to 100 and 0 respectively. If you want to override them, add a `scripts/personal_ros_env.sh` script
 > to the project where you export this environment variables, e.g. `export ROS_DOMAIN_ID=42 && export ROS_LOCALHOST_ONLY=1`. The script will be sourced at activation and is ignored by git.
