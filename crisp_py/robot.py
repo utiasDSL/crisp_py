@@ -1,20 +1,40 @@
 """Provides a client to control the franka robot. It is the easiest way to control the robot using ROS2."""
 
 import threading
+from dataclasses import dataclass
+from typing import List
 
 import numpy as np
-import pinocchio as pin
 import rclpy
+import rclpy.executors
 from geometry_msgs.msg import PoseStamped, WrenchStamped
+from numpy.typing import NDArray
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
+from scipy.spatial.transform import Rotation, Slerp
 from sensor_msgs.msg import JointState
 
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
+
+
+@dataclass
+class Pose:
+    """Compact representation of an SE3 object."""
+
+    position: np.ndarray
+    orientation: Rotation
+
+    def copy(self) -> "Pose":
+        """Create a copy of this pose."""
+        return Pose(self.position.copy(), Rotation.from_quat(self.orientation.as_quat()))
+
+    def __str__(self) -> str:
+        """Return a string representation of a Pose."""
+        return f"Pos: {np.array2string(self.position, suppress_small=True, precision=2, floatmode='fixed')},\n Orientation: {np.array2string(self.orientation.as_matrix(), suppress_small=True, precision=2, floatmode='fixed')}"
 
 
 class Robot:
@@ -37,12 +57,11 @@ class Robot:
 
     def __init__(
         self,
-        node: Node = None,
+        node: Node | None = None,
         namespace: str = "",
         spin_node: bool = True,
-        robot_config: RobotConfig = None,
-        prefix_frames: bool = True,
-    ):
+        robot_config: RobotConfig | None = None,
+    ) -> None:
         """Initialize the robot interface.
 
         Args:
@@ -50,7 +69,6 @@ class Robot:
             namespace (str, optional): ROS2 namespace for the robot.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
             robot_config (RobotConfig, optional): Robot configuration parameters.
-            prefix_frames (bool, optional): Whether to prefix frame names with namespace.
         """
         if node is None:
             if not rclpy.ok():
@@ -125,34 +143,99 @@ class Robot:
             executor.spin_once(timeout_sec=0.1)
 
     @property
-    def nq(self):
-        """Returns the number of joints of the robot."""
+    def nq(self) -> int:
+        """Get the number of joints in the robot.
+
+        Returns:
+            int: The number of joints in the robot configuration.
+        """
         return len(self.config.joint_names)
 
     @property
-    def end_effector_pose(self):
-        return self._current_pose
+    def end_effector_pose(self) -> Pose:
+        """Get the current pose of the end effector.
+
+        Returns:
+            Pose: The current pose of the end effector, or None if not available.
+        """
+        if self._current_pose is None:
+            raise RuntimeError(
+                "The robot has not received any poses yet. Run wait_until_ready() before running anything else."
+            )
+        return self._current_pose.copy()
 
     @property
-    def target_pose(self):
-        return self._target_pose
+    def target_pose(self) -> Pose:
+        """Get the target pose of the end effector.
+
+        Returns:
+            Pose: The target pose of the end effector, or None if not set.
+        """
+        if self._target_pose is None:
+            raise RuntimeError(
+                "The robot has not received any poses yet. Run wait_until_ready() before running anything else."
+            )
+        return self._target_pose.copy()
 
     @property
-    def joint_values(self):
-        return self._current_joint.copy() if self._current_joint is not None else None
+    def joint_values(self) -> NDArray:
+        """Get the current joint values of the robot.
 
-    def is_ready(self):
-        """Returns True if the end-effector pose is available."""
-        return self._current_pose is not None
+        Returns:
+            numpy.ndarray: Copy of current joint values, or None if not available.
+        """
+        if self._current_joint is None:
+            raise RuntimeError(
+                "The robot has not received any joints yet. Run wait_until_ready() before running anything else."
+            )
+        return self._current_joint.copy()
+
+    @property
+    def target_joint(self) -> NDArray:
+        """Get the target joint values of the robot.
+
+        Returns:
+            numpy.ndarray: Copy of target joint values, or None if not available.
+        """
+        if self._target_joint is None:
+            raise RuntimeError(
+                "The robot has not received any joints yet. Run wait_until_ready() before running anything else."
+            )
+        return self._target_joint.copy()
+
+    def is_ready(self) -> bool:
+        """Check if the robot is ready for operation.
+
+        Returns:
+            bool: True if all necessary values for operation are available, False otherwise.
+        """
+        return (
+            self._current_pose is not None
+            and self._target_pose is not None
+            and self._current_joint is not None
+            and self._target_joint is not None
+        )
 
     def reset_targets(self):
-        """Reset the target pose, joint, and wrench to be None."""
+        """Reset all target values to None.
+
+        This method clears the target pose, joint values, and wrench values,
+        effectively stopping any ongoing movement or force application.
+        """
         self._target_pose = None
         self._target_joint = None
         self._target_wrench = None
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
-        """Wait until the end-effector pose is available."""
+        """Wait until the robot is ready for operation.
+
+        Args:
+            timeout (float, optional): Maximum time to wait in seconds. Defaults to 10.0.
+            check_frequency (float, optional): How often to check readiness in Hz. Defaults to 10.0.
+
+        Raises:
+            TimeoutError: If the robot is not ready within the specified timeout.
+        """
         rate = self.node.create_rate(check_frequency)
         while not self.is_ready():
             rate.sleep()
@@ -160,37 +243,73 @@ class Robot:
             if timeout <= 0:
                 raise TimeoutError("Timeout waiting for end-effector pose.")
 
-    def set_target(self, position: iter = None, pose: pin.SE3 = None):
-        """Sets directly the target pose of the end-effector to be published."""
+    def set_target(self, position: List | NDArray | None = None, pose: Pose | None = None):
+        """Set the target pose for the end-effector.
+
+        Args:
+            position (List | NDArray, optional): Target position as [x, y, z]. If None, uses current orientation.
+            pose (Pose, optional): Target pose as SE3 transform. If None, uses position.
+
+        Note:
+            Either position or pose must be provided. If both are provided, position overrides
+            the translation component of pose.
+        """
         target_pose = self._parse_pose_or_position(position, pose)
         self._target_pose = target_pose.copy()
 
-    def set_target_joint(self, q: np.array):
+    def set_target_joint(self, q: NDArray):
+        """Set the target joint configuration.
+
+        Args:
+            q (np.array): Target joint values array of size nq.
+
+        Raises:
+            AssertionError: If q is not the same size as the number of joints.
+        """
         assert len(q) == self.nq, "Joint state must be of size nq."
         self._target_joint = q
 
     def _callback_publish_target_pose(self):
+        """Publish the current target pose if one exists.
+
+        This callback is triggered periodically to publish the target pose
+        to the ROS topic for the robot controller.
+        """
         if self._target_pose is None:
             return
         self._target_pose_publisher.publish(self._pose_to_pose_msg(self._target_pose))
 
     def _callback_publish_target_joint(self):
+        """Publish the current target joint configuration if one exists.
+
+        This callback is triggered periodically to publish the target joint values
+        to the ROS topic for the robot controller.
+        """
         if self._target_joint is None:
             return
         self._target_joint_publisher.publish(self._joint_to_joint_msg(self._target_joint))
 
     def _callback_publish_target_wrench(self):
-        """Publish the target wrench if it exists."""
+        """Publish the target wrench if one exists.
+
+        This callback is triggered periodically to publish the target wrench (force/torque)
+        to the ROS topic for the robot controller.
+        """
         if self._target_wrench is None:
             return
         self._target_wrench_publisher.publish(self._wrench_to_wrench_msg(self._target_wrench))
 
-    def set_target_wrench(self, force: iter = None, torque: iter = None):
-        """Sets the target wrench (force/torque) to be published.
+    def set_target_wrench(
+        self, force: List | NDArray | None = None, torque: List | NDArray | None = None
+    ):
+        """Set the target wrench (force/torque) to be applied by the robot.
 
         Args:
-            force (iter, optional): Force vector [fx, fy, fz] in N. If None, zeros are used.
-            torque (iter, optional): Torque vector [tx, ty, tz] in Nm. If None, zeros are used.
+            force (list, optional): Force vector [fx, fy, fz] in N. If None, zeros are used.
+            torque (list, optional): Torque vector [tx, ty, tz] in Nm. If None, zeros are used.
+
+        Raises:
+            AssertionError: If force or torque vectors are not 3D vectors.
         """
         if force is None:
             force = [0.0, 0.0, 0.0]
@@ -203,7 +322,14 @@ class Robot:
         self._target_wrench = {"force": np.array(force), "torque": np.array(torque)}
 
     def _wrench_to_wrench_msg(self, wrench: dict) -> WrenchStamped:
-        """Convert a wrench dictionary to a WrenchStamped message."""
+        """Convert a wrench dictionary to a ROS WrenchStamped message.
+
+        Args:
+            wrench (dict): Dictionary containing 'force' and 'torque' numpy arrays.
+
+        Returns:
+            WrenchStamped: ROS message containing the wrench data with proper header.
+        """
         wrench_msg = WrenchStamped()
         wrench_msg.header.frame_id = self.config.base_frame
         wrench_msg.header.stamp = self.node.get_clock().now().to_msg()
@@ -216,13 +342,27 @@ class Robot:
         return wrench_msg
 
     def _callback_current_pose(self, msg: PoseStamped):
-        """Save the current pose."""
+        """Update the current pose from a ROS message.
+
+        This callback is triggered when a new pose message is received. It updates
+        the current pose and initializes the target pose if not already set.
+
+        Args:
+            msg (PoseStamped): ROS message containing the current pose.
+        """
         self._current_pose = self._pose_msg_to_pose(msg)
         if self._target_pose is None:
             self._target_pose = self._current_pose.copy()
 
     def _callback_current_joint(self, msg: JointState):
-        """Save the current joint state of the message by filtering the joint."""
+        """Update the current joint state from a ROS message.
+
+        This callback filters the joint state message to only include joints
+        that are part of this robot's configuration.
+
+        Args:
+            msg (JointState): ROS message containing joint states.
+        """
         if self._current_joint is None:
             self._current_joint = np.zeros(self.nq)
 
@@ -234,7 +374,12 @@ class Robot:
                 self.config.joint_names.index(joint_name.removeprefix(self._prefix))
             ] = joint_position
 
-    def move_to(self, position: iter = None, pose: pin.SE3 = None, speed: float = 0.05):
+        if self._target_joint is None:
+            self._target_joint = self._current_joint.copy()
+
+    def move_to(
+        self, position: List | NDArray | None = None, pose: Pose | None = None, speed: float = 0.05
+    ):
         """Move the end-effector to a given pose by interpolating linearly between the poses.
 
         Args:
@@ -243,15 +388,22 @@ class Robot:
             speed: The speed of the movement. [m/s]
         """
         desired_pose = self._parse_pose_or_position(position, pose)
-        start_pose = self._target_pose.copy()
-        distance = np.linalg.norm(desired_pose.translation - start_pose.translation)
+        start_pose = self.target_pose
+        distance = np.linalg.norm(desired_pose.position - start_pose.position)
         time_to_move = distance / speed
 
         N = int(time_to_move * self.config.publish_frequency)
 
         rate = self.node.create_rate(self.config.publish_frequency)
+
+        slerp = Slerp(
+            [0, 1], Rotation.concatenate([start_pose.orientation, desired_pose.orientation])
+        )
+
         for t in np.linspace(0.0, 1.0, N):
-            next_pose = pin.SE3.Interpolate(start_pose, desired_pose, t)
+            pos = (1 - t) * start_pose.position + t * desired_pose.position
+            ori = slerp([t])[0]
+            next_pose = Pose(pos, ori)
             self._target_pose = next_pose
             rate.sleep()
 
@@ -271,37 +423,41 @@ class Robot:
         self._target_pose = None
         self._target_joint = None
 
+        if blocking:
+            self.wait_until_ready()
+
         # if switch_to_default_controller:
         #     self.controller_switcher_client.switch_controller(self.config.default_controller)
 
-    def _pose_msg_to_pose(self, pose: PoseStamped) -> pin.SE3:
-        """Convert a transform to a pose."""
-        return pin.SE3(
-            pin.Quaternion(
-                x=pose.pose.orientation.x,
-                y=pose.pose.orientation.y,
-                z=pose.pose.orientation.z,
-                w=pose.pose.orientation.w,
-            ),
-            np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z]),
+    def _pose_msg_to_pose(self, pose: PoseStamped) -> Pose:
+        """Convert a ROS2 pose msg to a pose."""
+        position = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
+        orientation = Rotation.from_quat(
+            [
+                pose.pose.orientation.x,
+                pose.pose.orientation.y,
+                pose.pose.orientation.z,
+                pose.pose.orientation.w,
+            ]
         )
+        return Pose(position, orientation)
 
-    def _pose_to_pose_msg(self, pose: pin.SE3) -> PoseStamped:
+    def _pose_to_pose_msg(self, pose: Pose) -> PoseStamped:
         """Convert a pose to a pose message."""
-        pose_msg = PoseStamped()
-        q = pin.Quaternion(pose.rotation)
-        pose_msg.header.frame_id = self.config.base_frame
-        pose_msg.pose.position.x = pose.translation[0]
-        pose_msg.pose.position.y = pose.translation[1]
-        pose_msg.pose.position.z = pose.translation[2]
-        pose_msg.pose.orientation.x = q.x
-        pose_msg.pose.orientation.y = q.y
-        pose_msg.pose.orientation.z = q.z
-        pose_msg.pose.orientation.w = q.w
-        return pose_msg
+        msg = PoseStamped()
+        msg.header.frame_id = self.config.base_frame
+        msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = pose.position
+        q = pose.orientation.as_quat()
+        (
+            msg.pose.orientation.x,
+            msg.pose.orientation.y,
+            msg.pose.orientation.z,
+            msg.pose.orientation.w,
+        ) = q
+        return msg
 
     def _joint_to_joint_msg(
-        self, q: np.array, dq: np.array = None, tau: np.array = None
+        self, q: NDArray, dq: NDArray | None = None, tau: NDArray | None = None
     ) -> JointState:
         """Convert a pose to a pose message."""
         joint_msg = JointState()
@@ -313,17 +469,19 @@ class Robot:
         joint_msg.effort = tau.tolist() if tau is not None else [0.0] * len(q)
         return joint_msg
 
-    def _parse_pose_or_position(self, position: iter = None, pose: pin.SE3 = None) -> pin.SE3:
+    def _parse_pose_or_position(
+        self, position: List | NDArray | None = None, pose: Pose | None = None
+    ) -> Pose:
         """Parse a pose from a desired position or pose.
 
         This function is a utility to create a pose object from either a position vector or a pose object.
         """
         assert position is not None or pose is not None, "Either position or pose must be provided."
 
-        desired_pose = pose.copy() if pose is not None else self._target_pose.copy()
+        desired_pose = pose.copy() if pose is not None else self.target_pose
         if position is not None:
             assert len(position) == 3, "Position must be a 3D vector."
-            desired_pose.translation = np.array(position)
+            desired_pose.position = np.array(position)
 
         return desired_pose
 
