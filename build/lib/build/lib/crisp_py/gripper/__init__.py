@@ -1,3 +1,1 @@
-"""Initialize the gripper module."""
-
 from crisp_py.gripper.gripper import Gripper, GripperConfig  # noqa: D104, F401

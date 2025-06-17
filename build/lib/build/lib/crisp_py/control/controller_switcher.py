@@ -12,15 +12,14 @@ from rclpy.node import Node
 
 
 class ControllerSwitcherClient:
-    """ControllerSwitcher class allows user to communicate with the controller_manager and manage controllers in an easy way."""
-
     def __init__(
-        self, node: Node, always_active: list[str] = ["joint_state_broadcaster", "pose_broadcaster"]
+        self,
+        node: Node,
+        always_active: list[str] = ["joint_state_broadcaster", "pose_broadcaster"],
     ):
         """Initialize the ControllerSwitcher.
 
         Args:
-            node (Node): Node used for the communication with the controller_manager.
             always_active (list[str], optional): List of controllers that are always active. Defaults to ["joint_state_broadcaster", "franka_robot_state_broadcaster"].
         """
         self.node = node
@@ -48,7 +47,7 @@ class ControllerSwitcherClient:
             callback_group=ReentrantCallbackGroup(),
         )
 
-    def is_server_ready(self) -> bool:
+    def is_server_ready(self):
         """Return True if all services are ready."""
         return (
             self.load_client.wait_for_service(timeout_sec=5.0)
@@ -57,7 +56,7 @@ class ControllerSwitcherClient:
             and self.switch_client.wait_for_service(timeout_sec=5.0)
         )
 
-    def get_controller_list(self) -> list:
+    def get_controller_list(self):
         """Get a list of all controllers using a service."""
         if not self.list_client.wait_for_service(timeout_sec=5.0):
             self.node.get_logger().error("Timed out waiting for controller list service.")
@@ -68,9 +67,7 @@ class ControllerSwitcherClient:
         future = self.list_client.call_async(ListControllers.Request())
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for controller list...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for controller list...", throttle_duration_sec=1.0)
 
         response = future.result()
 
@@ -83,9 +80,7 @@ class ControllerSwitcherClient:
         future = self.load_client.call_async(request)
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for load controller answer...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for load controller answer...", throttle_duration_sec=1.0)
         response = future.result()
 
         return response.ok
@@ -97,9 +92,7 @@ class ControllerSwitcherClient:
         future = self.configure_client.call_async(request)
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for configure controller answer...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for configure controller answer...", throttle_duration_sec=1.0)
         response = future.result()
 
         return response.ok
@@ -116,9 +109,7 @@ class ControllerSwitcherClient:
         future = self.switch_client.call_async(request)
 
         while not future.done():
-            self.node.get_logger().debug(
-                "Waiting for switch controller answer...", throttle_duration_sec=1.0
-            )
+            self.node.get_logger().debug("Waiting for switch controller answer...", throttle_duration_sec=1.0)
         response = future.result()
 
         return response.ok
@@ -135,12 +126,8 @@ class ControllerSwitcherClient:
         """
         controllers = self.get_controller_list()
 
-        active_controllers = [
-            controller.name for controller in controllers if controller.state == "active"
-        ]
-        inactive_controllers = [
-            controller.name for controller in controllers if controller.state == "inactive"
-        ]
+        active_controllers = [controller.name for controller in controllers if controller.state == "active"]
+        inactive_controllers = [controller.name for controller in controllers if controller.state == "inactive"]
 
         if controller_name in active_controllers:
             self.node.get_logger().info(f"Controller {controller_name} is already active.")

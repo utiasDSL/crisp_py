@@ -2,23 +2,12 @@
 preview = ["pixi-build"]
 authors = ["Daniel San José Pro <42489409+danielsanjosepro@users.noreply.github.com>"]
 channels = ["https://fast.prefix.dev/conda-forge"]
-name = "crips_py"
-platforms = ["linux-64"]
-version = "0.1.0"
-
-[package]
 name = "crisp_py"
-version = "0.1.0"
-
-[package.build]
-backend = { name = "pixi-build-python", version = "0.1.*" }
-channels = [
-  "https://prefix.dev/pixi-build-backends",
-  "https://prefix.dev/conda-forge",
-]
+platforms = ["linux-64"]
+version = "1.0.12"
 
 [activation]
-scripts = ["set_ros_env.sh"]
+scripts = ["scripts/set_ros_env.sh"]
 
 [dependencies]
 python = "*"
@@ -27,14 +16,16 @@ cmake = "*"
 pkg-config = "*"
 make = "*"
 ninja = "*"
-pinocchio = ">=3.5.0,<4"
 
 [target.linux.dependencies]
 libgl-devel = "*"
 
 [environments]
-humble = { features = ["humble"] }
-jazzy = { features = ["jazzy"] }
+humble = { features = ["humble", "crisp-py"] }
+jazzy = { features = ["jazzy", "crisp-py"] }
+humble-dev = { features = ["humble", "dev", "crisp-py"] }
+dev = { features = ["dev"] }
+humble-clean = { features = ["humble"] }
 
 # humble
 [feature.humble]
@@ -59,5 +50,13 @@ ros-jazzy-ros2-controllers = "*"
 colcon-common-extensions = "*"
 rosdep = "*"
 
-[pypi-dependencies]
-crisp_py = { path = ".", editable = true }
+[feature.dev.pypi-dependencies]
+ruff= "*"
+bumpver = "*"
+build = "*"
+twine = "*"
+
+[feature.crisp-py.pypi-dependencies]
+crisp_py = { path = ".", editable = false }
+# crisp_py = "1.0.x"  # if added from pypi
+

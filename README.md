@@ -11,27 +11,44 @@ Set target poses and joints, reconfigure stiffness and other controller paramete
 
 ## Getting started
 
-Install pixi and create an environment to work with the robot:
+### Intall from PyPi
+👷‍♂️ Work in progress...
+Simply add it to your project with
+```bash
+pip install crisp-py
+```
+be sure that ROS2 is installed in your system. We recommend to use [robostack](https://robostack.github.io/) in combination with [pixi](https://pixi.sh/latest/).
+You can check [crisp_gym]() or this repo to see how to set it up.
+Try importing `crisp_py` to check if everything is working.
+```bash
+python
+import crisp_py  # If no print, everything is fine!
+```
+
+### Git installation with pixi
+
+Install [pixi](https://pixi.sh/latest/) and create an environment to work with the robot:
 ```bash
 pixi install
 pixi shell -e humble  # or jazzy
 ```
 
-> [!WARNING]  
+> [!INFO]  
 > This will activate an environment where `ros2` is sourced, so you are able to use the `roscli`, `rqt`, `rviz` and more!
-> The default `ROS_DOMAIN_ID` and `ROS_LOCALHOST_ONLY` are set to 100 and 0 respectively. If you want to override them, add a `.ros_env.sh` script
+> The default `ROS_DOMAIN_ID` and `ROS_LOCALHOST_ONLY` are set to 100 and 0 respectively. If you want to override them, add a `scripts/personal_ros_env.sh` script
 > to the project where you export this environment variables, e.g. `export ROS_DOMAIN_ID=42 && export ROS_LOCALHOST_ONLY=1`. The script will be sourced at activation and is ignored by git.
 > More information on this topic can be found [here](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html).
-> We recommend using [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling). It is easy to configure, in particular
-> for multi-machine setups.
-> ```bash
-> #/usr/bin/env bash
-> export ROS_DOMAIN_ID=XXX
-> export ROS_LOCALHOST_ONLY=X
-> export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-> export ZENOH_ROUTER_CONFIG_URI=/path/to/crisp_py/zenoh_router_config.json5  # define here the zenoh_router_config
-> ```
 
+> [!WARNING]  
+> For **multi-machine setups**, you recommend using a different RMW than FastDDS (for an easier configuration)
+> We recommend using CycloneDDS (or [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling)). It is easy to configure, in particular
+> for multi-machine setups. We provide two setup scripts `scripts/setup_cyclone_config.sh` and `scripts/setup_zenoh_config.sh`.
+> Modify your personal ROS environment script to use it:
+> ```bash
+> # ... in scripts/personal_ros_env.sh
+> #/usr/bin/env bash
+> source scripts/setup_cyclone_config.sh
+> ```
 
 You are good to go!
 

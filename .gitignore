@@ -3,3 +3,13 @@ crisp_py/control/__pycache__
 crisp_py/gripper/__pycache__
 .ros_env.sh
 crisp_py.egg-info
+.pypirc
+build/lib/crisp_py
+build/lib/crisp_py
+dist
+
+# pixi environments
+.pixi
+*.egg-info
+build/lib/build/lib/build/lib
+scripts/personal_ros_env.sh
