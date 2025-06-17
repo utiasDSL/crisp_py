@@ -12,7 +12,9 @@ Set target poses and joints, reconfigure stiffness and other controller paramete
 ## Getting started
 
 ### Intall from PyPi
-👷‍♂️ Work in progress...
+> [!WARNING]
+> 👷‍♂️ This is still work in progress...
+
 Simply add it to your project with
 ```bash
 pip install crisp-py
@@ -27,13 +29,13 @@ import crisp_py  # If no print, everything is fine!
 
 ### Git installation with pixi
 
-Install [pixi](https://pixi.sh/latest/) and create an environment to work with the robot:
+Clone this repo, install [pixi](https://pixi.sh/latest/) and create an environment to work with the robot:
 ```bash
 pixi install
 pixi shell -e humble  # or jazzy
 ```
 
-> [!NOTE]  
+> [!INFO]  
 > This will activate an environment where `ros2` is sourced, so you are able to use the `roscli`, `rqt`, `rviz` and more!
 > The default `ROS_DOMAIN_ID` and `ROS_LOCALHOST_ONLY` are set to 100 and 0 respectively. If you want to override them, add a `scripts/personal_ros_env.sh` script
 > to the project where you export this environment variables, e.g. `export ROS_DOMAIN_ID=42 && export ROS_LOCALHOST_ONLY=1`. The script will be sourced at activation and is ignored by git.
