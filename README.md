@@ -49,7 +49,7 @@ pixi shell -e humble  # or jazzy
 > ```bash
 > # ... in scripts/personal_ros_env.sh
 > #/usr/bin/env bash
-> source scripts/setup_cyclone_config.sh
+> source scripts/set_cyclone_config.sh
 > ```
 
 You are good to go!
