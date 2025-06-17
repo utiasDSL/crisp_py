@@ -19,23 +19,12 @@ class CameraConfig:
     camera_color_info_topic: str = None
 
 @dataclass
-class PrimaryCameraConfig:
+class FrankaCameraConfig:
 
-    camera_name: str = "primary"
-    camera_frame: str = "primary_link"
-
-    resolution: Optional[Tuple[int, int]] = (256, 256)
-
-    camera_color_image_topic: str = "right_third_person_camera/color/image_raw"
-    camera_color_info_topic: str = "right_third_person_camera/color/camera_info"
-
-@dataclass
-class WristCameraConfig:
-
-    camera_name: str = "wrist"
-    camera_frame: str = "wrist_link"
+    camera_name: str = "franka"
+    camera_frame: str = "franka_link"
 
     resolution: Optional[Tuple[int, int]] = (256, 256)
 
-    camera_color_image_topic: str = "right_wrist_camera/color/image_rect_raw"
-    camera_color_info_topic: str = "right_wrist_camera/color/camera_info"
+    camera_color_image_topic: str = "franka/color/image_raw"
+    camera_color_info_topic: str = "franka/color/camera_info"
