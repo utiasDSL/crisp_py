@@ -190,13 +190,31 @@ class Robot:
             )
         return self._current_joint.copy()
 
+    @property
+    def target_joint(self) -> NDArray:
+        """Get the target joint values of the robot.
+
+        Returns:
+            numpy.ndarray: Copy of target joint values, or None if not available.
+        """
+        if self._target_joint is None:
+            raise RuntimeError(
+                "The robot has not received any joints yet. Run wait_until_ready() before running anything else."
+            )
+        return self._target_joint.copy()
+
     def is_ready(self) -> bool:
         """Check if the robot is ready for operation.
 
         Returns:
-            bool: True if the end-effector pose is available, False otherwise.
+            bool: True if all necessary values for operation are available, False otherwise.
         """
-        return self._current_pose is not None
+        return (
+            self._current_pose is not None
+            and self._target_pose is not None
+            and self._current_joint is not None
+            and self._target_joint is not None
+        )
 
     def reset_targets(self):
         """Reset all target values to None.
@@ -356,6 +374,9 @@ class Robot:
                 self.config.joint_names.index(joint_name.removeprefix(self._prefix))
             ] = joint_position
 
+        if self._target_joint is None:
+            self._target_joint = self._current_joint
+
     def move_to(
         self, position: List | NDArray | None = None, pose: Pose | None = None, speed: float = 0.05
     ):
@@ -401,6 +422,9 @@ class Robot:
         # Set to none to avoid publishing the previous target pose after activating the next controller
         self._target_pose = None
         self._target_joint = None
+
+        if blocking:
+            self.wait_until_ready()
 
         # if switch_to_default_controller:
         #     self.controller_switcher_client.switch_controller(self.config.default_controller)

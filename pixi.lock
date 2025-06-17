@@ -944,7 +944,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zziplib-0.13.69-he45264a_2.conda
       - pypi: https://files.pythonhosted.org/packages/bd/37/89f19c8c05505d0601ed5650156e50eb881ae3918786c8fd7262b4ee66d3/scipy-1.15.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: ./
+      - pypi: .
   humble-clean:
     channels:
     - url: https://prefix.dev/robostack-humble/
@@ -2475,7 +2475,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/24/b4293291fa1dd830f353d2cb163295742fa87f179fcc8a20a306a81978b7/SecretStorage-3.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7c/b6/74e927715a285743351233f33ea3c684528a0d374d2e43ff9ce9585b73fe/twine-6.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6b/11/cc635220681e93a0183390e26485430ca2c7b5f9d33b15c74c2861cb8091/urllib3-2.4.0-py3-none-any.whl
-      - pypi: ./
+      - pypi: .
   jazzy:
     channels:
     - url: https://prefix.dev/robostack-jazzy/
@@ -3279,7 +3279,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zziplib-0.13.69-he45264a_2.conda
       - pypi: https://files.pythonhosted.org/packages/0b/1f/03f52c282437a168ee2c7c14a1a0d0781a9a4a8962d84ac05c06b4c5b555/scipy-1.15.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: ./
+      - pypi: .
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
   sha256: fe51de6107f9edc7aa4f786a70f4a883943bc9d39b3bb7307c04c41410990726
@@ -4401,10 +4401,10 @@ packages:
   - pkg:pypi/cppcheck-htmlreport?source=hash-mapping
   size: 2886675
   timestamp: 1744040683266
-- pypi: ./
+- pypi: .
   name: crisp-py
-  version: 1.0.9
-  sha256: 9361237458b8955c3a271972152365c77fa11fede3a13dff98bd88723296ec2b
+  version: 1.0.11
+  sha256: 4f7d1d8ba4683240a6546540b43a81f37be688c40f3dbce87c3a9c7b144350ce
   requires_dist:
   - scipy
   - numpy
@@ -7347,6 +7347,7 @@ packages:
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-2-Clause
   license_family: BSD
+  purls: []
   size: 91183
   timestamp: 1748393666725
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libnetcdf-4.9.2-nompi_h00e09a9_116.conda
@@ -10153,6 +10154,7 @@ packages:
   - tzdata
   channel: https://fast.prefix.dev/conda-forge
   license: Python-2.0
+  purls: []
   size: 33259249
   timestamp: 1749779390745
   python_site_packages_path: lib/python3.13/site-packages
@@ -10220,6 +10222,7 @@ packages:
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
+  purls: []
   size: 6988
   timestamp: 1745258852285
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.2-py311h2dc5d0c_2.conda

@@ -41,6 +41,7 @@ class Gripper:
         namespace: str = "",
         gripper_config: GripperConfig | None = None,
         spin_node: bool = True,
+        index: int = 0,
     ):
         """Initialize the gripper client.
 
@@ -67,6 +68,7 @@ class Gripper:
         self._prefix = f"{namespace}_" if namespace else ""
         self._value = None
         self._torque = None
+        self._index = index
 
         # self.controller_switcher_client = ControllerSwitcherClient(self.node)
         # self.gripper_parameter_client = ParametersClient(
@@ -155,8 +157,8 @@ class Gripper:
         Args:
             msg (JointState): the message containing the joint state.
         """
-        self._value = msg.position[0]
-        self._torque = msg.effort[0]
+        self._value = msg.position[self._index]
+        self._torque = msg.effort[self._index]
 
     def set_target(self, target: float, *, epsilon: float = 0.1, send_raw_target: bool = False):
         """Grasp with the gripper by setting a target. This can be a position, velocity or effort depending on the active controller.

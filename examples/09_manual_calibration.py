@@ -10,8 +10,11 @@ import yaml
 
 # %%
 from crisp_py.gripper import Gripper
+from crisp_py.gripper import GripperConfig
 
-gripper = Gripper(namespace="follower")
+gripper_config = GripperConfig(0.0, 1.0, joint_state_topic="trigger/joint_states")
+
+gripper = Gripper(gripper_config=gripper_config)
 gripper.wait_until_ready()
 
 # %%
