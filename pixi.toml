@@ -37,6 +37,7 @@ colcon-common-extensions = "*"
 ros-humble-ros2-control = "*"
 ros-humble-ros2-controllers = "*"
 ros-humble-rmw-zenoh-cpp = "*"
+ros-humble-rmw-cyclonedds-cpp = "*"
 rosdep = "*"
 
 # jazzy
