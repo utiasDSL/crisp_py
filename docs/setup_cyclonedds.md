@@ -33,3 +33,9 @@ time you open the pixi shell. That script will automatically restart the `ros2 d
 
 ```
 you can check the name of your network interfaces by running `ip addr`.
+
+4. Finally, check that everything is working. If your robot is active, run `ros2 topic list` and you should see some topics listed!
+
+## Troubleshooting
+- Run `env | grep RMW_IMPLEMENTATION`, if the variable is not set, you need to make sure that the script `scripts/set_ros_env.sh` is being executed and that your script `scripts/personal_ros_env.sh` is properly defined.
+- Be sure that the name of the interface is correct!
