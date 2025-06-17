@@ -375,7 +375,7 @@ class Robot:
             ] = joint_position
 
         if self._target_joint is None:
-            self._target_joint = self._current_joint
+            self._target_joint = self._current_joint.copy()
 
     def move_to(
         self, position: List | NDArray | None = None, pose: Pose | None = None, speed: float = 0.05

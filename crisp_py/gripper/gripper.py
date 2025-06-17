@@ -148,6 +148,18 @@ class Gripper:
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
                 raise TimeoutError("Timeout waiting for gripper to be ready.")
+            
+    def is_open(self, open_threshold: float = 0.1) -> bool:
+        """Returns True if the gripper is open."""
+        return self.value > open_threshold
+
+    def close(self):
+        """Close the gripper."""
+        self.set_target(target=0.0)
+
+    def open(self):
+        """Open the gripper."""
+        self.set_target(target=1.0)
 
     def _callback_joint_state(self, msg: JointState):
         """Save the latest joint state values.
