@@ -56,8 +56,8 @@ ruff= "*"
 bumpver = "*"
 build = "*"
 twine = "*"
+pre-commit = "*"
 
 [feature.crisp-py.pypi-dependencies]
 crisp_py = { path = ".", editable = false }
 # crisp_py = "1.0.x"  # if added from pypi
-
