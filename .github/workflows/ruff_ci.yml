@@ -1,4 +1,4 @@
-name: CI
+name: Ruff-CI
 on: push
 jobs:
   build:
