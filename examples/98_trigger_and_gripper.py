@@ -46,7 +46,9 @@ project_root_path = Path("/home/lsy_franka/repos/crisp_py")
 gripper_config = None
 with open(project_root_path / "config" / "gripper_with_trigger.yaml", "r") as file:
     gripper_config = yaml.safe_load(file)
-    gripper_config = GripperConfig(min_value=gripper_config.get("min_value"), max_value=gripper_config.get("max_value"))
+    gripper_config = GripperConfig(
+        min_value=gripper_config.get("min_value"), max_value=gripper_config.get("max_value")
+    )
 
 gripper_config.joint_state_topic = "gripper_state_broadcaster/joint_states"
 
@@ -54,7 +56,9 @@ project_root_path = Path("/home/lsy_franka/repos/crisp_py")
 trigger_config = None
 with open(project_root_path / "config" / "trigger.yaml", "r") as file:
     trigger_config = yaml.safe_load(file)
-    trigger_config = GripperConfig(min_value=trigger_config.get("min_value"), max_value=trigger_config.get("max_value"))
+    trigger_config = GripperConfig(
+        min_value=trigger_config.get("min_value"), max_value=trigger_config.get("max_value")
+    )
 
 trigger_config.joint_state_topic = "trigger_state_broadcaster/joint_states"
 trigger_config.command_topic = "trigger_position_controller/commands"
@@ -74,5 +78,5 @@ trigger.set_target(0.0)
 
 rate = gripper.node.create_rate(50)
 while True:
-    gripper.set_target(max(min(1.0, 1.0-trigger.value), 0.0))
+    gripper.set_target(max(min(1.0, 1.0 - trigger.value), 0.0))
     rate.sleep()

@@ -31,7 +31,8 @@ max_time = 8.0
 # %%
 left_arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
 left_arm.cartesian_controller_parameters_client.load_param_config(
-    file_path="config/control/default_operational_space_controller.yaml"
+    file_path="config/control/gravity_compensation.yaml"
+    # file_path="config/control/default_operational_space_controller.yaml"
     # file_path="config/control/clipped_cartesian_impedance.yaml"
     # file_path="config/control/default_cartesian_impedance.yaml"
 )
@@ -55,7 +56,7 @@ while t < max_time:
     x = center[0]
     y = radius * np.sin(2 * np.pi * sin_freq_y * t) + center[1]
     z = radius * np.sin(2 * np.pi * sin_freq_z * t) + center[2]
-    target_pose.translation = np.array([x, y, z])
+    target_pose.position = np.array([x, y, z])
 
     left_arm.set_target(pose=target_pose)
 
@@ -83,13 +84,13 @@ print("Done drawing a circle!")
 
 
 # %%
-y_t = [target_pose_sample.translation[1] for target_pose_sample in target_poses]
-z_t = [target_pose_sample.translation[2] for target_pose_sample in target_poses]
+y_t = [target_pose_sample.position[1] for target_pose_sample in target_poses]
+z_t = [target_pose_sample.position[2] for target_pose_sample in target_poses]
 
 # %%
 # === Normal params ===
-y_ee = [ee_pose.translation[1] for ee_pose in ee_poses]
-z_ee = [ee_pose.translation[2] for ee_pose in ee_poses]
+y_ee = [ee_pose.position[1] for ee_pose in ee_poses]
+z_ee = [ee_pose.position[2] for ee_pose in ee_poses]
 
 # %%
 fig, ax = plt.subplots(1, 2, figsize=(10, 5))

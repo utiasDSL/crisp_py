@@ -45,7 +45,7 @@ pixi shell -e humble  # or jazzy
 > For **multi-machine setups**, you recommend using a different RMW than FastDDS (for an easier configuration)
 > We recommend using CycloneDDS (or [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling)). It is easy to configure, in particular
 > for multi-machine setups. 
-> Check 💻[Setup CycloneDDS](docs/setup_cyclonedds.md) to see how to setup a different RMW.
+> Check [Setup CycloneDDS](docs/setup_cyclonedds.md) to see how to setup a different RMW.
 
 You are good to go!
 

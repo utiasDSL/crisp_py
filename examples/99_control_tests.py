@@ -43,7 +43,7 @@ def drive_eight():
         x = center[0]
         y = radius * np.sin(2 * np.pi * sin_freq_y * t) + center[1]
         z = radius * np.sin(2 * np.pi * sin_freq_z * t) + center[2]
-        target_pose.translation = np.array([x, y, z])
+        target_pose.position = np.array([x, y, z])
 
         left_arm.set_target(pose=target_pose)
 
@@ -87,18 +87,18 @@ left_arm.move_to(position=center, speed=0.05)
 ts, target_poses_ci, ee_poses_ci = drive_eight()
 
 # %%
-x_t = [target_pose_sample.translation[0] for target_pose_sample in target_poses_osc]
-y_t = [target_pose_sample.translation[1] for target_pose_sample in target_poses_osc]
-z_t = [target_pose_sample.translation[2] for target_pose_sample in target_poses_osc]
+x_t = [target_pose_sample.position[0] for target_pose_sample in target_poses_osc]
+y_t = [target_pose_sample.position[1] for target_pose_sample in target_poses_osc]
+z_t = [target_pose_sample.position[2] for target_pose_sample in target_poses_osc]
 
 # %%
 # === Normal params ===
-x_ee_osc = [ee_pose.translation[0] for ee_pose in ee_poses_osc]
-y_ee_osc = [ee_pose.translation[1] for ee_pose in ee_poses_osc]
-z_ee_osc = [ee_pose.translation[2] for ee_pose in ee_poses_osc]
-x_ee_ci = [ee_pose.translation[0] for ee_pose in ee_poses_ci]
-y_ee_ci = [ee_pose.translation[1] for ee_pose in ee_poses_ci]
-z_ee_ci = [ee_pose.translation[2] for ee_pose in ee_poses_ci]
+x_ee_osc = [ee_pose.position[0] for ee_pose in ee_poses_osc]
+y_ee_osc = [ee_pose.position[1] for ee_pose in ee_poses_osc]
+z_ee_osc = [ee_pose.position[2] for ee_pose in ee_poses_osc]
+x_ee_ci = [ee_pose.position[0] for ee_pose in ee_poses_ci]
+y_ee_ci = [ee_pose.position[1] for ee_pose in ee_poses_ci]
+z_ee_ci = [ee_pose.position[2] for ee_pose in ee_poses_ci]
 
 
 # fig, ax = plt.subplots(1, 3, figsize=(10, 5))

@@ -50,6 +50,7 @@ class Gripper:
             namespace (str, optional): ROS2 namespace for the gripper.
             gripper_config (GripperConfig, optional): configuration for the gripper class.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
+            index (int, optional): index of the gripper width from the joint state message.
         """
         if not rclpy.ok() and node is None:
             rclpy.init()
@@ -148,7 +149,7 @@ class Gripper:
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
                 raise TimeoutError("Timeout waiting for gripper to be ready.")
-            
+
     def is_open(self, open_threshold: float = 0.1) -> bool:
         """Returns True if the gripper is open."""
         return self.value > open_threshold

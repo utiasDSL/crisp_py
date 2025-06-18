@@ -66,7 +66,7 @@ while t < max_time:
     x = radius * np.cos(2 * np.pi * sin_freq * t) + center[0]
     y = radius * np.sin(2 * np.pi * sin_freq * t) + center[1]
     z = center[2]
-    target_pose.translation = np.array([x, y, z])
+    target_pose.position = np.array([x, y, z])
 
     robot.set_target(pose=target_pose)
     rate.sleep()
