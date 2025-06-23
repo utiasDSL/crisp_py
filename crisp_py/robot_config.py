@@ -35,6 +35,7 @@ class RobotConfig:
 
     default_controller: str = "cartesian_impedance_controller"
     cartesian_impedance_controller_name: str = "cartesian_impedance_controller"
+    joint_trajectory_controller_name: str = 'joint_impedance_controller'
 
     target_pose_topic: str = "target_pose"
     target_joint_topic: str = "target_joint"
