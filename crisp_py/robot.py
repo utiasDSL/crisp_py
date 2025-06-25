@@ -85,6 +85,9 @@ class Robot:
         self.cartesian_controller_parameters_client = ParametersClient(
             self.node, target_node=self.config.cartesian_impedance_controller_name
         )
+        self.joint_controller_parameters_client = ParametersClient(
+            self.node, target_node=self.config.joint_trajectory_controller_name
+        )
 
         self._current_pose = None
         self._target_pose = None
@@ -388,7 +391,7 @@ class Robot:
             speed: The speed of the movement. [m/s]
         """
         desired_pose = self._parse_pose_or_position(position, pose)
-        start_pose = self.target_pose
+        start_pose = self._current_pose
         distance = np.linalg.norm(desired_pose.position - start_pose.position)
         time_to_move = distance / speed
 
