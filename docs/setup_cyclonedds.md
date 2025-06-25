@@ -3,7 +3,7 @@
 1. Make sure that the Cyclone RMW is installed `ros-$ROS_DISTRO-rmw-cyclonedds-cpp`. If you use the `pixi.toml` provided
 in this repo it should be the case. You can check it in the terminal by running  
 ```bash
-ros2 pkg list | grep rmw-cyclonedds-cpp  # this should print the package
+ros2 pkg list | grep rmw_cyclonedds_cpp  # this should print the package
 ```
 
 2. Now you can setup the required environment variables:
