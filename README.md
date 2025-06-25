@@ -2,6 +2,9 @@
 
 <img src="https://github.com/user-attachments/assets/284983f8-2311-4699-86ab-06fc2ea9d5af" alt="CRISP Controllers Logo" width="120" align="right"/>
 
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![MIT Badge](https://img.shields.io/badge/MIT-License-blue?style=flat)
+<a href="https://github.com/utiasDSL/crisp_py/actions/workflows/ruff_ci.yml"><img src="https://github.com/utiasDSL/crisp_py/actions/workflows/ruff_ci.yml/badge.svg"/></a>
 <a href="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml"><img src="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml/badge.svg"/></a>
 
 A python package to interface with robots using [crisp_controllers](https://github.com/utiasDSL/crisp_controllers) or any ROS2 manipulator with a similar interface!
@@ -35,17 +38,17 @@ pixi install
 pixi shell -e humble  # or jazzy
 ```
 
-> [!NOTE]  
+> [!NOTE]
 > This will activate an environment where `ros2` is sourced, so you are able to use the `roscli`, `rqt`, `rviz` and more!
 > The default `ROS_DOMAIN_ID` and `ROS_LOCALHOST_ONLY` are set to 100 and 0 respectively. If you want to override them, add a `scripts/personal_ros_env.sh` script
 > to the project where you export this environment variables, e.g. `export ROS_DOMAIN_ID=42 && export ROS_LOCALHOST_ONLY=1`. The script will be sourced at activation and is ignored by git.
 > More information on this topic can be found [here](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html).
 
-> [!WARNING]  
+> [!WARNING]
 > For **multi-machine setups**, you recommend using a different RMW than FastDDS (for an easier configuration)
 > We recommend using CycloneDDS (or [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling)). It is easy to configure, in particular
-> for multi-machine setups. 
-> Check 💻[Setup CycloneDDS](docs/setup_cyclonedds.md) to see how to setup a different RMW.
+> for multi-machine setups.
+> Check [Setup CycloneDDS](docs/setup_cyclonedds.md) to see how to setup a different RMW.
 
 You are good to go!
 
@@ -193,4 +196,3 @@ from crisp_py.gripper import Gripper, GripperConfig
 gripper_config = GripperConfig()
 gripper = Gripper()
 ```
-

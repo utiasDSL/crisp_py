@@ -27,15 +27,15 @@ for param_name in params_names:
 
 # %%
 first_pose = homing_pose.copy()
-first_pose.translation[0] += 0.1
-first_pose.translation[1] += 0.3
-first_pose.translation[2] -= 0.1
+first_pose.position[0] += 0.1
+first_pose.position[1] += 0.3
+first_pose.position[2] -= 0.1
 transform_rotation = pin.exp3(np.array([0.0, 0.0, +np.pi / 2.0]))
 first_pose.rotation = pin.exp3(pin.log3(first_pose.rotation @ transform_rotation))
 
 # %%
 second_pose = first_pose.copy()
-second_pose.translation[1] -= 0.2
+second_pose.position[1] -= 0.2
 transform_rotation = pin.exp3(np.array([0.0, -np.pi / 2, 0.0]))
 second_pose.rotation = pin.exp3(pin.log3(second_pose.rotation @ transform_rotation))
 
@@ -90,13 +90,13 @@ def drive_trajectory():
 def get_error(target_poses, ee_poses):
     """Get the error between the end effector and the target pose."""
     # We extract some values from the trajetory
-    x_t = np.array([target_pose_sample.translation[0] for target_pose_sample in target_poses])
-    y_t = np.array([target_pose_sample.translation[1] for target_pose_sample in target_poses])
-    z_t = np.array([target_pose_sample.translation[2] for target_pose_sample in target_poses])
+    x_t = np.array([target_pose_sample.position[0] for target_pose_sample in target_poses])
+    y_t = np.array([target_pose_sample.position[1] for target_pose_sample in target_poses])
+    z_t = np.array([target_pose_sample.position[2] for target_pose_sample in target_poses])
     R_t = np.array([target_pose_sample.rotation for target_pose_sample in target_poses])
-    x_ee = np.array([ee_pose_sample.translation[0] for ee_pose_sample in ee_poses])
-    y_ee = np.array([ee_pose_sample.translation[1] for ee_pose_sample in ee_poses])
-    z_ee = np.array([ee_pose_sample.translation[2] for ee_pose_sample in ee_poses])
+    x_ee = np.array([ee_pose_sample.position[0] for ee_pose_sample in ee_poses])
+    y_ee = np.array([ee_pose_sample.position[1] for ee_pose_sample in ee_poses])
+    z_ee = np.array([ee_pose_sample.position[2] for ee_pose_sample in ee_poses])
     R_ee = np.array([ee_pose_sample.rotation for ee_pose_sample in ee_poses])
 
     # And compute the error i.e. differences between the end effector and the target

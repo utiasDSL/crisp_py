@@ -3,23 +3,24 @@
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-import numpy as np
-
 
 @dataclass
 class CameraConfig:
+    """Default camera configuration."""
 
     camera_name: str = "camera"
     camera_frame: str = "camera_link"
 
     resolution: Optional[Tuple[int, int]] = None
 
-    camera_color_image_topic: str = None
+    camera_color_image_topic: Optional[str] = None
 
-    camera_color_info_topic: str = None
+    camera_color_info_topic: Optional[str] = None
+
 
 @dataclass
 class FrankaCameraConfig:
+    """Example camera configuration used with Franka."""
 
     camera_name: str = "franka"
     camera_frame: str = "franka_link"

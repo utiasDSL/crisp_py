@@ -27,6 +27,7 @@ time you open the pixi shell. That script will automatically restart the `ros2 d
     </General>
     <Discovery>
       <ParticipantIndex>auto</ParticipantIndex>
+      <MaxAutoParticipantIndex>100</MaxAutoParticipantIndex>
     </Discovery>
   </Domain>
 </CycloneDDS>

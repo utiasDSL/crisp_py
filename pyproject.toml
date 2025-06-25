@@ -1,5 +1,5 @@
 [project]
-name = "crisp_py"
+name = "crisp-py"
 version = "1.0.12"
 description = "Simple python interface to control robots that use crisp_controllers and other ROS2 components."
 readme = "README.md"
