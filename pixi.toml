@@ -17,13 +17,14 @@ pkg-config = "*"
 make = "*"
 ninja = "*"
 
+
 [target.linux.dependencies]
 libgl-devel = "*"
 
 [environments]
-humble = { features = ["humble", "crisp-py"] }
-jazzy = { features = ["jazzy", "crisp-py"] }
-humble-dev = { features = ["humble", "dev", "crisp-py"] }
+humble = { features = ["humble", "crisp-py", "extra"] }
+jazzy = { features = ["jazzy", "crisp-py", "extra"] }
+humble-dev = { features = ["humble", "dev", "crisp-py", "extra"] }
 dev = { features = ["dev"] }
 humble-clean = { features = ["humble"] }
 
@@ -61,3 +62,6 @@ pre-commit = "*"
 [feature.crisp-py.pypi-dependencies]
 crisp_py = { path = ".", editable = false }
 # crisp_py = "1.0.x"  # if added from pypi
+
+[feature.extra.pypi-dependencies]
+rich = "*"  # For nice prints

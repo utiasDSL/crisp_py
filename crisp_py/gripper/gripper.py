@@ -2,8 +2,10 @@
 
 import threading
 from dataclasses import dataclass
+from pathlib import Path
 
 import rclpy
+import yaml
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -11,8 +13,6 @@ from rclpy.qos import qos_profile_system_default
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from std_srvs.srv import SetBool, Trigger
-
-# from crisp_py.control.controller_switcher import ControllerSwitcherClient
 
 
 @dataclass
@@ -28,6 +28,37 @@ class GripperConfig:
     joint_state_topic: str = "joint_states"
     reboot_service: str = "reboot_gripper"
     enable_torque_service: str = "dynamixel_hardware_interface/set_dxl_torque"
+
+    @classmethod
+    def from_yaml(cls, path: str | Path) -> "GripperConfig":
+        """Create a GripperConfig from a YAML configuration file.
+
+        Args:
+            path (str | Path): Path to the YAML configuration file from the project root or directly full path from the filesystem.
+        """
+        if isinstance(path, str):
+            project_root_path = Path(__file__).parent.parent.parent
+            full_path = project_root_path / path
+        elif isinstance(path, Path):
+            full_path = path
+        else:
+            raise TypeError("Path must be a string or a Path object.")
+
+        with open(full_path, "r") as file:
+            config = yaml.safe_load(file)
+            config = {
+                "min_value": config.get("min_value", 0.0),
+                "max_value": config.get("max_value", 1.0),
+                "command_topic": config.get(
+                    "command_topic", "gripper_position_controller/commands"
+                ),
+                "joint_state_topic": config.get("joint_state_topic", "joint_states"),
+                "reboot_service": config.get("reboot_service", "reboot_gripper"),
+                "enable_torque_service": config.get(
+                    "enable_torque_service", "dynamixel_hardware_interface/set_dxl_torque"
+                ),
+            }
+        return cls(**config)
 
 
 class Gripper:
@@ -128,6 +159,24 @@ class Gripper:
         return self._torque
 
     @property
+    def is_valid(self) -> bool:
+        """Returns true if the joint values received are valid."""
+        if self.value is None:
+            self.node.get_logger().error(
+                f"{self._prefix}Gripper is not initialized. Call wait_until_ready() first."
+            )
+            return False
+        if self.value > 1.05 or self.value < -0.05:
+            self.node.get_logger().error(
+                f"{self._prefix}Gripper value {self._value} is out of bounds [0.0, 1.0]. Please check the gripper configuration, and eventually calibrate the gripper."
+            )
+            self.node.get_logger().error(
+                f"The raw value of the gripper is {self.raw_value}, which is not in the range [{self.min_value}, {self.max_value}]."
+            )
+            return False
+        return True
+
+    @property
     def value(self) -> float | None:
         """Returns the current value of the gripper or None if not initialized."""
         return self._normalize(self._value) if self._value is not None else None
@@ -152,6 +201,8 @@ class Gripper:
 
     def is_open(self, open_threshold: float = 0.1) -> bool:
         """Returns True if the gripper is open."""
+        if self.value is None:
+            raise RuntimeError("Gripper value is not initialized. Call wait_until_ready() first.")
         return self.value > open_threshold
 
     def close(self):

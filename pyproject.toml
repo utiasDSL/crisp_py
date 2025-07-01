@@ -5,10 +5,9 @@ description = "Simple python interface to control robots that use crisp_controll
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "ruff>=0.11.9",
-    "opencv-python>=4.10.0",
+    # "opencv-python>=4.10.0",
     "scipy",
-    "numpy"
+    "numpy<2.3"
 ]
 
 [tool.ruff]
@@ -40,7 +39,7 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-exclude = ["config", "examples", "build", "scripts"]
+exclude = ["config", "examples", "build", "scripts", "media", "docs"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "D", "TCH", "ANN"]
