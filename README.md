@@ -53,5 +53,5 @@ pixi shell -e humble  # or jazzy
 You are good to go!
 
 You can check the examples to get an idea on how to use the code or check some of the guides:
-## [How to crisp :robot:](docs/how_to_crisp.md)
-## [How to grasp :hand:](docs/how_to_grasp.md)
+### [How to crisp :robot:](docs/how_to_crisp.md)
+### [How to grip :hand:](docs/how_to_grip.md)
