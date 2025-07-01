@@ -1,5 +1,4 @@
 """Simple example to control the gripper."""
-
 # %%
 from crisp_py.gripper.gripper import Gripper, GripperConfig
 from datetime import datetime
@@ -8,8 +7,11 @@ import yaml
 
 # %%
 
-gripper_config = GripperConfig(0.0, 1.0, joint_state_topic="trigger_state_broadcaster/joint_states")
-gripper = Gripper(gripper_config=gripper_config, namespace="gripper")
+# gripper_config = GripperConfig(0.0, 1.0, joint_state_topic="trigger_state_broadcaster/joint_states")
+gripper_config = GripperConfig(0.0, 1.0, joint_state_topic="gripper_state_broadcaster/joint_states")
+# gripper = Gripper(gripper_config=gripper_config, namespace="gripper", index=1)
+gripper = Gripper(gripper_config=gripper_config, namespace="gripper", index=0)
+
 gripper.wait_until_ready()
 
 # %%
@@ -34,6 +36,8 @@ print(f"Measured min_value is {min_value} and max_value is {max_value}")
 # %% Saving to a valid config file
 this_file_path = Path(__name__).parent.parent
 config_file = f"gripper_config_{datetime.now().strftime('%Y-%m-%d-%H-%M')}.yaml"
+config_file = "gripper_with_trigger.yaml"
+config_file = "trigger.yaml"
 
 print(f"Saving config file to: {this_file_path / 'config' / config_file}")
 
@@ -61,22 +65,21 @@ with open(project_root_path / "config" / "trigger.yaml", "r") as file:
     )
 
 trigger_config.joint_state_topic = "trigger_state_broadcaster/joint_states"
-trigger_config.command_topic = "trigger_position_controller/commands"
+trigger_config.command_topic = "trigger_effort_controller/commands"
 
 gripper = Gripper(gripper_config=gripper_config, namespace="gripper")
+
 gripper.wait_until_ready()
 
 trigger = Gripper(node=gripper.node, gripper_config=trigger_config, namespace="gripper", index=1)
 trigger.wait_until_ready()
 
-trigger.value
-
-# trigger.enable_torque()
+trigger.enable_torque()
 # trigger.reboot()
 
-trigger.set_target(0.0)
+trigger.set_target(50.0, send_raw_target=True)
 
 rate = gripper.node.create_rate(50)
 while True:
-    gripper.set_target(max(min(1.0, 1.0 - trigger.value), 0.0))
+    gripper.set_target(max(min(1.0, trigger.value), 0.0))
     rate.sleep()

@@ -31,10 +31,10 @@ max_time = 8.0
 # %%
 left_arm.controller_switcher_client.switch_controller("cartesian_impedance_controller")
 left_arm.cartesian_controller_parameters_client.load_param_config(
-    file_path="config/control/gravity_compensation.yaml"
+    # file_path="config/control/gravity_compensation.yaml"
     # file_path="config/control/default_operational_space_controller.yaml"
     # file_path="config/control/clipped_cartesian_impedance.yaml"
-    # file_path="config/control/default_cartesian_impedance.yaml"
+    file_path="config/control/default_cartesian_impedance.yaml"
 )
 
 # %%
