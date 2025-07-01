@@ -36,6 +36,20 @@ class Pose:
         """Return a string representation of a Pose."""
         return f"Pos: {np.array2string(self.position, suppress_small=True, precision=2, floatmode='fixed')},\n Orientation: {np.array2string(self.orientation.as_matrix(), suppress_small=True, precision=2, floatmode='fixed')}"
 
+    def __sub__(self, other: "Pose") -> "Pose":
+        """Subtract another pose from this pose, i.e. compute the relative pose."""
+        return Pose(
+            self.position - other.position,
+            self.orientation * other.orientation.inv(),
+        )
+
+    def __add__(self, other: "Pose") -> "Pose":
+        """Add another pose to this pose, i.e. add a relative pose."""
+        return Pose(
+            self.position + other.position,
+            other.orientation * self.orientation,
+        )
+
 
 class Robot:
     """A high-level interface for controlling robots using ROS2.
