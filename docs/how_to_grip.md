@@ -6,8 +6,8 @@ To calibrate a gripper, use the script:
 ```bash
 python scripts/gripper_manual_calibration.py --help
 ```
-The script will guide you in calibration procedure.
-[../media/gripper_calibration_output.png](../media/gripper_calibration_output.png)
+The script will guide you in calibration procedure:
+![../media/gripper_calibration_output.png](../media/gripper_calibration_output.png)
 
 After this, control a gripper as follows:
 ```python
