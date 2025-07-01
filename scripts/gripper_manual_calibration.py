@@ -76,7 +76,11 @@ config_file = args.config_file
 print(f":right_arrow: Saving config file to: {this_file_path / 'config' / config_file}")
 
 with open(this_file_path / "config" / config_file, "w") as file:
-    gripper_config = {"min_value": min_value, "max_value": max_value}
+    gripper_config = {
+        "min_value": min_value,
+        "max_value": max_value,
+        "joint_state_topic": args.joint_state_topic,
+    }
     yaml.dump(gripper_config, file)
 
 print(

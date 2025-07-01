@@ -1,2 +1,3 @@
-max_value: 0.966880004640938
-min_value: 1.8401414691499756
+joint_state_topic: gripper_state_broadcaster/joint_states
+max_value: 1.10193625925745
+min_value: 1.8907875646311676
