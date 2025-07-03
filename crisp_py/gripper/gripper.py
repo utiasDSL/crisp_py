@@ -28,6 +28,7 @@ class GripperConfig:
     joint_state_topic: str = "joint_states"
     reboot_service: str = "reboot_gripper"
     enable_torque_service: str = "dynamixel_hardware_interface/set_dxl_torque"
+    index: int = 0
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "GripperConfig":
@@ -57,6 +58,7 @@ class GripperConfig:
                 "enable_torque_service": config.get(
                     "enable_torque_service", "dynamixel_hardware_interface/set_dxl_torque"
                 ),
+                "index": config.get("index", 0),
             }
         return cls(**config)
 
@@ -72,7 +74,6 @@ class Gripper:
         namespace: str = "",
         gripper_config: GripperConfig | None = None,
         spin_node: bool = True,
-        index: int = 0,
     ):
         """Initialize the gripper client.
 
@@ -81,7 +82,6 @@ class Gripper:
             namespace (str, optional): ROS2 namespace for the gripper.
             gripper_config (GripperConfig, optional): configuration for the gripper class.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
-            index (int, optional): index of the gripper width from the joint state message.
         """
         if not rclpy.ok() and node is None:
             rclpy.init()
@@ -100,7 +100,7 @@ class Gripper:
         self._prefix = f"{namespace}_" if namespace else ""
         self._value = None
         self._torque = None
-        self._index = index
+        self._index = gripper_config.index
 
         # self.controller_switcher_client = ControllerSwitcherClient(self.node)
         # self.gripper_parameter_client = ParametersClient(
