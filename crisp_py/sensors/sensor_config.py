@@ -1,3 +1,5 @@
+"""Sensor configuration classes for sensor objects."""
+
 from dataclasses import dataclass
 
 
