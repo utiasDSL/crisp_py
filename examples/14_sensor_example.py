@@ -5,7 +5,8 @@ from crisp_py.sensors.sensor_config import AnySkinSensorConfig
 import matplotlib.pyplot as plt
 import time
 
-sensor = Sensor(sensor_config=AnySkinSensorConfig())
+sensor = Sensor(namespace="anyskin", sensor_config=AnySkinSensorConfig())
+sensor.wait_until_ready()
 
 #%%
 

@@ -14,3 +14,4 @@ dist
 *.egg-info
 build
 scripts/personal_ros_env.sh
+crisp_py/sensors/__pycache__
