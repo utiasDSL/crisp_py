@@ -28,7 +28,9 @@ while time.time() - start_time < duration:
 
 # Smooth the data using a simple moving average
 N = 10
-data = [sum(data[max(0, i-N):i+1]) / min(i+1, N+1) for i in range(len(data))]
+import numpy as np
+kernel = np.ones(N) / N
+data = np.convolve(data, kernel, mode='valid')
 
 plt.plot(t, data)
 plt.xlabel('Time (s)')
