@@ -4,9 +4,9 @@ import threading
 
 import numpy as np
 import rclpy
-from rclpy.node import Node
-from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
+from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from std_msgs.msg import Float32MultiArray
 
@@ -16,7 +16,7 @@ from crisp_py.sensors.sensor_config import SensorConfig
 class Sensor:
     """Interface for sensor wrapper."""
 
-    THREADS_REQUIRED = 2
+    THREADS_REQUIRED = 1
 
     def __init__(
         self,
@@ -49,6 +49,7 @@ class Sensor:
         )
 
         self._value: np.ndarray | None = None
+        self._baseline: np.ndarray | None = None
 
         self.node.create_subscription(
             Float32MultiArray,
@@ -63,18 +64,45 @@ class Sensor:
 
     @property
     def value(self) -> np.ndarray:
-        """Get the latest sensor value."""
-        if self._value is None:
+        """Get the latest calibrated sensor value."""
+        if self._value is None or self._baseline is None:
             raise ValueError("Sensor value is not available yet.")
-        return self._value
+        return self._value - self._baseline
 
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
-        executor = MultiThreadedExecutor(num_threads=self.THREADS_REQUIRED)
+        executor = (
+            MultiThreadedExecutor(num_threads=self.THREADS_REQUIRED)
+            if self.THREADS_REQUIRED > 1
+            else SingleThreadedExecutor()
+        )
         executor.add_node(self.node)
         while rclpy.ok():
             executor.spin_once(timeout_sec=0.1)
+
+    def calibrate_to_zero(self, num_samples: int = 10, sample_rate: float = 10.0):
+        """Calibrate the sensor to zero.
+
+        This function computes the average of a number of samples to compute the baseline.
+        The value is then normalized by this average with the formula:
+
+            calibrated_value = value - average(samples)
+
+        Args:
+            num_samples (int): Number of samples to take for calibration.
+            sample_rate (float): Rate at which to take samples in Hz.
+        """
+        if self._value is None:
+            raise ValueError("Sensor value is not available yet.")
+        samples = np.zeros((num_samples, len(self._value)), dtype=np.float32)
+        rate = self.node.create_rate(sample_rate)  # 10 Hz
+
+        for sample_num in range(num_samples):
+            samples[sample_num] = self.value
+            rate.sleep()
+
+        self._baseline = np.mean(samples, axis=0)
 
     def is_ready(self) -> bool:
         """Check if the sensor has a value."""
@@ -92,3 +120,5 @@ class Sensor:
     def _callback_sensor_data(self, msg: Float32MultiArray):
         """Callback for sensor data."""
         self._value = np.array(msg.data[:], dtype=np.float32)
+        if self._baseline is None:
+            self._baseline = np.zeros_like(self._value)

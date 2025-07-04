@@ -10,7 +10,7 @@ class SensorConfig:
 
 
 @dataclass
-class AnySkinSensor(SensorConfig):
+class AnySkinSensorConfig(SensorConfig):
     """Configuration for the AnySkin sensor broadcasted by a node using the anyskin_ros2 wrapper: https://github.com/danielsanjosepro/anyskin_ros2."""
 
     name: str = "anyskin_sensor"
