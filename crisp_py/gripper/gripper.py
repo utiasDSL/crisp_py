@@ -102,11 +102,6 @@ class Gripper:
         self._torque = None
         self._index = gripper_config.index
 
-        # self.controller_switcher_client = ControllerSwitcherClient(self.node)
-        # self.gripper_parameter_client = ParametersClient(
-        #     self.node, target_node=todo
-        # )
-
         self._command_publisher = self.node.create_publisher(
             Float64MultiArray,
             self.config.command_topic,
@@ -120,12 +115,6 @@ class Gripper:
             qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
         )
-
-        # self.node.create_timer(
-        #     1.0 / self.config.publish_frequency,
-        #     self._callback_publish_target,
-        #     ReentrantCallbackGroup(),
-        # )
 
         self.reboot_client = self.node.create_client(Trigger, self.config.reboot_service)
         self.enable_torque_client = self.node.create_client(
