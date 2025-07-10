@@ -75,6 +75,7 @@ class Robot:
         namespace: str = "",
         spin_node: bool = True,
         robot_config: RobotConfig | None = None,
+        name: str = "robot_client",
     ) -> None:
         """Initialize the robot interface.
 
@@ -83,11 +84,12 @@ class Robot:
             namespace (str, optional): ROS2 namespace for the robot.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
             robot_config (RobotConfig, optional): Robot configuration parameters.
+            name (str, optional): Name of the robot client node.
         """
         if node is None:
             if not rclpy.ok():
                 rclpy.init()
-            self.node = rclpy.create_node("robot_client", namespace=namespace)
+            self.node = rclpy.create_node(name, namespace=namespace)
         else:
             self.node = node
         self.config = robot_config if robot_config else FrankaConfig()
@@ -292,7 +294,7 @@ class Robot:
         This callback is triggered periodically to publish the target pose
         to the ROS topic for the robot controller.
         """
-        if self._target_pose is None:
+        if self._target_pose is None or not rclpy.ok():
             return
         self._target_pose_publisher.publish(self._pose_to_pose_msg(self._target_pose))
 
@@ -302,7 +304,7 @@ class Robot:
         This callback is triggered periodically to publish the target joint values
         to the ROS topic for the robot controller.
         """
-        if self._target_joint is None:
+        if self._target_joint is None or not rclpy.ok():
             return
         self._target_joint_publisher.publish(self._joint_to_joint_msg(self._target_joint))
 
@@ -312,7 +314,7 @@ class Robot:
         This callback is triggered periodically to publish the target wrench (force/torque)
         to the ROS topic for the robot controller.
         """
-        if self._target_wrench is None:
+        if self._target_wrench is None or not rclpy.ok():
             return
         self._target_wrench_publisher.publish(self._wrench_to_wrench_msg(self._target_wrench))
 
@@ -504,5 +506,5 @@ class Robot:
 
     def shutdown(self):
         """Shutdown the node."""
-        self.node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
