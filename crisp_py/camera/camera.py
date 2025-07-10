@@ -10,8 +10,8 @@ import rclpy.executors
 from cv_bridge import CvBridge
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
-from rclpy.qos import qos_profile_system_default
-from sensor_msgs.msg import CameraInfo, Image
+from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
+from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 
 from crisp_py.camera.camera_config import CameraConfig
 
@@ -54,11 +54,18 @@ class Camera:
 
         self.cv_bridge = CvBridge()
 
+        # self.node.create_subscription(
+        #     Image,
+        #     self.config.camera_color_image_topic,
+        #     self._callback_current_color_image,
+        #     qos_profile_system_default,
+        #     callback_group=ReentrantCallbackGroup(),
+        # )
         self.node.create_subscription(
-            Image,
-            self.config.camera_color_image_topic,
+            CompressedImage,
+            f"{self.config.camera_color_image_topic}/compressed",
             self._callback_current_color_image,
-            qos_profile_system_default,
+            qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
         self.node.create_subscription(
@@ -79,6 +86,12 @@ class Camera:
         executor.add_node(self.node)
         while rclpy.ok():
             executor.spin_once(timeout_sec=0.1)
+
+    def _uncompress(self, compressed_image: CompressedImage) -> Image:
+        """Uncompress a CompressedImage message to an Image message."""
+        return np.asarray(
+            self.cv_bridge.compressed_imgmsg_to_cv2(compressed_image, desired_encoding="rgb8")
+        )
 
     @property
     def current_image(self) -> np.ndarray:
@@ -111,11 +124,12 @@ class Camera:
 
     def _callback_current_color_image(self, msg: Image):
         """Receive and store the current image."""
-        raw_image = self._image_to_array(msg)
-        if self.config.resolution is not None:
-            raw_image = self._resize_with_aspect_ratio(raw_image, self.config.resolution)
-
-        self._current_image = raw_image
+        # raw_image = self._image_to_array(msg)
+        # if self.config.resolution is not None:
+        #     raw_image = self._resize_with_aspect_ratio(raw_image, self.config.resolution)
+        self._current_image = self._resize_with_aspect_ratio(
+            self._uncompress(msg), target_res=self.config.resolution
+        )
 
     def _callback_current_color_info(self, msg: CameraInfo):
         """Receive and store the current camera info."""
