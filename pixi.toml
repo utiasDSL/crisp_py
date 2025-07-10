@@ -65,3 +65,4 @@ crisp_py = { path = ".", editable = false }
 
 [feature.extra.pypi-dependencies]
 rich = "*"  # For nice prints
+matplotlib = "*"  # to do some plots

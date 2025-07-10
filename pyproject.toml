@@ -5,7 +5,6 @@ description = "Simple python interface to control robots that use crisp_controll
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    # "opencv-python>=4.10.0",
     "scipy",
     "numpy<2.3"
 ]

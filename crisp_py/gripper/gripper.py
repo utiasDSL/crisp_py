@@ -260,8 +260,8 @@ class Gripper:
 
     def shutdown(self):
         """Shutdown the node and allow the robot to be instantiated again."""
-        if self.node:
-            self.node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
     def reboot(self, block: bool = False):
         """Reboot the gripper if the reboot service is available.
