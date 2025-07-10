@@ -60,8 +60,7 @@ class ControllerSwitcherClient:
     def get_controller_list(self) -> list:
         """Get a list of all controllers using a service."""
         if not self.list_client.wait_for_service(timeout_sec=5.0):
-            self.node.get_logger().error("Timed out waiting for controller list service.")
-            return []
+            raise RuntimeError("Timed out waiting for controller list service.")
         else:
             self.node.get_logger().debug("Got controller list service.")
 
@@ -143,8 +142,8 @@ class ControllerSwitcherClient:
         ]
 
         if controller_name in active_controllers:
-            self.node.get_logger().info(f"Controller {controller_name} is already active.")
-            return
+            self.node.get_logger().debug(f"Controller {controller_name} is already active.")
+            return True
 
         if controller_name not in inactive_controllers:
             ok = self.load_controller(controller_name)
