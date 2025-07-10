@@ -35,7 +35,7 @@ class RobotConfig:
 
     default_controller: str = "cartesian_impedance_controller"
     cartesian_impedance_controller_name: str = "cartesian_impedance_controller"
-    joint_trajectory_controller_name: str = 'joint_impedance_controller'
+    joint_trajectory_controller_name: str = "joint_impedance_controller"
 
     target_pose_topic: str = "target_pose"
     target_joint_topic: str = "target_joint"
@@ -145,3 +145,35 @@ class IiwaConfig(RobotConfig):
     )
     base_frame: str = "iiwa_base"
     target_frame: str = "tool0"
+
+
+@dataclass
+class SO101Config(RobotConfig):
+    """Configuration specific to So101 robots.
+
+    Provides default values for frame names, joint names, and home configuration
+    specifically for so101 robots.
+    """
+
+    joint_names: list = field(
+        default_factory=lambda: [
+            "Shoulder_Rotation",
+            "Shoulder_Pitch",
+            "Elbow",
+            "Wrist_Pitch",
+            "Wrist_Roll",
+            "Gripper",
+        ]
+    )
+    home_config: list = field(
+        default_factory=lambda: [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ]
+    )
+    base_frame: str = "Base"
+    target_frame: str = "Fixed_Gripper"

@@ -11,7 +11,7 @@ from geometry_msgs.msg import PoseStamped, WrenchStamped
 from numpy.typing import NDArray
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
-from rclpy.qos import qos_profile_system_default
+from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from scipy.spatial.transform import Rotation, Slerp
 from sensor_msgs.msg import JointState
 
@@ -122,14 +122,14 @@ class Robot:
             PoseStamped,
             self.config.current_pose_topic,
             self._callback_current_pose,
-            qos_profile_system_default,
+            qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
         self.node.create_subscription(
             JointState,
             self.config.current_joint_topic,
             self._callback_current_joint,
-            qos_profile_system_default,
+            qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
 
@@ -148,6 +148,7 @@ class Robot:
             self._callback_publish_target_wrench,
             ReentrantCallbackGroup(),
         )
+
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
 
