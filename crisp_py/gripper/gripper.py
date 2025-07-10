@@ -4,6 +4,7 @@ import threading
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 import rclpy
 import yaml
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -29,6 +30,7 @@ class GripperConfig:
     reboot_service: str = "reboot_gripper"
     enable_torque_service: str = "dynamixel_hardware_interface/set_dxl_torque"
     index: int = 0
+    publish_frequency: float = 30.0
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "GripperConfig":
@@ -100,12 +102,8 @@ class Gripper:
         self._prefix = f"{namespace}_" if namespace else ""
         self._value = None
         self._torque = None
-        self._index = gripper_config.index
-
-        # self.controller_switcher_client = ControllerSwitcherClient(self.node)
-        # self.gripper_parameter_client = ParametersClient(
-        #     self.node, target_node=todo
-        # )
+        self._target = None
+        self._index = self.config.index
 
         self._command_publisher = self.node.create_publisher(
             Float64MultiArray,
@@ -121,11 +119,11 @@ class Gripper:
             callback_group=ReentrantCallbackGroup(),
         )
 
-        # self.node.create_timer(
-        #     1.0 / self.config.publish_frequency,
-        #     self._callback_publish_target,
-        #     ReentrantCallbackGroup(),
-        # )
+        self.node.create_timer(
+            1.0 / self.config.publish_frequency,
+            self._callback_publish_target,
+            ReentrantCallbackGroup(),
+        )
 
         self.reboot_client = self.node.create_client(Trigger, self.config.reboot_service)
         self.enable_torque_client = self.node.create_client(
@@ -161,12 +159,12 @@ class Gripper:
     @property
     def is_valid(self) -> bool:
         """Returns true if the joint values received are valid."""
-        if self.value is None:
+        if self._value is None:
             self.node.get_logger().error(
                 f"{self._prefix}Gripper is not initialized. Call wait_until_ready() first."
             )
             return False
-        if self.value > 1.05 or self.value < -0.05:
+        if self._normalize(self._value) > 1.05 or self._normalize(self.value) < -0.05:
             self.node.get_logger().error(
                 f"{self._prefix}Gripper value {self._value} is out of bounds [0.0, 1.0]. Please check the gripper configuration, and eventually calibrate the gripper."
             )
@@ -179,7 +177,11 @@ class Gripper:
     @property
     def value(self) -> float | None:
         """Returns the current value of the gripper or None if not initialized."""
-        return self._normalize(self._value) if self._value is not None else None
+        if self._value is None:
+            raise RuntimeError(
+                f"{self._prefix}Gripper is not initialized. Call wait_until_ready() first."
+            )
+        return np.clip(self._normalize(self._value), 0.0, 1.0)
 
     @property
     def raw_value(self) -> float | None:
@@ -188,7 +190,7 @@ class Gripper:
 
     def is_ready(self) -> bool:
         """Returns True if the gripper is fully ready to operate."""
-        return self.value is not None
+        return self._value is not None
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
         """Wait until the gripper is available."""
@@ -213,6 +215,14 @@ class Gripper:
         """Open the gripper."""
         self.set_target(target=1.0)
 
+    def _callback_publish_target(self):
+        """Publish the target command."""
+        if self._target is None:
+            return
+        msg = Float64MultiArray()
+        msg.data = self._target
+        self._command_publisher.publish(msg)
+
     def _callback_joint_state(self, msg: JointState):
         """Save the latest joint state values.
 
@@ -232,15 +242,13 @@ class Gripper:
             epsilon (float): allowed zone around the target limits that are allowed to be set.
             send_raw_target(bool): if true, simply publish the target that has been set as an argument without parsing.
         """
-        msg = Float64MultiArray()
         if not send_raw_target:
             assert 0.0 - epsilon <= target <= 1.0 + epsilon, (
                 f"The target should be normalized between 0 and 1, but is currently {target}"
             )
-            msg.data = [self._unnormalize(target)]
+            self._target = [self._unnormalize(target)]
         else:
-            msg.data = [target]
-        self._command_publisher.publish(msg)
+            self._target = [target]
 
     def _normalize(self, unormalized_value: float) -> float:
         """Normalize a raw value between 0.0 and 1.0."""
