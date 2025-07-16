@@ -45,4 +45,3 @@ class FreshnessChecker:
                 f"exceeds max delay of {self.max_delay:.2f}s",
                 throttle_duration_sec=self.throttle_duration,
             )
-

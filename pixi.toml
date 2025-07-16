@@ -17,15 +17,16 @@ pkg-config = "*"
 make = "*"
 ninja = "*"
 
+[tasks]
+test = "pytest"
+
 
 [target.linux.dependencies]
 libgl-devel = "*"
 
 [environments]
-humble = { features = ["humble", "crisp-py", "extra"] }
-jazzy = { features = ["jazzy", "crisp-py", "extra"] }
-humble-dev = { features = ["humble", "dev", "crisp-py", "extra"] }
-dev = { features = ["dev"] }
+humble = { features = ["humble", "crisp-py", "extra", "dev"] }
+jazzy = { features = ["jazzy", "crisp-py", "extra", "dev"] }
 humble-clean = { features = ["humble"] }
 
 # humble

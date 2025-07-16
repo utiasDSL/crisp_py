@@ -20,4 +20,5 @@ jobs:
         with:
           pixi-version: v0.46.0
           cache: true
-
+      - run: pixi run -e humble test
+      - run: pixi run -e jazzy test

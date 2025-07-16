@@ -52,9 +52,7 @@ class Sensor:
         self._value: np.ndarray | None = None
         self._baseline: np.ndarray | None = None
         self._data_freshness_checker = FreshnessChecker(
-            self.node, 
-            f"Sensor '{self.config.name}'", 
-            self.config.max_data_delay
+            self.node, f"Sensor '{self.config.name}'", self.config.max_data_delay
         )
 
         self.node.create_subscription(
@@ -130,4 +128,3 @@ class Sensor:
         if self._baseline is None:
             self._baseline = np.zeros_like(self._value)
         self._data_freshness_checker.update_timestamp()
-
