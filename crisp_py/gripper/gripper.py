@@ -263,7 +263,7 @@ class Gripper:
         assert 0.0 - epsilon <= target <= 1.0 + epsilon, (
             f"The target should be normalized between 0 and 1, but is currently {target}"
         )
-        self._target = self.unnormalize(target)
+        self._target = self._unnormalize(target)
 
     def _normalize(self, unormalized_value: float) -> float:
         """Normalize a raw value between 0.0 and 1.0."""
