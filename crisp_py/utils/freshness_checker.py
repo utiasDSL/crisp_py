@@ -39,7 +39,7 @@ class FreshnessChecker:
         data_age = current_time - self._last_timestamp
 
         if data_age > self.max_delay:
-            self.node.get_logger().warn(
+            self.node.get_logger().warning(
                 f"{self.data_name} data is stale. "
                 f"Last data received {data_age:.2f}s ago, "
                 f"exceeds max delay of {self.max_delay:.2f}s",
