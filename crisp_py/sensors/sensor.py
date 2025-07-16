@@ -11,6 +11,7 @@ from rclpy.qos import qos_profile_sensor_data
 from std_msgs.msg import Float32MultiArray
 
 from crisp_py.sensors.sensor_config import SensorConfig
+from crisp_py.utils import FreshnessChecker
 
 
 class Sensor:
@@ -50,6 +51,11 @@ class Sensor:
 
         self._value: np.ndarray | None = None
         self._baseline: np.ndarray | None = None
+        self._data_freshness_checker = FreshnessChecker(
+            self.node, 
+            f"Sensor '{self.config.name}'", 
+            self.config.max_data_delay
+        )
 
         self.node.create_subscription(
             Float32MultiArray,
@@ -67,6 +73,7 @@ class Sensor:
         """Get the latest calibrated sensor value."""
         if self._value is None or self._baseline is None:
             raise ValueError("Sensor value is not available yet.")
+        self._data_freshness_checker.check_freshness()
         return self._value - self._baseline
 
     def _spin_node(self):
@@ -122,3 +129,5 @@ class Sensor:
         self._value = np.array(msg.data[:], dtype=np.float32)
         if self._baseline is None:
             self._baseline = np.zeros_like(self._value)
+        self._data_freshness_checker.update_timestamp()
+
