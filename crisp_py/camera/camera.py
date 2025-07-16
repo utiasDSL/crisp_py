@@ -1,6 +1,7 @@
 """Class defining a camera object."""
 
 import threading
+import time
 from typing import Optional, Tuple
 
 import cv2
@@ -51,6 +52,7 @@ class Camera:
             self.node = node
 
         self._current_image: Optional[np.ndarray] = None
+        self._last_image_timestamp: Optional[float] = None
 
         self.cv_bridge = CvBridge()
 
@@ -100,6 +102,7 @@ class Camera:
             raise RuntimeError(
                 f"We have not received any images of camera {self.config.camera_name}. Call wait_until_ready to be sure that the camera is available!."
             )
+        self._check_image_freshness()
         return self._current_image
 
     @property
@@ -130,6 +133,8 @@ class Camera:
         self._current_image = self._resize_with_aspect_ratio(
             self._uncompress(msg), target_res=self.config.resolution
         )
+        self._last_image_timestamp = time.time()
+        self._check_image_freshness()
 
     def _callback_current_color_info(self, msg: CameraInfo):
         """Receive and store the current camera info."""
@@ -156,3 +161,19 @@ class Camera:
         cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
 
         return cropped_image
+
+    def _check_image_freshness(self):
+        """Check if the last received image is within the acceptable delay threshold."""
+        if self._last_image_timestamp is None:
+            return
+        
+        current_time = time.time()
+        image_age = current_time - self._last_image_timestamp
+        
+        if image_age > self.config.max_image_delay:
+            self.node.get_logger().warn(
+                f"Camera '{self.config.camera_name}' image is stale. "
+                f"Last image received {image_age:.2f}s ago, "
+                f"exceeds max delay of {self.config.max_image_delay:.2f}s",
+                throttle_duration_sec=5.0
+            )
