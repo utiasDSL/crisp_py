@@ -53,7 +53,9 @@ class Camera:
 
         self._current_image: Optional[np.ndarray] = None
         self._image_freshness_checker = FreshnessChecker(
-            self.node, f"Camera '{self.config.camera_name}' image", self.config.max_image_delay
+            self.node,
+            f"Camera '{self.config.camera_name}' image",
+            self.config.max_image_delay,
         )
 
         self.cv_bridge = CvBridge()
