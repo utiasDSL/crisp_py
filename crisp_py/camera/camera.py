@@ -14,6 +14,7 @@ from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 
 from crisp_py.camera.camera_config import CameraConfig
+from crisp_py.utils import FreshnessChecker
 
 
 class Camera:
@@ -51,6 +52,11 @@ class Camera:
             self.node = node
 
         self._current_image: Optional[np.ndarray] = None
+        self._image_freshness_checker = FreshnessChecker(
+            self.node,
+            f"Camera '{self.config.camera_name}' image",
+            self.config.max_image_delay,
+        )
 
         self.cv_bridge = CvBridge()
 
@@ -100,6 +106,7 @@ class Camera:
             raise RuntimeError(
                 f"We have not received any images of camera {self.config.camera_name}. Call wait_until_ready to be sure that the camera is available!."
             )
+        self._image_freshness_checker.check_freshness()
         return self._current_image
 
     @property
@@ -130,6 +137,7 @@ class Camera:
         self._current_image = self._resize_with_aspect_ratio(
             self._uncompress(msg), target_res=self.config.resolution
         )
+        self._image_freshness_checker.update_timestamp()
 
     def _callback_current_color_info(self, msg: CameraInfo):
         """Receive and store the current camera info."""

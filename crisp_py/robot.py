@@ -19,6 +19,7 @@ from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
+from crisp_py.utils import FreshnessChecker
 
 
 @dataclass
@@ -110,6 +111,12 @@ class Robot:
         self._current_joint = None
         self._target_joint = None
         self._target_wrench = None
+        self._pose_freshness_checker = FreshnessChecker(
+            self.node, "Robot pose", self.config.max_pose_delay
+        )
+        self._joint_freshness_checker = FreshnessChecker(
+            self.node, "Robot joint state", self.config.max_joint_delay
+        )
 
         self._target_pose_publisher = self.node.create_publisher(
             PoseStamped, self.config.target_pose_topic, qos_profile_system_default
@@ -182,6 +189,7 @@ class Robot:
             raise RuntimeError(
                 "The robot has not received any poses yet. Run wait_until_ready() before running anything else."
             )
+        self._pose_freshness_checker.check_freshness()
         return self._current_pose.copy()
 
     @property
@@ -208,6 +216,7 @@ class Robot:
             raise RuntimeError(
                 "The robot has not received any joints yet. Run wait_until_ready() before running anything else."
             )
+        self._joint_freshness_checker.check_freshness()
         return self._current_joint.copy()
 
     @property
@@ -373,6 +382,7 @@ class Robot:
         self._current_pose = self._pose_msg_to_pose(msg)
         if self._target_pose is None:
             self._target_pose = self._current_pose.copy()
+        self._pose_freshness_checker.update_timestamp()
 
     def _callback_current_joint(self, msg: JointState):
         """Update the current joint state from a ROS message.
@@ -396,6 +406,7 @@ class Robot:
 
         if self._target_joint is None:
             self._target_joint = self._current_joint.copy()
+        self._joint_freshness_checker.update_timestamp()
 
     def move_to(
         self, position: List | NDArray | None = None, pose: Pose | None = None, speed: float = 0.05
@@ -466,6 +477,7 @@ class Robot:
         """Convert a pose to a pose message."""
         msg = PoseStamped()
         msg.header.frame_id = self.config.base_frame
+        msg.header.stamp = self.node.get_clock().now().to_msg()
         msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = pose.position
         q = pose.orientation.as_quat()
         (

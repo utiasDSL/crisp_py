@@ -44,6 +44,9 @@ class RobotConfig:
 
     publish_frequency: float = 50.0
     time_to_home: float = 5.0
+    
+    max_pose_delay: float = 1.0
+    max_joint_delay: float = 1.0
 
 
 @dataclass

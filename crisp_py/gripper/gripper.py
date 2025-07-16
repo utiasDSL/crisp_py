@@ -15,6 +15,8 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from std_srvs.srv import SetBool, Trigger
 
+from crisp_py.utils import FreshnessChecker
+
 
 @dataclass
 class GripperConfig:
@@ -31,6 +33,8 @@ class GripperConfig:
     enable_torque_service: str = "dynamixel_hardware_interface/set_dxl_torque"
     index: int = 0
     publish_frequency: float = 30.0
+    max_joint_delay: float = 1.0
+    max_delta: float = 0.1
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "GripperConfig":
@@ -61,6 +65,9 @@ class GripperConfig:
                     "enable_torque_service", "dynamixel_hardware_interface/set_dxl_torque"
                 ),
                 "index": config.get("index", 0),
+                "publish_frequency": config.get("publish_frequency", 30.0),
+                "max_delta": config.get("max_delta", 0.1),
+                "max_joint_delay": config.get("max_joint_delay", 1.0),
             }
         return cls(**config)
 
@@ -104,6 +111,9 @@ class Gripper:
         self._torque = None
         self._target = None
         self._index = self.config.index
+        self._joint_freshness_checker = FreshnessChecker(
+            self.node, "Gripper joint state", self.config.max_joint_delay
+        )
 
         self._command_publisher = self.node.create_publisher(
             Float64MultiArray,
@@ -181,6 +191,7 @@ class Gripper:
             raise RuntimeError(
                 f"{self._prefix}Gripper is not initialized. Call wait_until_ready() first."
             )
+        self._joint_freshness_checker.check_freshness()
         return np.clip(self._normalize(self._value), 0.0, 1.0)
 
     @property
@@ -220,7 +231,14 @@ class Gripper:
         if self._target is None:
             return
         msg = Float64MultiArray()
-        msg.data = self._target
+        msg.data = [
+            self._unnormalize(
+                self.value
+                + np.clip(
+                    self._normalize(self._target), -self.config.max_delta, self.config.max_delta
+                )
+            )
+        ]
         self._command_publisher.publish(msg)
 
     def _callback_joint_state(self, msg: JointState):
@@ -233,22 +251,19 @@ class Gripper:
         """
         self._value = msg.position[self._index]
         self._torque = msg.effort[self._index]
+        self._joint_freshness_checker.update_timestamp()
 
-    def set_target(self, target: float, *, epsilon: float = 0.1, send_raw_target: bool = False):
+    def set_target(self, target: float, *, epsilon: float = 0.1):
         """Grasp with the gripper by setting a target. This can be a position, velocity or effort depending on the active controller.
 
         Args:
             target (float): The target value for the gripper between 0 and 1 from closed to open respectively.
             epsilon (float): allowed zone around the target limits that are allowed to be set.
-            send_raw_target(bool): if true, simply publish the target that has been set as an argument without parsing.
         """
-        if not send_raw_target:
-            assert 0.0 - epsilon <= target <= 1.0 + epsilon, (
-                f"The target should be normalized between 0 and 1, but is currently {target}"
-            )
-            self._target = [self._unnormalize(target)]
-        else:
-            self._target = [target]
+        assert 0.0 - epsilon <= target <= 1.0 + epsilon, (
+            f"The target should be normalized between 0 and 1, but is currently {target}"
+        )
+        self._target = self.unnormalize(target)
 
     def _normalize(self, unormalized_value: float) -> float:
         """Normalize a raw value between 0.0 and 1.0."""

@@ -9,6 +9,7 @@ class SensorConfig:
 
     name: str = "sensor"
     data_topic: str = "sensor_data"
+    max_data_delay: float = 1.0
 
 
 @dataclass
