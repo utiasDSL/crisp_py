@@ -34,6 +34,7 @@ class GripperConfig:
     index: int = 0
     publish_frequency: float = 30.0
     max_joint_delay: float = 1.0
+    max_delta: float = 1.0
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "GripperConfig":
@@ -64,6 +65,8 @@ class GripperConfig:
                     "enable_torque_service", "dynamixel_hardware_interface/set_dxl_torque"
                 ),
                 "index": config.get("index", 0),
+                "publish_frequency": config.get("publish_frequency", 30.0),
+                "max_delta": config.get("max_delta", 1.0),
             }
         return cls(**config)
 
@@ -108,9 +111,7 @@ class Gripper:
         self._target = None
         self._index = self.config.index
         self._joint_freshness_checker = FreshnessChecker(
-            self.node, 
-            f"Gripper joint state", 
-            self.config.max_joint_delay
+            self.node, "Gripper joint state", self.config.max_joint_delay
         )
 
         self._command_publisher = self.node.create_publisher(
@@ -267,7 +268,6 @@ class Gripper:
     def _unnormalize(self, normalized_value: float) -> float:
         """Normalize a raw value between 0.0 and 1.0."""
         return (self.max_value - self.min_value) * normalized_value + self.min_value
-
 
     def shutdown(self):
         """Shutdown the node and allow the robot to be instantiated again."""
