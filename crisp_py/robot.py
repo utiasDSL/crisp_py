@@ -127,7 +127,7 @@ class Robot:
         self._target_joint_publisher = self.node.create_publisher(
             JointState, self.config.target_joint_topic, qos_profile_system_default
         )
-        self._current_pose_subscriber = self.node.create_subscription(
+        self.node.create_subscription(
             PoseStamped,
             self.config.current_pose_topic,
             self._callback_current_pose,
