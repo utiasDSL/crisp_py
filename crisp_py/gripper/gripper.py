@@ -235,7 +235,9 @@ class Gripper:
             self._unnormalize(
                 self.value
                 + np.clip(
-                    self._normalize(self._target) - self.value, -self.config.max_delta, self.config.max_delta
+                    self._normalize(self._target) - self.value,
+                    -self.config.max_delta,
+                    self.config.max_delta,
                 )
             )
         ]

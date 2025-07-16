@@ -14,7 +14,7 @@ class CameraConfig:
 
     camera_color_image_topic: str | None = None
     camera_color_info_topic: str | None = None
-    
+
     max_image_delay: float = 1.0
 
 
