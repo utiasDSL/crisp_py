@@ -112,14 +112,10 @@ class Robot:
         self._target_joint = None
         self._target_wrench = None
         self._pose_freshness_checker = FreshnessChecker(
-            self.node, 
-            "Robot pose", 
-            self.config.max_pose_delay
+            self.node, "Robot pose", self.config.max_pose_delay
         )
         self._joint_freshness_checker = FreshnessChecker(
-            self.node, 
-            "Robot joint state", 
-            self.config.max_joint_delay
+            self.node, "Robot joint state", self.config.max_joint_delay
         )
 
         self._target_pose_publisher = self.node.create_publisher(
@@ -481,6 +477,7 @@ class Robot:
         """Convert a pose to a pose message."""
         msg = PoseStamped()
         msg.header.frame_id = self.config.base_frame
+        msg.header.stamp = self.node.get_clock().now().to_msg()
         msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = pose.position
         q = pose.orientation.as_quat()
         (
@@ -519,7 +516,6 @@ class Robot:
             desired_pose.position = np.array(position)
 
         return desired_pose
-
 
     def shutdown(self):
         """Shutdown the node."""
