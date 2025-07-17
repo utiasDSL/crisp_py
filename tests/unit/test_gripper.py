@@ -148,7 +148,7 @@ class TestGripperBasics:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -168,7 +168,7 @@ class TestGripperBasics:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -187,7 +187,7 @@ class TestGripperBasics:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -204,7 +204,7 @@ class TestGripperBasics:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -225,7 +225,7 @@ class TestGripperProperties:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -244,7 +244,7 @@ class TestGripperProperties:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -262,7 +262,7 @@ class TestGripperProperties:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -286,7 +286,7 @@ class TestGripperProperties:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -313,7 +313,7 @@ class TestGripperProperties:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -331,7 +331,7 @@ class TestGripperProperties:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -365,7 +365,7 @@ class TestGripperMethods:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -385,7 +385,7 @@ class TestGripperMethods:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -405,7 +405,7 @@ class TestGripperMethods:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -425,7 +425,7 @@ class TestGripperMethods:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -446,7 +446,7 @@ class TestGripperMethods:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -466,7 +466,7 @@ class TestGripperMethods:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -488,7 +488,7 @@ class TestGripperMethods:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -510,7 +510,7 @@ class TestGripperNormalization:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -531,7 +531,7 @@ class TestGripperNormalization:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -552,7 +552,7 @@ class TestGripperNormalization:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -579,7 +579,7 @@ class TestGripperServices:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -605,7 +605,7 @@ class TestGripperServices:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -626,7 +626,7 @@ class TestGripperServices:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -652,7 +652,7 @@ class TestGripperServices:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -673,7 +673,7 @@ class TestGripperServices:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -698,7 +698,7 @@ class TestGripperCallbacks:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
                 mock_node.create_subscription.return_value = Mock()
@@ -708,9 +708,6 @@ class TestGripperCallbacks:
 
                 config = GripperConfig(min_value=0.0, max_value=1.0, index=1)
                 gripper = Gripper(gripper_config=config, spin_node=False)
-
-                # Mock freshness checker
-                gripper._joint_freshness_checker = Mock()
 
                 # Create mock joint state message
                 mock_msg = Mock()
@@ -722,14 +719,14 @@ class TestGripperCallbacks:
 
                 assert gripper._value == 0.5
                 assert gripper._torque == 0.05
-                gripper._joint_freshness_checker.update_timestamp.assert_called_once()
+                # Note: CallbackMonitor handles timestamp updates automatically
 
     def test_gripper_publish_target_callback_no_target(self):
         """Test publish target callback when no target is set."""
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_publisher = Mock()
                 mock_node.create_publisher.return_value = mock_publisher
@@ -751,7 +748,7 @@ class TestGripperCallbacks:
         with patch("crisp_py.gripper.gripper.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.gripper.gripper.FreshnessChecker"):
+            with patch("crisp_py.gripper.gripper.CallbackMonitor"):
                 mock_node = Mock()
                 mock_publisher = Mock()
                 mock_node.create_publisher.return_value = mock_publisher

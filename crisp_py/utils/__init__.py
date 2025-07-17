@@ -1,5 +1,5 @@
 """Utility classes and functions for crisp_py."""
 
-from .freshness_checker import FreshnessChecker
+from .callback_monitor import CallbackMonitor
 
-__all__ = ["FreshnessChecker"]
+__all__ = ["CallbackMonitor"]
