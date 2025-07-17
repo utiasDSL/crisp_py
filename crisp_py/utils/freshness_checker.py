@@ -26,6 +26,23 @@ class FreshnessChecker:
         self.throttle_duration = throttle_duration
         self._last_timestamp: Optional[float] = None
 
+    @property
+    def data_age(self) -> Optional[float]:
+        """Get the age of the data in seconds."""
+        if self._last_timestamp is None:
+            return None
+        return time.time() - self._last_timestamp
+
+    @property
+    def is_fresh(self) -> bool:
+        """Check if the data is fresh based on the last timestamp."""
+        if self._last_timestamp is None:
+            return False
+
+        current_time = time.time()
+        data_age = current_time - self._last_timestamp
+        return data_age <= self.max_delay
+
     def update_timestamp(self) -> None:
         """Update the timestamp when new data is received."""
         self._last_timestamp = time.time()
@@ -35,13 +52,10 @@ class FreshnessChecker:
         if self._last_timestamp is None:
             return
 
-        current_time = time.time()
-        data_age = current_time - self._last_timestamp
-
-        if data_age > self.max_delay:
-            self.node.get_logger().warning(
+        if not self.is_fresh:
+            self.node.get_logger().warn(
                 f"{self.data_name} data is stale. "
-                f"Last data received {data_age:.2f}s ago, "
+                f"Last data received {time.time() - self._last_timestamp:.2f}s ago, "
                 f"exceeds max delay of {self.max_delay:.2f}s",
                 throttle_duration_sec=self.throttle_duration,
             )

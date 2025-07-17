@@ -7,6 +7,7 @@ from typing import List
 import numpy as np
 import rclpy
 import rclpy.executors
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from geometry_msgs.msg import PoseStamped, WrenchStamped
 from numpy.typing import NDArray
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -19,7 +20,7 @@ from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
-from crisp_py.utils import FreshnessChecker
+from crisp_py.utils import FreshnessChecker, freshness_checker
 
 
 @dataclass
@@ -142,6 +143,12 @@ class Robot:
             callback_group=ReentrantCallbackGroup(),
         )
 
+        self._diagnostics_publisher = self.node.create_publisher(
+            DiagnosticArray,
+            "/diagnostics",
+            qos_profile_system_default,
+        )
+
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
             self._callback_publish_target_pose,
@@ -155,6 +162,12 @@ class Robot:
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
             self._callback_publish_target_wrench,
+            ReentrantCallbackGroup(),
+        )
+
+        self.node.create_timer(
+            1.0,
+            self._callback_diagnostics,
             ReentrantCallbackGroup(),
         )
 
@@ -407,6 +420,49 @@ class Robot:
         if self._target_joint is None:
             self._target_joint = self._current_joint.copy()
         self._joint_freshness_checker.update_timestamp()
+
+    def _callback_diagnostics(self):
+        """Publish diagnostics information about the robot state.
+
+        This method creates a DiagnosticArray message containing the current
+        pose and joint state freshness, and publishes it to the diagnostics topic.
+        """
+        diagnostics = DiagnosticArray()
+        diagnostics.header.stamp = self.node.get_clock().now().to_msg()
+        diagnostics.status = []
+
+        # Pose freshness
+        pose_status = DiagnosticStatus()
+        pose_status.name = "Robot Pose"
+        pose_status.level = (
+            DiagnosticStatus.OK if self._pose_freshness_checker.is_fresh else DiagnosticStatus.STALE
+        )
+        pose_status.message = (
+            "Pose is fresh" if self._pose_freshness_checker.is_fresh else "Pose is stale"
+        )
+        value = KeyValue()
+        value.key = "Pose Age"
+        value.value = f"{self._pose_freshness_checker.data_age:.2f}s"
+        pose_status.values.append(value)
+
+        diagnostics.status.append(pose_status)
+
+        # Joint freshness
+        joint_status = DiagnosticStatus()
+        joint_status.name = "Robot Joint"
+        joint_status.level = (
+            DiagnosticStatus.OK
+            if self._joint_freshness_checker.is_fresh
+            else DiagnosticStatus.ERROR
+        )
+        joint_status.message = (
+            "Joint state is fresh"
+            if self._joint_freshness_checker.is_fresh
+            else "Joint state is stale"
+        )
+        diagnostics.status.append(joint_status)
+
+        self._diagnostics_publisher.publish(diagnostics)
 
     def move_to(
         self, position: List | NDArray | None = None, pose: Pose | None = None, speed: float = 0.05
