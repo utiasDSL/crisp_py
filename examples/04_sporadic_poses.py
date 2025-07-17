@@ -3,9 +3,9 @@
 # %%
 import matplotlib.pyplot as plt
 import numpy as np
-import pinocchio as pin
+from scipy.spatial.transform import Rotation
 
-from crisp_py.robot import Robot
+from crisp_py.robot import Pose, Robot
 
 robot = Robot(namespace="right")
 # robot = Robot()
@@ -17,27 +17,20 @@ robot.controller_switcher_client.switch_controller("cartesian_impedance_controll
 homing_pose = robot.end_effector_pose.copy()
 
 # %%
-
-params_names = robot.cartesian_controller_parameters_client.list_parameters()
-i = 0
-for param_name in params_names:
-    print(param_name, end="\n" if i % 2 == 1 else ", ")
-    i += 1
-
-
-# %%
 first_pose = homing_pose.copy()
-first_pose.position[0] += 0.1
-first_pose.position[1] += 0.3
-first_pose.position[2] -= 0.1
-transform_rotation = pin.exp3(np.array([0.0, 0.0, +np.pi / 2.0]))
-first_pose.rotation = pin.exp3(pin.log3(first_pose.rotation @ transform_rotation))
+delta_pose = Pose(
+    position=np.array([0.1, 0.3, -0.1]),
+    orientation=Rotation.from_euler("xyz", [0.0, 0.0, +np.pi / 2.0], degrees=False),
+)
+first_pose += delta_pose
 
 # %%
 second_pose = first_pose.copy()
-second_pose.position[1] -= 0.2
-transform_rotation = pin.exp3(np.array([0.0, -np.pi / 2, 0.0]))
-second_pose.rotation = pin.exp3(pin.log3(second_pose.rotation @ transform_rotation))
+delta_pose = Pose(
+    position=np.array([0.0, -0.2, 0.0]),
+    orientation=Rotation.from_euler("xyz", [0.0, 0.0, -np.pi / 2.0], degrees=False),
+)
+second_pose += delta_pose
 
 
 # %%
