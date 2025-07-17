@@ -14,7 +14,7 @@ from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 
 from crisp_py.camera.camera_config import CameraConfig
-from crisp_py.utils import FreshnessChecker
+from crisp_py.utils.callback_monitor import CallbackMonitor
 
 
 class Camera:
@@ -52,10 +52,10 @@ class Camera:
             self.node = node
 
         self._current_image: Optional[np.ndarray] = None
-        self._image_freshness_checker = FreshnessChecker(
+        self._namespace = namespace
+        self._callback_monitor = CallbackMonitor(
             self.node,
-            f"Camera '{self.config.camera_name}' image",
-            self.config.max_image_delay,
+            stale_threshold=self.config.max_image_delay,
         )
 
         self.cv_bridge = CvBridge()
@@ -70,14 +70,20 @@ class Camera:
         self.node.create_subscription(
             CompressedImage,
             f"{self.config.camera_color_image_topic}/compressed",
-            self._callback_current_color_image,
+            self._callback_monitor.monitor(
+                f"{self._namespace.capitalize()} Camera {self.config.camera_name} Image".strip(),
+                self._callback_current_color_image,
+            ),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
         self.node.create_subscription(
             CameraInfo,
             self.config.camera_color_info_topic,
-            self._callback_current_color_info,
+            self._callback_monitor.monitor(
+                f"{self._namespace.capitalize()} Camera {self.config.camera_name} Info".strip(),
+                self._callback_current_color_info,
+            ),
             qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
         )
@@ -106,7 +112,24 @@ class Camera:
             raise RuntimeError(
                 f"We have not received any images of camera {self.config.camera_name}. Call wait_until_ready to be sure that the camera is available!."
             )
-        self._image_freshness_checker.check_freshness()
+        # Check if image callback is stale
+        try:
+            # Try to find the callback - need to handle namespace properly
+            for callback_name in self._callback_monitor.callbacks.keys():
+                if (
+                    "Camera" in callback_name
+                    and self.config.camera_name in callback_name
+                    and "Image" in callback_name
+                ):
+                    image_callback_data = self._callback_monitor.get_callback_data(callback_name)
+                    if image_callback_data and image_callback_data.is_stale:
+                        self.node.get_logger().warn(
+                            f"Camera {self.config.camera_name} image data is stale"
+                        )
+                    break
+        except ValueError:
+            # Callback not found, which is expected if no data has been received yet
+            pass
         return self._current_image
 
     @property
@@ -137,7 +160,6 @@ class Camera:
         self._current_image = self._resize_with_aspect_ratio(
             self._uncompress(msg), target_res=self.config.resolution
         )
-        self._image_freshness_checker.update_timestamp()
 
     def _callback_current_color_info(self, msg: CameraInfo):
         """Receive and store the current camera info."""

@@ -15,7 +15,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from std_srvs.srv import SetBool, Trigger
 
-from crisp_py.utils import FreshnessChecker
+from crisp_py.utils.callback_monitor import CallbackMonitor
 
 
 @dataclass
@@ -111,8 +111,8 @@ class Gripper:
         self._torque = None
         self._target = None
         self._index = self.config.index
-        self._joint_freshness_checker = FreshnessChecker(
-            self.node, "Gripper joint state", self.config.max_joint_delay
+        self._callback_monitor = CallbackMonitor(
+            self.node, stale_threshold=self.config.max_joint_delay
         )
 
         self._command_publisher = self.node.create_publisher(
@@ -124,14 +124,18 @@ class Gripper:
         self.node.create_subscription(
             JointState,
             self.config.joint_state_topic,
-            self._callback_joint_state,
+            self._callback_monitor.monitor(
+                f"{namespace.capitalize()} Gripper Joint State", self._callback_joint_state
+            ),
             qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
         )
 
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
-            self._callback_publish_target,
+            self._callback_monitor.monitor(
+                f"{namespace.capitalize()} Gripper Target Publisher", self._callback_publish_target
+            ),
             ReentrantCallbackGroup(),
         )
 
@@ -191,7 +195,16 @@ class Gripper:
             raise RuntimeError(
                 f"{self._prefix}Gripper is not initialized. Call wait_until_ready() first."
             )
-        self._joint_freshness_checker.check_freshness()
+        # Check if joint state callback is stale
+        namespace_part = self._prefix.rstrip("_").capitalize() if self._prefix else ""
+        callback_name = f"{namespace_part} Gripper Joint State".strip()
+        try:
+            joint_callback_data = self._callback_monitor.get_callback_data(callback_name)
+            if joint_callback_data and joint_callback_data.is_stale:
+                self.node.get_logger().warn(f"{self._prefix}Gripper joint state is stale")
+        except ValueError:
+            # Callback not found, which is expected if no data has been received yet
+            pass
         return np.clip(self._normalize(self._value), 0.0, 1.0)
 
     @property
@@ -253,7 +266,6 @@ class Gripper:
         """
         self._value = msg.position[self._index]
         self._torque = msg.effort[self._index]
-        self._joint_freshness_checker.update_timestamp()
 
     def set_target(self, target: float, *, epsilon: float = 0.1):
         """Grasp with the gripper by setting a target. This can be a position, velocity or effort depending on the active controller.

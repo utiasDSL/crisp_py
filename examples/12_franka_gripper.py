@@ -7,7 +7,7 @@ from crisp_py.gripper import Gripper, GripperConfig
 
 # %%
 config = GripperConfig.from_yaml(path="config/gripper_franka.yaml")
-gripper = Gripper(gripper_config=config, namespace="leader/gripper")
+gripper = Gripper(gripper_config=config, namespace="right")
 gripper.wait_until_ready()
 
 # %%

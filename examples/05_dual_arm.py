@@ -10,7 +10,7 @@ from crisp_py.robot_config import FrankaConfig
 
 # %%
 faster_publishing_config = FrankaConfig()
-faster_publishing_config.publish_frequency = 200.0
+faster_publishing_config.publish_frequency = 20.0
 
 left_arm = Robot(robot_config=faster_publishing_config, namespace="left")
 right_arm = Robot(robot_config=faster_publishing_config, namespace="right")
