@@ -18,7 +18,11 @@ make = "*"
 ninja = "*"
 
 [tasks]
-test = "pytest"
+test_raw = "pytest --cov=crisp_py --cov-report=html"
+test = [{task="test_raw", environment="humble"}]
+view_diagnostics = "python scripts/view_diagnostics.py"
+view_diagnostics_humble = [{task="view_diagnostics", environment="humble"}]
+
 
 
 [target.linux.dependencies]
@@ -59,6 +63,7 @@ bumpver = "*"
 build = "*"
 twine = "*"
 pre-commit = "*"
+pytest = "*"  # for testing
 
 [feature.crisp-py.pypi-dependencies]
 crisp_py = { path = ".", editable = true }

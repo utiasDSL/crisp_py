@@ -136,7 +136,7 @@ class DiagnosticViewer:
 
     def display(self):
         """Display the table."""
-        with Live(self._diagnostics_table, refresh_per_second=4) as live:
+        with Live(self._diagnostics_table, refresh_per_second=1) as live:
             while rclpy.ok():
                 live.update(self._diagnostics_table)
-                time.sleep(0.1)
+                time.sleep(0.5)
