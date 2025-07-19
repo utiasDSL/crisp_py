@@ -112,28 +112,6 @@ class DiagnosticViewer:
             self._diagnostics_table.add_column("Status", justify="left", style="green")
             self._diagnostics_table.add_column("Message", justify="left", style="yellow")
 
-    def _generate_random_table(self) -> Table:
-        """Generate a random diagnostics table for demonstration purposes."""
-        self._diagnostics_table = Table(title="Diagnostics Viewer")
-        self._diagnostics_table.add_column("Name", justify="left", style="cyan")
-        self._diagnostics_table.add_column("Status", justify="left", style="green")
-        self._diagnostics_table.add_column("Message", justify="left", style="yellow")
-
-        for i in range(5):
-            name = f"Component {i + 1}"
-            status = random.choice(
-                [
-                    "[green]OK[/green]",
-                    "[yellow]WARNING[/yellow]",
-                    "[red]ERROR[/red]",
-                    "[red]STALE[/red]",
-                ]
-            )
-            message = f"Sample message for {name} with status {status}"
-            self._diagnostics_table.add_row(name, status, message)
-
-        return self._diagnostics_table
-
     def display(self):
         """Display the table."""
         with Live(self._diagnostics_table, refresh_per_second=1) as live:
