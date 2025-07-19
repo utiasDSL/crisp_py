@@ -1,4 +1,5 @@
-# crisp_py */krɪspi/*
+
+<img src="media/crisp_logo.png" alt="CRISP Controllers Logo"/>
 
 <img src="https://github.com/user-attachments/assets/284983f8-2311-4699-86ab-06fc2ea9d5af" alt="CRISP Controllers Logo" width="120" align="right"/>
 
