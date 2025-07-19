@@ -78,6 +78,7 @@ params = [
 
 robot.cartesian_controller_parameters_client.set_parameters(params)
 ```
+You can also load parameters from a yaml file with `robot.cartesian_controller_parameters_client.load_params(path)`
 Check if the changes have been applied:
 
 ```python
