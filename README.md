@@ -45,9 +45,8 @@ pixi shell -e humble  # or jazzy
 > More information on this topic can be found [here](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html).
 
 > [!WARNING]
-> For **multi-machine setups**, you recommend using a different RMW than FastDDS (for an easier configuration)
-> We recommend using CycloneDDS (or [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling)). It is easy to configure, in particular
-> for multi-machine setups.
+> For **multi-machine setups**, we recommend using a different RMW than FastDDS (for an easier configuration).
+> We recommend using CycloneDDS (or [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling)).
 > Check [Setup CycloneDDS](docs/setup_cyclonedds.md) to see how to setup a different RMW.
 
 You are good to go!
