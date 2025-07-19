@@ -1,7 +1,5 @@
 
-<img src="media/crisp_logo.png" alt="CRISP Controllers Logo"/>
-
-<img src="https://github.com/user-attachments/assets/284983f8-2311-4699-86ab-06fc2ea9d5af" alt="CRISP Controllers Logo" width="120" align="right"/>
+<img src="media/crisp_logo.png" alt="CRISP Controllers Logo" width="800" align="middle"/>
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![MIT Badge](https://img.shields.io/badge/MIT-License-blue?style=flat)
