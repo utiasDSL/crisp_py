@@ -38,7 +38,7 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-exclude = ["config", "examples", "build", "scripts", "media", "docs"]
+exclude = ["config", "examples", "build", "scripts", "media", "docs", "output"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "D", "TCH", "ANN"]

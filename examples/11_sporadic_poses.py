@@ -4,7 +4,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import pinocchio as pin
+from scipy.spatial.transform import Rotation
 
 from crisp_py.robot import Robot
 
@@ -58,21 +58,22 @@ def drive_trajectory(target_pose, max_time=10.0):
 # %%
 def get_error(target_poses, ee_poses):
     """Get the error between the end effector and the target pose."""
-    # We extract some values from the trajetory
+    # We extract some values from the trajectory
     x_t = np.array([target_pose_sample.position[0] for target_pose_sample in target_poses])
     y_t = np.array([target_pose_sample.position[1] for target_pose_sample in target_poses])
     z_t = np.array([target_pose_sample.position[2] for target_pose_sample in target_poses])
-    R_t = np.array([target_pose_sample.rotation for target_pose_sample in target_poses])
+    R_t = np.array([target_pose_sample.orientation.as_matrix() for target_pose_sample in target_poses])
     x_ee = np.array([ee_pose_sample.position[0] for ee_pose_sample in ee_poses])
     y_ee = np.array([ee_pose_sample.position[1] for ee_pose_sample in ee_poses])
     z_ee = np.array([ee_pose_sample.position[2] for ee_pose_sample in ee_poses])
-    R_ee = np.array([ee_pose_sample.rotation for ee_pose_sample in ee_poses])
+    R_ee = np.array([ee_pose_sample.orientation.as_matrix() for ee_pose_sample in ee_poses])
 
     # And compute the error i.e. differences between the end effector and the target
     dx = x_ee - x_t
     dy = y_ee - y_t
     dz = z_ee - z_t
-    d_rot = np.array([pin.log3(R_diff) for R_diff in R_ee @ R_t.transpose(0, 2, 1)])
+    # Use scipy's axis-angle representation instead of pinocchio's log3
+    d_rot = np.array([Rotation.from_matrix(R_diff).as_rotvec() for R_diff in R_ee @ R_t.transpose(0, 2, 1)])
     drx = d_rot[:, 0]
     dry = d_rot[:, 1]
     drz = d_rot[:, 2]
