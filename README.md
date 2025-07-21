@@ -1,5 +1,5 @@
 
-<img src="media/crisp_py_logo.png" alt="CRISP PY Logo" />
+<img src="media/crisp_py_logo.webp" alt="CRISP PY Logo" />
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![MIT Badge](https://img.shields.io/badge/MIT-License-blue?style=flat)
