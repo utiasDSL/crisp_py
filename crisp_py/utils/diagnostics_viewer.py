@@ -1,6 +1,5 @@
 """Simple terminal diagnostics viewer using rich."""
 
-import random
 import threading
 import time
 
