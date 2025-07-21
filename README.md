@@ -1,13 +1,12 @@
-# crisp_py */krɪspi/*
 
-<img src="https://github.com/user-attachments/assets/284983f8-2311-4699-86ab-06fc2ea9d5af" alt="CRISP Controllers Logo" width="120" align="right"/>
+<img src="media/crisp_py_logo.webp" alt="CRISP PY Logo" />
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![MIT Badge](https://img.shields.io/badge/MIT-License-blue?style=flat)
 <a href="https://github.com/utiasDSL/crisp_py/actions/workflows/ruff_ci.yml"><img src="https://github.com/utiasDSL/crisp_py/actions/workflows/ruff_ci.yml/badge.svg"/></a>
 <a href="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml"><img src="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml/badge.svg"/></a>
 
-A python package to interface with robots using [CRISP controllers](https://github.com/utiasDSL/crisp_controllers) or any ROS2 manipulator with a similar interface!
+*crisp_py /krɪspi/*, a python package to interface with robots using [CRISP controllers](https://github.com/utiasDSL/crisp_controllers) or any ROS2 manipulator with a similar interface!
 Set target poses and joints, reconfigure stiffness and other controller parameters dynamically, deactivate and activate `ros2_controllers` and more!
 
 ![crisp_py](https://github.com/user-attachments/assets/e4cbf5fd-6ba7-4d7c-917a-bbb78d79ab10)
@@ -45,8 +44,8 @@ pixi shell -e humble  # or jazzy
 > More information on this topic can be found [here](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html).
 
 > [!WARNING]
-> For **multi-machine setups**, we recommend using a different RMW than FastDDS (for an easier configuration).
-> We recommend using CycloneDDS (or [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling)).
+> For **multi-machine setups**, you recommend using a different RMW than FastDDS (for an easier configuration)
+> We recommend using CycloneDDS (or [Zenoh RMW](https://github.com/ros2/rmw_zenoh/tree/rolling))
 > Check [Setup CycloneDDS](docs/setup_cyclonedds.md) to see how to setup a different RMW.
 
 You are good to go!
