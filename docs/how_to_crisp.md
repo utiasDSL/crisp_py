@@ -78,14 +78,13 @@ params = [
 
 robot.cartesian_controller_parameters_client.set_parameters(params)
 ```
+You can also load parameters from a yaml file with `robot.cartesian_controller_parameters_client.load_params(path)`
 Check if the changes have been applied:
 
 ```python
 param_names, _= zip(*params)
 robot.cartesian_controller_parameters_client.get_parameters(param_names)
 ```
-
-robot.cartesian_controller_parameters_client.set_parameters(params)
 
 The `move_to` function will publish a pose to `/target_pose` while interpolating linearly to it. It is blocking.
 ```python
@@ -105,32 +104,7 @@ q = robot.joint_values.copy()
 q[0] += 0.5  # [rad]
 robot.set_target_joint(q)
 ```
-if you want to go for joint control directly, then modify the parameters:
-```python
-robot.home()  # Go home first to avoid unexpected behavior
-params = [
-    ("task.k_pos_x", 0.0),
-    ("task.k_pos_y", 0.0),
-    ("task.k_pos_z", 0.0),
-    ("task.k_rot_x", 0.0),
-    ("task.k_rot_y", 0.0),
-    ("task.k_rot_z", 0.0),
-    ("nullspace.stiffness", 5.0),
-    ("nullspace.weights.fr3_joint1.value", 5.0),
-    ("nullspace.weights.fr3_joint2.value", 5.0),
-    ("nullspace.weights.fr3_joint3.value", 5.0),
-    ("nullspace.weights.fr3_joint4.value", 2.0),
-    ("nullspace.weights.fr3_joint5.value", 2.0),
-    ("nullspace.weights.fr3_joint6.value", 1.0),
-    ("nullspace.weights.fr3_joint7.value", 1.0),
-    ("nullspace.projector_type", "none"),  # Do not project joint torques in nullspace, simply let them go through
-]
-
-robot.cartesian_controller_parameters_client.set_parameters(params)
-robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
-```
-
-
+If you activate a "joint-only" controller that accepts a `target_joint` topic you can use `set_target_joint(q)` to control the robot.
 
 Once you are done, you can shutdown the robot (or simply kill the terminal/process where you are working):
 ```python

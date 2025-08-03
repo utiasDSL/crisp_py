@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "scipy",
-    "numpy<2.3"
+    "numpy<=2.3"
 ]
 
 [tool.ruff]

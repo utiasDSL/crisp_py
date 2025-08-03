@@ -3569,10 +3569,10 @@ packages:
 - pypi: ./
   name: crisp-py
   version: 1.0.12
-  sha256: 28f8162851ddfca93b3632377803eaff42fcaa4df913d8b81b8c1db80322275c
+  sha256: f236fa3c00155742b015e78b9485191a5c163dfff0c478bca1e829ca5df5c122
   requires_dist:
   - scipy
-  - numpy<2.3
+  - numpy<=2.3
   requires_python: '>=3.11'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/cryptography-45.0.4-py311hafd3f86_0.conda
