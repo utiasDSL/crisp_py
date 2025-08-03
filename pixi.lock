@@ -3574,6 +3574,7 @@ packages:
   - scipy
   - numpy<=2.3
   requires_python: '>=3.11'
+  editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/cryptography-45.0.4-py311hafd3f86_0.conda
   sha256: 0832d1aff2f6606824a89aed2427da26bda9914b6d2ff34ec643f560f4560547
   md5: 0cfa6cebbf4b3c8f16be9fba587d990a

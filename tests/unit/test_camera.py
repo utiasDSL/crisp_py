@@ -83,7 +83,7 @@ class TestCameraBasics:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -98,7 +98,7 @@ class TestCameraBasics:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -115,7 +115,7 @@ class TestCameraBasics:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -132,7 +132,7 @@ class TestCameraBasics:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -144,7 +144,7 @@ class TestCameraBasics:
 
     def test_camera_init_with_existing_node(self):
         """Test camera initialization with existing node."""
-        with patch("crisp_py.camera.camera.FreshnessChecker"):
+        with patch("crisp_py.camera.camera.CallbackMonitor"):
             existing_node = Mock()
             existing_node.create_subscription.return_value = Mock()
 
@@ -161,7 +161,7 @@ class TestCameraProperties:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -176,7 +176,7 @@ class TestCameraProperties:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -191,15 +191,12 @@ class TestCameraProperties:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
                 camera = Camera(spin_node=False)
-
-                # Mock freshness checker
-                camera._image_freshness_checker = Mock()
 
                 # Set a test image
                 test_image = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -208,14 +205,14 @@ class TestCameraProperties:
                 result = camera.current_image
 
                 assert np.array_equal(result, test_image)
-                camera._image_freshness_checker.check_freshness.assert_called_once()
+                # Note: CallbackMonitor handles freshness checking automatically
 
     def test_camera_resolution_with_config(self):
         """Test resolution property with config set."""
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -230,7 +227,7 @@ class TestCameraProperties:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -244,7 +241,7 @@ class TestCameraProperties:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -262,7 +259,7 @@ class TestCameraProperties:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -278,7 +275,7 @@ class TestCameraProperties:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -299,7 +296,7 @@ class TestCameraImageProcessing:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -325,7 +322,7 @@ class TestCameraImageProcessing:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -350,7 +347,7 @@ class TestCameraImageProcessing:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -376,7 +373,7 @@ class TestCameraImageProcessing:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -402,7 +399,7 @@ class TestCameraImageProcessing:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -430,16 +427,13 @@ class TestCameraCallbacks:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
                 config = CameraConfig(resolution=(100, 100))
                 camera = Camera(config=config, spin_node=False)
-
-                # Mock image freshness checker
-                camera._image_freshness_checker = Mock()
 
                 # Mock image processing methods
                 test_image = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -457,7 +451,7 @@ class TestCameraCallbacks:
                 camera._resize_with_aspect_ratio.assert_called_once_with(
                     test_image, target_res=(100, 100)
                 )
-                camera._image_freshness_checker.update_timestamp.assert_called_once()
+                # Note: CallbackMonitor handles timestamp updates automatically
 
                 # Verify image was stored
                 assert np.array_equal(camera._current_image, test_image)
@@ -467,7 +461,7 @@ class TestCameraCallbacks:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -490,7 +484,7 @@ class TestCameraCallbacks:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -518,7 +512,7 @@ class TestCameraErrorHandling:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rate = Mock()
@@ -536,7 +530,7 @@ class TestCameraErrorHandling:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rate = Mock()
@@ -557,15 +551,12 @@ class TestCameraErrorHandling:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
                 camera = Camera(spin_node=False)
-
-                # Mock freshness checker
-                camera._image_freshness_checker = Mock()
 
                 # Set image
                 test_image = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -574,9 +565,9 @@ class TestCameraErrorHandling:
                 # Access current_image
                 result = camera.current_image
 
-                # Verify freshness was checked
-                camera._image_freshness_checker.check_freshness.assert_called_once()
+                # Verify result is returned correctly
                 assert np.array_equal(result, test_image)
+                # Note: CallbackMonitor handles freshness checking automatically
 
 
 class TestCameraIntegration:
@@ -587,7 +578,7 @@ class TestCameraIntegration:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
@@ -595,8 +586,7 @@ class TestCameraIntegration:
                 config = CameraConfig(resolution=(256, 256))
                 camera = Camera(config=config, spin_node=False)
 
-                # Mock image freshness checker
-                camera._image_freshness_checker = Mock()
+                # Note: CallbackMonitor handles freshness checking automatically
 
                 # Create test pipeline - use square image to avoid aspect ratio issues
                 original_image = np.ones((300, 300, 3), dtype=np.uint8) * 255
@@ -624,7 +614,7 @@ class TestCameraIntegration:
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
-            with patch("crisp_py.camera.camera.FreshnessChecker"):
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
                 mock_node = Mock()
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node

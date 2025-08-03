@@ -19,7 +19,7 @@ from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
-from crisp_py.utils import FreshnessChecker
+from crisp_py.utils.callback_monitor import CallbackMonitor
 
 
 @dataclass
@@ -111,11 +111,10 @@ class Robot:
         self._current_joint = None
         self._target_joint = None
         self._target_wrench = None
-        self._pose_freshness_checker = FreshnessChecker(
-            self.node, "Robot pose", self.config.max_pose_delay
-        )
-        self._joint_freshness_checker = FreshnessChecker(
-            self.node, "Robot joint state", self.config.max_joint_delay
+
+        self._callback_monitor = CallbackMonitor(
+            node=self.node,
+            stale_threshold=max(self.config.max_pose_delay, self.config.max_joint_delay),
         )
 
         self._target_pose_publisher = self.node.create_publisher(
@@ -130,26 +129,34 @@ class Robot:
         self.node.create_subscription(
             PoseStamped,
             self.config.current_pose_topic,
-            self._callback_current_pose,
+            self._callback_monitor.monitor(
+                f"{namespace.capitalize()} Current Pose", self._callback_current_pose
+            ),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
         self.node.create_subscription(
             JointState,
             self.config.current_joint_topic,
-            self._callback_current_joint,
+            self._callback_monitor.monitor(
+                f"{namespace.capitalize()} Current Joint", self._callback_current_joint
+            ),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
 
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
-            self._callback_publish_target_pose,
+            self._callback_monitor.monitor(
+                f"{namespace.capitalize()} Target Pose", self._callback_publish_target_pose
+            ),
             ReentrantCallbackGroup(),
         )
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
-            self._callback_publish_target_joint,
+            self._callback_monitor.monitor(
+                f"{namespace.capitalize()} Target Joint", self._callback_publish_target_joint
+            ),
             ReentrantCallbackGroup(),
         )
         self.node.create_timer(
@@ -189,7 +196,6 @@ class Robot:
             raise RuntimeError(
                 "The robot has not received any poses yet. Run wait_until_ready() before running anything else."
             )
-        self._pose_freshness_checker.check_freshness()
         return self._current_pose.copy()
 
     @property
@@ -216,7 +222,6 @@ class Robot:
             raise RuntimeError(
                 "The robot has not received any joints yet. Run wait_until_ready() before running anything else."
             )
-        self._joint_freshness_checker.check_freshness()
         return self._current_joint.copy()
 
     @property
@@ -382,7 +387,6 @@ class Robot:
         self._current_pose = self._pose_msg_to_pose(msg)
         if self._target_pose is None:
             self._target_pose = self._current_pose.copy()
-        self._pose_freshness_checker.update_timestamp()
 
     def _callback_current_joint(self, msg: JointState):
         """Update the current joint state from a ROS message.
@@ -406,7 +410,6 @@ class Robot:
 
         if self._target_joint is None:
             self._target_joint = self._current_joint.copy()
-        self._joint_freshness_checker.update_timestamp()
 
     def move_to(
         self, position: List | NDArray | None = None, pose: Pose | None = None, speed: float = 0.05
@@ -418,6 +421,10 @@ class Robot:
             pose: The pose to move to. If None, the position is used.
             speed: The speed of the movement. [m/s]
         """
+        if self._current_pose is None:
+            raise RuntimeError(
+                "The robot has not received any poses yet. Run wait_until_ready() before running anything else."
+            )
         desired_pose = self._parse_pose_or_position(position, pose)
         start_pose = self._current_pose
         distance = np.linalg.norm(desired_pose.position - start_pose.position)
@@ -516,6 +523,16 @@ class Robot:
             desired_pose.position = np.array(position)
 
         return desired_pose
+
+    def is_homed(self) -> bool:
+        """Check if the robot is homed.
+
+        This method checks if the robot's current joint configuration matches the home configuration.
+
+        Returns:
+            bool: True if the robot is homed, False otherwise.
+        """
+        return np.allclose(self.joint_values, self.config.home_config, atol=1e-3)
 
     def shutdown(self):
         """Shutdown the node."""

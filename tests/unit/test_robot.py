@@ -28,7 +28,7 @@ class TestRobotBasics:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 # Mock node methods
                 mock_node = Mock()
@@ -53,7 +53,7 @@ class TestRobotBasics:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -79,7 +79,7 @@ class TestRobotReadinessChecks:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -100,7 +100,7 @@ class TestRobotReadinessChecks:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -127,7 +127,7 @@ class TestRobotReadinessChecks:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -161,7 +161,7 @@ class TestRobotPropertyErrors:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -183,7 +183,7 @@ class TestRobotPropertyErrors:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -209,7 +209,7 @@ class TestRobotTargetSetting:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -234,7 +234,7 @@ class TestRobotTargetSetting:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -259,7 +259,7 @@ class TestRobotTargetSetting:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -285,7 +285,7 @@ class TestRobotTargetSetting:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -316,7 +316,7 @@ class TestRobotUtilities:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -340,7 +340,7 @@ class TestRobotUtilities:
                 patch("crisp_py.robot.ControllerSwitcherClient"),
                 patch("crisp_py.robot.JointTrajectoryControllerClient"),
                 patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.FreshnessChecker"),
+                patch("crisp_py.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
