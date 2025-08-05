@@ -6,7 +6,7 @@
 <a href="https://utiasDSL.github.io/crisp_controllers/"><img alt="Static Badge" src="https://img.shields.io/badge/docs-passing-blue?style=flat&link=https%3A%2F%2FutiasDSL.github.io%2Fcrisp_controllers%2F"></a>
 <a href="https://github.com/utiasDSL/crisp_py/actions/workflows/ruff_ci.yml"><img src="https://github.com/utiasDSL/crisp_py/actions/workflows/ruff_ci.yml/badge.svg"/></a>
 <a href="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml"><img src="https://github.com/utiasDSL/crisp_py/actions/workflows/pixi_ci.yml/badge.svg"/></a>
-<a href="https://utiasDSL.github.io/crisp_controllers#citing"><img alt="Static Badge" src="https://img.shields.io/badge/arxiv-cite-b31b1b?style=flat&link=google.com"></a>
+<a href="https://utiasDSL.github.io/crisp_controllers#citing"><img alt="Static Badge" src="https://img.shields.io/badge/arxiv-cite-b31b1b?style=flat"></a>
 
 *crisp_py /krɪspi/*, a python package to interface with robots using [CRISP controllers](https://github.com/utiasDSL/crisp_controllers) or any ROS2 manipulator with a similar interface!
 
