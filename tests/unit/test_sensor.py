@@ -8,7 +8,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32MultiArray
 
 from crisp_py.sensors.sensor import Float32ArraySensor, Sensor, TorqueSensor
-from crisp_py.sensors.sensor_config import SensorConfig
+from crisp_py.sensors.sensor_config import EmptySensorConfig, SensorConfig
 
 
 class TestSensorConfig:
@@ -16,8 +16,9 @@ class TestSensorConfig:
 
     def test_sensor_config_creation(self):
         """Test basic sensor config creation."""
-        config = SensorConfig()
+        config = SensorConfig(shape=(3,))
 
+        assert config.shape == (3,)
         assert config.name == "sensor"
         assert config.data_topic == "sensor_data"
         assert config.max_data_delay == 1.0
@@ -25,11 +26,13 @@ class TestSensorConfig:
     def test_sensor_config_custom_values(self):
         """Test SensorConfig with custom values."""
         config = SensorConfig(
+            shape=(6,),
             name="custom_sensor",
             data_topic="custom/data",
             max_data_delay=2.0,
         )
 
+        assert config.shape == (6,)
         assert config.name == "custom_sensor"
         assert config.data_topic == "custom/data"
         assert config.max_data_delay == 2.0
@@ -54,7 +57,8 @@ class TestSensor:
             def _create_subscription(self):
                 pass
 
-        sensor = ConcreteSensor(node=mock_node, spin_node=False)
+        sensor_config = EmptySensorConfig(name="sensor", shape=(3,))
+        sensor = ConcreteSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
         assert sensor.node == mock_node
         assert sensor.config.name == "sensor"
@@ -72,7 +76,7 @@ class TestSensor:
             def _create_subscription(self):
                 pass
 
-        sensor = ConcreteSensor(node=None, spin_node=False)
+        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=None, spin_node=False)
 
         assert sensor.node == mock_node
         mock_rclpy.create_node.assert_called_once()
@@ -88,7 +92,7 @@ class TestSensor:
             def _create_subscription(self):
                 pass
 
-        sensor = ConcreteSensor(node=mock_node, spin_node=False)
+        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
 
         assert not sensor.is_ready()
 
@@ -106,7 +110,7 @@ class TestSensor:
             def _create_subscription(self):
                 pass
 
-        sensor = ConcreteSensor(node=mock_node, spin_node=False)
+        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
 
         with pytest.raises(ValueError, match="Sensor value is not available yet"):
             _ = sensor.value
@@ -124,7 +128,7 @@ class TestSensor:
             def _create_subscription(self):
                 pass
 
-        sensor = ConcreteSensor(node=mock_node, spin_node=False)
+        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
         sensor._value = np.array([3.0, 4.0])
         sensor._baseline = np.array([1.0, 2.0])
 
@@ -148,7 +152,7 @@ class TestSensor:
             def _create_subscription(self):
                 pass
 
-        sensor = ConcreteSensor(node=mock_node, spin_node=False)
+        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
         sensor._value = np.array([1.0, 2.0])
         sensor._baseline = np.array([0.0, 0.0])
 
@@ -168,7 +172,9 @@ class TestFloat32ArraySensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
 
-        Float32ArraySensor(node=mock_node, spin_node=False)
+        Float32ArraySensor(
+            sensor_config=EmptySensorConfig(shape=(7,)), node=mock_node, spin_node=False
+        )
 
         mock_node.create_subscription.assert_called_once()
         args, _ = mock_node.create_subscription.call_args
@@ -182,7 +188,9 @@ class TestFloat32ArraySensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
 
-        sensor = Float32ArraySensor(node=mock_node, spin_node=False)
+        sensor = Float32ArraySensor(
+            sensor_config=EmptySensorConfig(shape=(3,)), node=mock_node, spin_node=False
+        )
 
         msg = Float32MultiArray()
         msg.data = [1.0, 2.0, 3.0]
@@ -202,8 +210,9 @@ class TestTorqueSensor:
         """Test TorqueSensor creates correct subscription."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
+        sensor_config = EmptySensorConfig(shape=(3,))
 
-        TorqueSensor(node=mock_node, spin_node=False)
+        TorqueSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
         mock_node.create_subscription.assert_called_once()
         args, _ = mock_node.create_subscription.call_args
@@ -217,7 +226,8 @@ class TestTorqueSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
 
-        sensor = TorqueSensor(node=mock_node, spin_node=False)
+        sentor_config = EmptySensorConfig(shape=(3,))
+        sensor = TorqueSensor(sensor_config=sentor_config, node=mock_node, spin_node=False)
 
         msg = JointState()
         msg.effort = [0.5, 1.0, 1.5]

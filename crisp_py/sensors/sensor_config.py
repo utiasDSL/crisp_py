@@ -15,6 +15,14 @@ class SensorConfig:
 
 
 @dataclass
+class EmptySensorConfig(SensorConfig):
+    """Configuration for an empty sensor, used when using no sensor."""
+
+    shape: tuple[int, ...] = (0,)
+    name: str = "empty_sensor"
+
+
+@dataclass
 class AnySkinSensorConfig(SensorConfig):
     """Configuration for the AnySkin sensor broadcasted by a node using the anyskin_ros2 wrapper: https://github.com/danielsanjosepro/anyskin_ros2."""
 
