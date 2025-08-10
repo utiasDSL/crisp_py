@@ -1,0 +1,4 @@
+joint_state_topic: gripper/gripper_state_broadcaster/joint_states
+command_topic: gripper/gripper_position_controller/commands
+max_value: -0.07976700087890626
+min_value: -1.2977477450683594

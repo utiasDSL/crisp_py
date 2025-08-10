@@ -15,6 +15,10 @@ Homepage = "https://utiasDSL.github.io/crisp_controllers/"
 
 [tool.setuptools.packages.find]
 exclude = ["config", "examples", "build", "scripts", "media", "docs", "tests"]
+include = ["crisp_py*"]
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.ruff]
 exclude = [

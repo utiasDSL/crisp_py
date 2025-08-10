@@ -1,0 +1,3 @@
+recursive-include crisp_py/config *.yaml
+recursive-include crisp_py/config control/*
+
