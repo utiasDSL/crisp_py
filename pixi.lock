@@ -3568,8 +3568,8 @@ packages:
   timestamp: 1744040683266
 - pypi: ./
   name: crisp-py
-  version: 1.1.0
-  sha256: edf2811439ee4a1684defd1c76b5ddd91028de4bd4d72bef09b25a4bcd21cbcf
+  version: 1.1.1
+  sha256: dafc336fa7a2a5a22531d10cd4f7ab1f55d27c8c65fced49c986ad5e0dbe419c
   requires_dist:
   - scipy
   - numpy<=2.3
