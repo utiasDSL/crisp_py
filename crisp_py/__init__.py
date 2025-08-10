@@ -18,4 +18,4 @@ except ImportError:
     print('ros-<ROS_DISTRO>-ros2-control = "*"\nros-<ROS_DISTRO>-ros2-controllers = "*"')
 
 
-__version__ = "1.2.0"
+__version__ = "1.2.2"
