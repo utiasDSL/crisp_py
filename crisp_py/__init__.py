@@ -8,4 +8,4 @@ except ImportError:
     print("ROS2 should be installed and sourced!")
 
 
-__version__ = (Path(__file__).parent.parent / "version.txt").read_text().strip()
+__version__ = (Path(__file__).parent / "version.txt").read_text().strip()

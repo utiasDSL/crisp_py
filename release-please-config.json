@@ -1,0 +1,9 @@
+{
+  "packages": {
+    "package-name": {
+      "path": "crisp_py",
+      "releaseType": "simple",
+      "versionFile": "crisp_py/version.txt"
+    }
+  }
+}

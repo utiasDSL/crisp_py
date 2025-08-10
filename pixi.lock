@@ -3569,7 +3569,7 @@ packages:
 - pypi: ./
   name: crisp-py
   version: 1.1.0
-  sha256: 01b2a19285f86920fce3640f71d76376c47d6533c614ee1816c5f6ef6a20add2
+  sha256: edf2811439ee4a1684defd1c76b5ddd91028de4bd4d72bef09b25a4bcd21cbcf
   requires_dist:
   - scipy
   - numpy<=2.3

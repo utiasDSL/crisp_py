@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [tool.setuptools.dynamic]
-version = { file = "version.txt" }
+version = { file = "crisp_py/version.txt" }
 
 [tool.setuptools.package-data]
 "*" = ["version.txt"]
