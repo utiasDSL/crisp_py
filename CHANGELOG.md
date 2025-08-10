@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/utiasDSL/crisp_py/compare/v1.0.0...v1.1.0) (2025-08-10)
+
+
+### Features
+
+* modified release.yaml to upload directly to test-pypi ([166fba0](https://github.com/utiasDSL/crisp_py/commit/166fba026b3e8b58577627e472ee465e1473c2c4))
+
+
+### Bug Fixes
+
+* versioning of the package ([29d568e](https://github.com/utiasDSL/crisp_py/commit/29d568eb47e95787e043270177471c664ce06c5d))
+
 ## 1.0.0 (2025-08-10)
 
 
