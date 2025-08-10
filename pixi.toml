@@ -4,7 +4,6 @@ authors = ["Daniel San José Pro <42489409+danielsanjosepro@users.noreply.github
 channels = ["https://fast.prefix.dev/conda-forge"]
 name = "crisp_py"
 platforms = ["linux-64"]
-version = "1.0.12"
 
 [activation]
 scripts = ["scripts/set_ros_env.sh"]
