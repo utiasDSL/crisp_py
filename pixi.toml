@@ -65,7 +65,7 @@ pre-commit = "*"
 pytest = "*"  # for testing
 
 [feature.crisp-py.pypi-dependencies]
-crisp_py = { path = ".", editable = true }
+crisp_python = { path = ".", editable = true }
 # crisp_py = "1.0.x"  # if added from pypi
 
 [feature.extra.pypi-dependencies]
