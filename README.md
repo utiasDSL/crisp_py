@@ -1,6 +1,11 @@
 
 <img src="media/crisp_py_logo.webp" alt="CRISP PY Logo" />
 
+To install the package use:
+```bash
+pip install crisp-python
+```
+
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![MIT Badge](https://img.shields.io/badge/MIT-License-blue?style=flat)
 <a href="https://utiasDSL.github.io/crisp_controllers/"><img alt="Static Badge" src="https://img.shields.io/badge/docs-passing-blue?style=flat&link=https%3A%2F%2FutiasDSL.github.io%2Fcrisp_controllers%2F"></a>
