@@ -1,5 +1,6 @@
 """Simple example to control the gripper."""
 
+import cv2
 from crisp_py.camera import Camera, CameraConfig
 
 camera_config = CameraConfig(
@@ -12,4 +13,6 @@ camera_config = CameraConfig(
 
 camera = Camera(config=camera_config, namespace="right")
 camera.wait_until_ready()
-camera.current_image
+
+cv2.imshow("Camera Image", camera.current_image)
+cv2.waitKey(0)
