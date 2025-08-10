@@ -1,6 +1,6 @@
 [project]
 name = "crisp-py"
-version = "1.0.12"
+dynamic = ["version"]
 description = "Simple python interface to control robots that use crisp_controllers and other ROS2 components."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -8,6 +8,15 @@ dependencies = [
     "scipy",
     "numpy<=2.3"
 ]
+
+[tool.setuptools.dynamic]
+version = { file = "version.txt" }
+
+[tool.setuptools.package-data]
+"myproject" = ["../version.txt"]
+
+[tool.setuptools.packages.find]
+exclude = ["config", "examples", "build", "scripts", "media", "docs"]
 
 [tool.ruff]
 exclude = [
@@ -37,8 +46,6 @@ target-version = "py311"
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-exclude = ["config", "examples", "build", "scripts", "media", "docs"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "D", "TCH", "ANN"]
@@ -61,15 +68,3 @@ line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
-[tool.bumpver]
-current_version = "1.0.12"
-version_pattern = "MAJOR.MINOR.PATCH"
-commit_message  = "Bump version {old_version} -> {new_version}"
-commit          = true
-tag             = true
-push            = false
-
-[tool.bumpver.file_patterns]
-"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
-"crisp_py/__init__.py" = ["{version}"]
-"pixi.toml" = ["{version}"]
