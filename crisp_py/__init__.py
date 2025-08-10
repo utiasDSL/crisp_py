@@ -1,5 +1,9 @@
 """Initialize crisp_py."""
 
+import importlib.metadata
+
+__version__ = importlib.metadata.version("crisp_python")
+
 try:
     import rclpy  # noqa: F401
 except ImportError:
@@ -16,6 +20,3 @@ except ImportError:
         "If you are using robostack with pixi, add the following lines to your pixi.toml dependencies:"
     )
     print('ros-<ROS_DISTRO>-ros2-control = "*"\nros-<ROS_DISTRO>-ros2-controllers = "*"')
-
-
-__version__ = "1.2.2"

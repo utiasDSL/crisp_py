@@ -66,7 +66,7 @@ pytest = "*"  # for testing
 
 [feature.crisp-py.pypi-dependencies]
 crisp_python = { path = ".", editable = true }
-# crisp_py = "1.0.x"  # if added from pypi
+# crisp_python = "1.0.x"  # if added from pypi
 
 [feature.extra.pypi-dependencies]
 rich = "*"  # For nice prints
