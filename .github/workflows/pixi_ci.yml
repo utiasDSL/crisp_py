@@ -19,6 +19,7 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.8.8
         with:
           pixi-version: v0.46.0
+          frozen: true
           cache: true
       - run: pixi run -e humble test
       - run: pixi run -e jazzy test
