@@ -48,6 +48,10 @@ class RobotConfig:
     max_pose_delay: float = 1.0
     max_joint_delay: float = 1.0
 
+    def num_joints(self) -> int:
+        """Returns the number of joints in the robot."""
+        return len(self.joint_names)
+
 
 @dataclass
 class FrankaConfig(RobotConfig):

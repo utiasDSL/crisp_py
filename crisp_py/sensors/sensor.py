@@ -23,23 +23,23 @@ class Sensor(ABC):
 
     def __init__(
         self,
+        sensor_config: SensorConfig,
         node: Node | None = None,
         namespace: str = "",
-        sensor_config: SensorConfig | None = None,
         spin_node: bool = True,
     ):
         """Initialize the sensor.
 
         Args:
+            sensor_config (SensorConfig, optional): Configuration for the sensor.
             node (Node, optional): ROS2 node to use. If None, creates a new node.
             namespace (str, optional): ROS2 namespace for the sensor.
-            sensor_config (SensorConfig, optional): Configuration for the sensor.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
         """
         if not rclpy.ok() and node is None:
             rclpy.init()
 
-        self.config = sensor_config if sensor_config else SensorConfig()
+        self.config = sensor_config
 
         self.node = (
             rclpy.create_node(
