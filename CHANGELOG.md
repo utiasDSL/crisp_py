@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/utiasDSL/crisp_py/compare/v1.2.1...v1.2.2) (2025-08-10)
+
+
+### Bug Fixes
+
+* guide use in case that the ros2 control packages are not installed ([19a616d](https://github.com/utiasDSL/crisp_py/commit/19a616d0d0cfad794df171c2ee14122ba80f0556))
+
 ## [1.2.1](https://github.com/utiasDSL/crisp_py/compare/v1.2.0...v1.2.1) (2025-08-10)
 
 
