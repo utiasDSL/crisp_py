@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.3](https://github.com/utiasDSL/crisp_py/compare/v1.2.2...v1.2.3) (2025-08-10)
+
+
+### Bug Fixes
+
+* add license + homepage ([05cd2e7](https://github.com/utiasDSL/crisp_py/commit/05cd2e72a0cc481e94645f61a1644aa41518a1c2))
+* added proper versioning for package ([5d49611](https://github.com/utiasDSL/crisp_py/commit/5d4961170aa0915af3f7e1be1df0d085bb1f0713))
+* Update README.md to be able to visualize banner in pypi ([42e82a4](https://github.com/utiasDSL/crisp_py/commit/42e82a4beaa4816682d0b0418a49bc541bf053f4))
+* wrong version in __init__ ([76bc4cf](https://github.com/utiasDSL/crisp_py/commit/76bc4cf9503a7345caacede136e78485a9aaf48f))
+
 ## [1.2.2](https://github.com/utiasDSL/crisp_py/compare/v1.2.1...v1.2.2) (2025-08-10)
 
 
