@@ -1,6 +1,6 @@
 [project]
 name = "crisp-py"
-dynamic = ["version"]
+version = "1.1.1"
 description = "Simple python interface to control robots that use crisp_controllers and other ROS2 components."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -9,11 +9,6 @@ dependencies = [
     "numpy<=2.3"
 ]
 
-[tool.setuptools.dynamic]
-version = { file = "crisp_py/version.txt" }
-
-[tool.setuptools.package-data]
-"*" = ["version.txt"]
 
 [tool.setuptools.packages.find]
 exclude = ["config", "examples", "build", "scripts", "media", "docs", "tests"]
