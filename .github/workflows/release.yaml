@@ -20,8 +20,6 @@ jobs:
         id: release
         with:
           release-type: simple
-        permissions:
-          contents: write
 
 
   publish:
