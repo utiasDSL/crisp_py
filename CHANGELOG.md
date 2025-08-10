@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/utiasDSL/crisp_py/compare/v1.1.1...v1.1.2) (2025-08-10)
+
+
+### Bug Fixes
+
+* specifying the location of the version.txt ([633b5fc](https://github.com/utiasDSL/crisp_py/commit/633b5fc96dd1a08fddb764bee3f72234f08c1a4c))
+* updated release-please configs ([5b9210d](https://github.com/utiasDSL/crisp_py/commit/5b9210dc172beb269f2276c54f112dbdd3b35377))
+* use python release type instead of simple ([2c9fe29](https://github.com/utiasDSL/crisp_py/commit/2c9fe294ac74bdb30175862c3677046cf3f0cac3))
+
 ## [1.1.1](https://github.com/utiasDSL/crisp_py/compare/v1.1.0...v1.1.1) (2025-08-10)
 
 

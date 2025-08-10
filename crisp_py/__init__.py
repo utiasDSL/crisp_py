@@ -8,4 +8,4 @@ except ImportError:
     print("ROS2 should be installed and sourced!")
 
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
