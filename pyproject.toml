@@ -13,10 +13,10 @@ dependencies = [
 version = { file = "version.txt" }
 
 [tool.setuptools.package-data]
-"*" = ["../version.txt"]
+"*" = ["version.txt"]
 
 [tool.setuptools.packages.find]
-exclude = ["config", "examples", "build", "scripts", "media", "docs"]
+exclude = ["config", "examples", "build", "scripts", "media", "docs", "tests"]
 
 [tool.ruff]
 exclude = [
