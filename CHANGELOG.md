@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/utiasDSL/crisp_py/compare/v1.2.0...v1.2.1) (2025-08-10)
+
+
+### Bug Fixes
+
+* New name for pypi, since crisp-py not allowed ([6dfee56](https://github.com/utiasDSL/crisp_py/commit/6dfee5628eda102711bc27c261fd6014a2aa4d26))
+
 ## [1.2.0](https://github.com/utiasDSL/crisp_py/compare/v1.1.2...v1.2.0) (2025-08-10)
 
 
