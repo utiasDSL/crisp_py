@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/utiasDSL/crisp_py/compare/v1.2.3...v1.3.0) (2025-08-10)
+
+
+### Features
+
+* include data files to the repo ([1b4d125](https://github.com/utiasDSL/crisp_py/commit/1b4d1252ef074172dca93e6cca99e017d6dbf745))
+
+
+### Bug Fixes
+
+* deprecated license option in pyproject.toml ([94f18b8](https://github.com/utiasDSL/crisp_py/commit/94f18b8fdae265f5fc08b1671adf1cf602feeb15))
+
 ## [1.2.3](https://github.com/utiasDSL/crisp_py/compare/v1.2.2...v1.2.3) (2025-08-10)
 
 
