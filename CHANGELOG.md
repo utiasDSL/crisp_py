@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/utiasDSL/crisp_py/compare/v1.1.0...v1.1.1) (2025-08-10)
+
+
+### Bug Fixes
+
+* version.txt and tests should not be packaged ([43a9ca7](https://github.com/utiasDSL/crisp_py/commit/43a9ca70dbbd11c458054fb1412b6e013a284f35))
+
 ## [1.1.0](https://github.com/utiasDSL/crisp_py/compare/v1.0.0...v1.1.0) (2025-08-10)
 
 
