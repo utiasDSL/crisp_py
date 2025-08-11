@@ -72,7 +72,6 @@ class Sensor(ABC):
         """Get the latest calibrated sensor value."""
         if self._value is None or self._baseline is None:
             raise ValueError("Sensor value is not available yet.")
-        self._callback_monitor.check_callback_health()
         return self._value - self._baseline
 
     def _spin_node(self):
@@ -132,7 +131,7 @@ class Float32ArraySensor(Sensor):
         self.node.create_subscription(
             Float32MultiArray,
             self.config.data_topic,
-            self._callback_monitor.monitor(self._callback_sensor_data),
+            self._callback_monitor.monitor(name="float32", func=self._callback_sensor_data),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
@@ -152,7 +151,9 @@ class ForceTorqueSensor(Sensor):
         self.node.create_subscription(
             JointState,
             self.config.data_topic,
-            self._callback_monitor.monitor(self._callback_joint_state),
+            self._callback_monitor.monitor(
+                name="force_torque_monitor", func=self._callback_joint_state
+            ),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
@@ -166,24 +167,18 @@ class ForceTorqueSensor(Sensor):
 
 def make_sensor(
     sensor_config: SensorConfig,
-    node: Node | None = None,
-    namespace: str = "",
-    spin_node: bool = True,
+    **kwargs,  # noqa: ANN003
 ) -> Sensor:
     """Factory function to create a sensor based on the configuration."""
     if sensor_config.sensor_type == "float32":
         return Float32ArraySensor(
             sensor_config=sensor_config,
-            node=node,
-            namespace=namespace,
-            spin_node=spin_node,
+            **kwargs,
         )
     elif sensor_config.sensor_type == "force_torque":
         return ForceTorqueSensor(
             sensor_config=sensor_config,
-            node=node,
-            namespace=namespace,
-            spin_node=spin_node,
+            **kwargs,
         )
     else:
         raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
