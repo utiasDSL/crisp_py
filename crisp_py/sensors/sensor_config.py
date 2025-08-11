@@ -42,5 +42,20 @@ class ForceTorqueSensorConfig(SensorConfig):
 
     shape: tuple[int, ...] = (6,)
     name: str = "ft_sensor"
-    data_topic: str = "external_wrench_broadcaster/external_wrench"
+    data_topic: str = "external_wrench"
     sensor_type: Literal["empty", "float32", "force_torque"] = "force_torque"
+
+
+def make_sensor_config(
+    sensor_type: Literal["empty", "float32", "force_torque"],
+    **kwargs,  # noqa: ANN003
+) -> SensorConfig:
+    """Factory function to create a sensor configuration based on the type."""
+    if sensor_type == "empty":
+        return EmptySensorConfig(**kwargs)
+    elif sensor_type == "float32":
+        return AnySkinSensorConfig(**kwargs)
+    elif sensor_type == "force_torque":
+        return ForceTorqueSensorConfig(**kwargs)
+    else:
+        raise ValueError(f"Unknown sensor type: {sensor_type}")
