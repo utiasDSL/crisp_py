@@ -15,17 +15,15 @@ class ControllerSwitcherClient:
     """ControllerSwitcher class allows user to communicate with the controller_manager and manage controllers in an easy way."""
 
     def __init__(
-        self, node: Node, always_active: list[str] = ["joint_state_broadcaster", "pose_broadcaster"]
+        self,
+        node: Node,
     ):
         """Initialize the ControllerSwitcher.
 
         Args:
             node (Node): Node used for the communication with the controller_manager.
-            always_active (list[str], optional): List of controllers that are always active. Defaults to ["joint_state_broadcaster", "franka_robot_state_broadcaster"].
         """
         self.node = node
-
-        self.always_active = always_active
 
         self.load_client = node.create_client(
             LoadController,
@@ -160,7 +158,7 @@ class ControllerSwitcherClient:
 
         to_deactivate = []
         for active_controller in active_controllers:
-            if active_controller not in self.always_active:
+            if not active_controller.endswith("broadcaster"):  # Do not deactivate broadcasters
                 to_deactivate.append(active_controller)
 
         to_activate = [controller_name]
