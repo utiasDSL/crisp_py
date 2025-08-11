@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 
-@dataclass
+@dataclass(kw_only=True)
 class RobotConfig:
     """Configuration class for robot parameters.
 
@@ -184,3 +184,32 @@ class SO101Config(RobotConfig):
     )
     base_frame: str = "Base"
     target_frame: str = "Fixed_Gripper"
+
+
+def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
+    """Factory function to create robot configuration objects.
+
+    Args:
+        robot_type (str): Type of robot ('franka', 'kinova', 'iiwa', 'so101')
+        **kwargs: Additional keyword arguments to override default configuration
+
+    Returns:
+        RobotConfig: Configured robot configuration object
+
+    Raises:
+        ValueError: If robot_type is not supported
+    """
+    robot_type = robot_type.lower()
+
+    if robot_type == "franka":
+        return FrankaConfig(**kwargs)
+    elif robot_type == "kinova":
+        return KinovaConfig(**kwargs)
+    elif robot_type == "iiwa":
+        return IiwaConfig(**kwargs)
+    elif robot_type == "so101":
+        return SO101Config(**kwargs)
+    else:
+        raise ValueError(
+            f"Unsupported robot type: {robot_type}. Supported types: franka, kinova, iiwa, so101"
+        )
