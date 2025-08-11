@@ -144,7 +144,7 @@ class Float32ArraySensor(Sensor):
             self._baseline = np.zeros_like(self._value)
 
 
-class TorqueSensor(Sensor):
+class ForceTorqueSensor(Sensor):
     """Torque sensor that subscribes to JointState messages."""
 
     def _create_subscription(self):
@@ -152,7 +152,7 @@ class TorqueSensor(Sensor):
         self.node.create_subscription(
             JointState,
             self.config.data_topic,
-            self._callback_monitor(self._callback_joint_state),
+            self._callback_monitor.monitor(self._callback_joint_state),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
@@ -162,3 +162,28 @@ class TorqueSensor(Sensor):
         self._value = np.array(msg.effort, dtype=np.float32)
         if self._baseline is None:
             self._baseline = np.zeros_like(self._value)
+
+
+def make_sensor(
+    sensor_config: SensorConfig,
+    node: Node | None = None,
+    namespace: str = "",
+    spin_node: bool = True,
+) -> Sensor:
+    """Factory function to create a sensor based on the configuration."""
+    if sensor_config.sensor_type == "float32":
+        return Float32ArraySensor(
+            sensor_config=sensor_config,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+        )
+    elif sensor_config.sensor_type == "force_torque":
+        return ForceTorqueSensor(
+            sensor_config=sensor_config,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+        )
+    else:
+        raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
