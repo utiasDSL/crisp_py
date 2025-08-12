@@ -7,7 +7,7 @@ import pytest
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32MultiArray
 
-from crisp_py.sensors.sensor import Float32ArraySensor, Sensor, TorqueSensor
+from crisp_py.sensors.sensor import Float32ArraySensor, Sensor, ForceTorqueSensor
 from crisp_py.sensors.sensor_config import EmptySensorConfig, SensorConfig
 
 
@@ -16,9 +16,10 @@ class TestSensorConfig:
 
     def test_sensor_config_creation(self):
         """Test basic sensor config creation."""
-        config = SensorConfig(shape=(3,))
+        config = SensorConfig(shape=(3,), sensor_type="float32")
 
         assert config.shape == (3,)
+        assert config.sensor_type == "float32"
         assert config.name == "sensor"
         assert config.data_topic == "sensor_data"
         assert config.max_data_delay == 1.0
@@ -27,12 +28,14 @@ class TestSensorConfig:
         """Test SensorConfig with custom values."""
         config = SensorConfig(
             shape=(6,),
+            sensor_type="force_torque",
             name="custom_sensor",
             data_topic="custom/data",
             max_data_delay=2.0,
         )
 
         assert config.shape == (6,)
+        assert config.sensor_type == "force_torque"
         assert config.name == "custom_sensor"
         assert config.data_topic == "custom/data"
         assert config.max_data_delay == 2.0
@@ -212,7 +215,7 @@ class TestTorqueSensor:
         mock_rclpy.ok.return_value = True
         sensor_config = EmptySensorConfig(shape=(3,))
 
-        TorqueSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
+        ForceTorqueSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
         mock_node.create_subscription.assert_called_once()
         args, _ = mock_node.create_subscription.call_args
@@ -226,8 +229,8 @@ class TestTorqueSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
 
-        sentor_config = EmptySensorConfig(shape=(3,))
-        sensor = TorqueSensor(sensor_config=sentor_config, node=mock_node, spin_node=False)
+        sensor_config = EmptySensorConfig(shape=(3,))
+        sensor = ForceTorqueSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
         msg = JointState()
         msg.effort = [0.5, 1.0, 1.5]
