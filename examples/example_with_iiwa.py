@@ -1,8 +1,8 @@
 import numpy as np
-import pinocchio as pin
+from scipy.spatial.transform import Rotation
 
 # %%
-from crisp_py.robot import Robot
+from crisp_py.robot import Pose, Robot
 from crisp_py.robot_config import IiwaConfig
 
 robot = Robot(robot_config=IiwaConfig())
@@ -18,13 +18,13 @@ robot.home()
 # %%
 
 params = [
-    ("task.k_pos_x", 2000.0),
-    ("task.k_pos_y", 2000.0),
-    ("task.k_pos_z", 2000.0),
-    ("task.k_rot_x", 50.0),
-    ("task.k_rot_y", 50.0),
-    ("task.k_rot_z", 50.0),
-    ("nullspace.stiffness", 10.0),
+    ("task.k_pos_x", 2500.0),
+    ("task.k_pos_y", 2500.0),
+    ("task.k_pos_z", 2500.0),
+    ("task.k_rot_x", 80.0),
+    ("task.k_rot_y", 80.0),
+    ("task.k_rot_z", 80.0),
+    ("nullspace.stiffness", 5.0),
     ("nullspace.weights.joint_a1.value", 5.0),
     ("nullspace.weights.joint_a2.value", 5.0),
     ("nullspace.weights.joint_a3.value", 5.0),
@@ -40,16 +40,16 @@ robot.controller_switcher_client.switch_controller("cartesian_impedance_controll
 # %%
 # Paremeters for the circle
 radius = 0.1  # [m]
-center = [0.6, 0.0, 0.2]
+center = [0.5, 0.0, 0.2]
 ctrl_freq = 50.0
 sin_freq = 0.25  # rot / s
 max_time = 10.0
 
 # %%
 # The move_to function will publish a pose to /target_pose while interpolation linearly
-starting_pose = pin.SE3(
-    np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]]),
-    np.array(center) + np.array([radius * np.cos(0.0), radius * np.sin(0.0), 0]),
+starting_pose = Pose(
+    position=np.array(center) + np.array([radius * np.cos(0.0), radius * np.sin(0.0), 0]),
+    orientation=Rotation.from_euler("xyz", [-180, 0, -180], degrees=True),
 )
 
 robot.move_to(pose=starting_pose, speed=0.15)
