@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/utiasDSL/crisp_py/compare/v1.3.0...v1.3.1) (2025-08-13)
+
+
+### Bug Fixes
+
+* example with IIWA still used pinochio ([8800eb0](https://github.com/utiasDSL/crisp_py/commit/8800eb09ed7097a60b5b7d49dc702bbe8514a230))
+* fix examples ([262d779](https://github.com/utiasDSL/crisp_py/commit/262d779c40b0e7a568027ff12439cc56a38c233f))
+
 ## [1.3.0](https://github.com/utiasDSL/crisp_py/compare/v1.2.3...v1.3.0) (2025-08-10)
 
 
