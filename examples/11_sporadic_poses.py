@@ -4,7 +4,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import pinocchio as pin
+from scipy.spatial.transform import Rotation
 
 from crisp_py.robot import Robot
 
@@ -72,7 +72,7 @@ def get_error(target_poses, ee_poses):
     dx = x_ee - x_t
     dy = y_ee - y_t
     dz = z_ee - z_t
-    d_rot = np.array([pin.log3(R_diff) for R_diff in R_ee @ R_t.transpose(0, 2, 1)])
+    d_rot = np.array([Rotation.from_matrix(R_diff).as_rotvec() for R_diff in R_ee @ R_t.transpose(0, 2, 1)])
     drx = d_rot[:, 0]
     dry = d_rot[:, 1]
     drz = d_rot[:, 2]

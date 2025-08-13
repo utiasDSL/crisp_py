@@ -1,8 +1,8 @@
 import numpy as np
-import pinocchio as pin
+from scipy.spatial.transform import Rotation
 
 # %%
-from crisp_py.robot import Robot
+from crisp_py.robot import Robot, Pose
 from crisp_py.robot_config import KinovaConfig
 
 robot = Robot(robot_config=KinovaConfig())
@@ -27,9 +27,9 @@ max_time = 10.0
 
 # %%
 # The move_to function will publish a pose to /target_pose while interpolation linearly
-starting_pose = pin.SE3(
-    robot.end_effector_pose.rotation,
-    np.array(center) + np.array([radius * np.cos(0.0), radius * np.sin(0.0), 0]),
+starting_pose = Pose(
+    orientation=robot.end_effector_pose.orientation,
+    position=np.array(center) + np.array([radius * np.cos(0.0), radius * np.sin(0.0), 0]),
 )
 
 robot.move_to(pose=starting_pose, speed=0.15)

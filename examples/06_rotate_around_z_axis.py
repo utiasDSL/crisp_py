@@ -2,7 +2,7 @@
 
 # %%
 import numpy as np
-import pinocchio as pin
+from scipy.spatial.transform import Rotation
 
 from crisp_py.robot import Robot
 
@@ -16,15 +16,15 @@ homing_pose = robot.end_effector_pose.copy()
 
 # %%
 
-rotate_90 = pin.exp3(np.array([0.0, 0.0, +np.pi / 2.0]))
-rotate_m180 = pin.exp3(np.array([0.0, 0.0, -np.pi]))
+rotate_90 = Rotation.from_rotvec(np.array([0.0, 0.0, +np.pi / 2.0]))
+rotate_m180 = Rotation.from_rotvec(np.array([0.0, 0.0, -np.pi]))
 
 # %%
 first_pose = homing_pose.copy()
-first_pose.rotation = pin.exp3(pin.log3(first_pose.rotation @ rotate_90))
+first_pose.orientation = first_pose.orientation * rotate_90
 
 second_pose = first_pose.copy()
-second_pose.rotation = pin.exp3(pin.log3(second_pose.rotation @ rotate_m180))
+second_pose.orientation = second_pose.orientation * rotate_m180
 
 # The set_target will directly publish the pose to /target_pose
 
