@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from crisp_py.camera.camera import Camera
-from crisp_py.camera.camera_config import CameraConfig, FrankaCameraConfig
+from crisp_py.camera.camera_config import CameraConfig
 
 
 class TestCameraConfig:
@@ -40,35 +40,6 @@ class TestCameraConfig:
         assert config.camera_color_image_topic == "test/color/image"
         assert config.camera_color_info_topic == "test/color/info"
         assert config.max_image_delay == 2.0
-
-    def test_franka_camera_config_defaults(self):
-        """Test FrankaCameraConfig defaults."""
-        config = FrankaCameraConfig()
-
-        assert config.camera_name == "franka"
-        assert config.camera_frame == "franka_link"
-        assert config.resolution == (256, 256)
-        assert config.camera_color_image_topic == "franka/color/image_raw"
-        assert config.camera_color_info_topic == "franka/color/camera_info"
-        assert config.max_image_delay == 1.0  # Inherited
-
-    def test_franka_camera_config_inheritance(self):
-        """Test that FrankaCameraConfig inherits from CameraConfig."""
-        config = FrankaCameraConfig()
-
-        assert isinstance(config, CameraConfig)
-        assert config.max_image_delay == 1.0  # Inherited default
-
-    def test_franka_camera_config_custom_override(self):
-        """Test overriding FrankaCameraConfig defaults."""
-        config = FrankaCameraConfig(
-            camera_name="custom_franka", resolution=(512, 512), max_image_delay=3.0
-        )
-
-        assert config.camera_name == "custom_franka"
-        assert config.resolution == (512, 512)
-        assert config.max_image_delay == 3.0
-        assert config.camera_color_image_topic == "franka/color/image_raw"  # Still uses default
 
 
 class TestCameraBasics:
@@ -109,23 +80,6 @@ class TestCameraBasics:
                 assert camera.config == custom_config
                 assert camera.config.camera_name == "test_camera"
                 assert camera.config.resolution == (640, 480)
-
-    def test_camera_init_with_franka_config(self):
-        """Test camera initialization with Franka config."""
-        with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
-            mock_rclpy.ok.return_value = True
-
-            with patch("crisp_py.camera.camera.CallbackMonitor"):
-                mock_node = Mock()
-                mock_node.create_subscription.return_value = Mock()
-                mock_rclpy.create_node.return_value = mock_node
-
-                franka_config = FrankaCameraConfig()
-                camera = Camera(config=franka_config, spin_node=False)
-
-                assert camera.config == franka_config
-                assert camera.config.camera_name == "franka"
-                assert camera.config.resolution == (256, 256)
 
     def test_camera_init_with_namespace(self):
         """Test camera initialization with namespace."""

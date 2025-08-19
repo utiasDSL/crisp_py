@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-from sensor_msgs.msg import JointState
+from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray
 
 from crisp_py.sensors.sensor import Float32ArraySensor, ForceTorqueSensor, Sensor
@@ -138,7 +138,6 @@ class TestSensor:
         result = sensor.value
 
         np.testing.assert_array_equal(result, np.array([2.0, 2.0]))
-        mock_callback_monitor_instance.check_callback_health.assert_called_once()
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
@@ -219,7 +218,7 @@ class TestTorqueSensor:
 
         mock_node.create_subscription.assert_called_once()
         args, _ = mock_node.create_subscription.call_args
-        assert args[0] == JointState
+        assert args[0] == WrenchStamped
         assert args[1] == "sensor_data"  # default topic
 
     @patch("crisp_py.sensors.sensor.rclpy")
@@ -232,10 +231,15 @@ class TestTorqueSensor:
         sensor_config = EmptySensorConfig(shape=(3,))
         sensor = ForceTorqueSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
-        msg = JointState()
-        msg.effort = [0.5, 1.0, 1.5]
+        msg = WrenchStamped()
+        msg.wrench.force.x = 0.5
+        msg.wrench.force.y = 1.0
+        msg.wrench.force.z = 1.5
+        msg.wrench.torque.x = 0.0
+        msg.wrench.torque.y = 0.0
+        msg.wrench.torque.z = 0.0
 
-        sensor._callback_joint_state(msg)
+        sensor._callback_wrench(msg)
 
-        np.testing.assert_array_equal(sensor._value, np.array([0.5, 1.0, 1.5]))
-        np.testing.assert_array_equal(sensor._baseline, np.array([0.0, 0.0, 0.0]))
+        np.testing.assert_array_equal(sensor._value, np.array([0.5, 1.0, 1.5, 0.0, 0.0, 0.0]))
+        np.testing.assert_array_equal(sensor._baseline, np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
