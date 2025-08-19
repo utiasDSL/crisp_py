@@ -151,15 +151,13 @@ class ForceTorqueSensor(Sensor):
         self.node.create_subscription(
             WrenchStamped,
             self.config.data_topic,
-            self._callback_monitor.monitor(
-                name="force_torque_monitor", func=self._callback_joint_state
-            ),
+            self._callback_monitor.monitor(name="force_torque_monitor", func=self._callback_wrench),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
 
-    def _callback_joint_state(self, msg: WrenchStamped):
-        """Callback for joint state data."""
+    def _callback_wrench(self, msg: WrenchStamped):
+        """Callback for wrench data."""
         self._value = np.array(
             [
                 msg.wrench.force.x,
@@ -190,10 +188,4 @@ def make_sensor(
             sensor_config=sensor_config,
             **kwargs,
         )
-        )
-    elif sensor_config.sensor_type == "empty":
-        return EmptySensor(
-            sensor_config=sensor_config,
-            **kwargs,
-        )
-        raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
+    raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
