@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/utiasDSL/crisp_py/compare/v1.3.1...v1.4.0) (2025-08-19)
+
+
+### Features
+
+* add sensor factory + mistake in wrench sensor ([3f3e951](https://github.com/utiasDSL/crisp_py/commit/3f3e951575cae5e957cc384c6b28812406574257))
+
 ## [1.3.1](https://github.com/utiasDSL/crisp_py/compare/v1.3.0...v1.3.1) (2025-08-13)
 
 
