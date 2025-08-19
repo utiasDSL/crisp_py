@@ -3,14 +3,13 @@
 import threading
 from abc import ABC, abstractmethod
 
-from geometry_msgs.msg import WrenchStamped
 import numpy as np
 import rclpy
+from geometry_msgs.msg import WrenchStamped
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
-from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32MultiArray
 
 from crisp_py.sensors.sensor_config import SensorConfig

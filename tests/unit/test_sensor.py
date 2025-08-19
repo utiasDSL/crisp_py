@@ -7,7 +7,7 @@ import pytest
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32MultiArray
 
-from crisp_py.sensors.sensor import Float32ArraySensor, Sensor, ForceTorqueSensor
+from crisp_py.sensors.sensor import Float32ArraySensor, ForceTorqueSensor, Sensor
 from crisp_py.sensors.sensor_config import EmptySensorConfig, SensorConfig
 
 
