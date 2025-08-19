@@ -190,5 +190,10 @@ def make_sensor(
             sensor_config=sensor_config,
             **kwargs,
         )
-    else:
+        )
+    elif sensor_config.sensor_type == "empty":
+        return EmptySensor(
+            sensor_config=sensor_config,
+            **kwargs,
+        )
         raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
