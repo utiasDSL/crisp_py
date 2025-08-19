@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import rclpy
+from geometry_msgs.msg import WrenchStamped
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
-from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32MultiArray
 
 from crisp_py.sensors.sensor_config import SensorConfig
@@ -54,7 +54,7 @@ class Sensor(ABC):
         self._value: np.ndarray | None = None
         self._baseline: np.ndarray | None = None
         self._callback_monitor = CallbackMonitor(
-            self.node, f"Sensor '{self.config.name}'", self.config.max_data_delay
+            self.node, stale_threshold=self.config.max_data_delay
         )
 
         self._create_subscription()
@@ -72,7 +72,6 @@ class Sensor(ABC):
         """Get the latest calibrated sensor value."""
         if self._value is None or self._baseline is None:
             raise ValueError("Sensor value is not available yet.")
-        self._callback_monitor.check_callback_health()
         return self._value - self._baseline
 
     def _spin_node(self):
@@ -132,7 +131,7 @@ class Float32ArraySensor(Sensor):
         self.node.create_subscription(
             Float32MultiArray,
             self.config.data_topic,
-            self._callback_monitor.monitor(self._callback_sensor_data),
+            self._callback_monitor.monitor(name="float32", func=self._callback_sensor_data),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
@@ -144,21 +143,49 @@ class Float32ArraySensor(Sensor):
             self._baseline = np.zeros_like(self._value)
 
 
-class TorqueSensor(Sensor):
-    """Torque sensor that subscribes to JointState messages."""
+class ForceTorqueSensor(Sensor):
+    """Torque sensor that subscribes to WrenchStamped messages."""
 
     def _create_subscription(self):
-        """Create the ROS2 subscription for JointState messages."""
+        """Create the ROS2 subscription for WrenchStamped messages."""
         self.node.create_subscription(
-            JointState,
+            WrenchStamped,
             self.config.data_topic,
-            self._callback_monitor(self._callback_joint_state),
+            self._callback_monitor.monitor(name="force_torque_monitor", func=self._callback_wrench),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
 
-    def _callback_joint_state(self, msg: JointState):
-        """Callback for joint state data."""
-        self._value = np.array(msg.effort, dtype=np.float32)
+    def _callback_wrench(self, msg: WrenchStamped):
+        """Callback for wrench data."""
+        self._value = np.array(
+            [
+                msg.wrench.force.x,
+                msg.wrench.force.y,
+                msg.wrench.force.z,
+                msg.wrench.torque.x,
+                msg.wrench.torque.y,
+                msg.wrench.torque.z,
+            ],
+            dtype=np.float32,
+        )
         if self._baseline is None:
             self._baseline = np.zeros_like(self._value)
+
+
+def make_sensor(
+    sensor_config: SensorConfig,
+    **kwargs,  # noqa: ANN003
+) -> Sensor:
+    """Factory function to create a sensor based on the configuration."""
+    if sensor_config.sensor_type == "float32":
+        return Float32ArraySensor(
+            sensor_config=sensor_config,
+            **kwargs,
+        )
+    elif sensor_config.sensor_type == "force_torque":
+        return ForceTorqueSensor(
+            sensor_config=sensor_config,
+            **kwargs,
+        )
+    raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
