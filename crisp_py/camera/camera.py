@@ -16,6 +16,8 @@ from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 from crisp_py.camera.camera_config import CameraConfig
 from crisp_py.utils.callback_monitor import CallbackMonitor
 
+RESIZING_STRATEGIES = ["crop"]  # TODO add padding @ZhangYi1999
+
 
 class Camera:
     """High level interface for managing cameras in ROS2.
@@ -43,6 +45,11 @@ class Camera:
             spin_node (bool, optional): Whether to spin the node in a separate thread.
         """
         self.config = config if config else CameraConfig()
+        if self.config.resizing_strategy not in RESIZING_STRATEGIES:
+            raise ValueError(
+                f"Invalid resizing strategy: {self.config.resizing_strategy}. "
+                f"Supported strategies: {RESIZING_STRATEGIES}"
+            )
 
         if node is None:
             if not rclpy.ok():
@@ -172,6 +179,20 @@ class Camera:
 
     def _resize_with_aspect_ratio(self, image: np.ndarray, target_res: tuple) -> np.ndarray:
         """Resize an image to fit within a target resolution while maintaining aspect ratio, cropping if necessary."""
+        if self.config.resizing_strategy == "crop":
+            resized_image = self.__crop_image(image, target_res)
+        elif self.config.resizing_strategy == "pad":
+            resized_image = self.__pad_image(image, target_res)
+        else:
+            raise ValueError(
+                f"Invalid resizing strategy: {self.config.resizing_strategy}. "
+                f"Supported strategies: {RESIZING_STRATEGIES}"
+            )
+
+        return resized_image
+
+    def __crop_image(self, image: np.ndarray, target_res: tuple) -> np.ndarray:
+        """Crop an image to fit within a target resolution."""
         h, w = image.shape[:2]
         target_h, target_w = target_res
 
@@ -184,5 +205,25 @@ class Camera:
         start_y = (new_h - target_h) // 2
 
         cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
-
         return cropped_image
+
+    def __pad_image(self, image: np.ndarray, target_res: tuple) -> np.ndarray:
+        """Pad an image to fit within a target resolution."""
+        # h, w = image.shape[:2]
+        # target_h, target_w = target_res
+        #
+        # pad_h = max(0, target_h - h)
+        # pad_w = max(0, target_w - w)
+        #
+        # top = pad_h // 2
+        # bottom = pad_h - top
+        # left = pad_w // 2
+        # right = pad_w - left
+        #
+        # padded_image = cv2.copyMakeBorder(
+        #     image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=(0, 0, 0)
+        # )
+        # return padded_image
+        raise NotImplementedError(
+            "Padding strategy is not implemented yet. Please use cropping strategy."
+        )
