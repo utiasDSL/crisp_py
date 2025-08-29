@@ -1,4 +1,4 @@
 joint_state_topic: trigger_state_broadcaster/joint_states
-max_value: 1.10193625925745
-min_value: 1.8907875646311676
-index: 1
+max_value: 2.9205915060820713
+min_value: 3.010893992305814
+index: 0
