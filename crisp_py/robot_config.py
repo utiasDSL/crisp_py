@@ -75,11 +75,11 @@ class FrankaConfig(RobotConfig):
     home_config: list = field(
         default_factory=lambda: [
             0,
-            -np.pi / 4,
             0,
-            -3 * np.pi / 4,
             0,
-            np.pi / 2,
+            -3 * np.pi / 5,
+            0,
+            3 * np.pi / 5,
             np.pi / 4,
         ]
     )
