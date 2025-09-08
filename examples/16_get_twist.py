@@ -1,13 +1,15 @@
-"""Try to follow a "figure eight" target on the yz plane."""
+"""Example showing how to get the end-effector twist (linear and angular velocity) of the robot."""
 
 # %%
 import time
 
-from crisp_py.robot import Robot
 from rich import print
 import numpy as np
+import matplotlib.pyplot as plt
 
+from crisp_py.robot import Robot
 from crisp_py.utils.geometry import Pose
+
 # %%
 
 # robot = Robot()
@@ -61,7 +63,6 @@ while (time.time() - start_time) < max_duration:
 
 # %%
 
-import matplotlib.pyplot as plt
 plt.figure()
 plt.subplot(2, 1, 1)
 plt.plot(np.arange(len(end_effector_z_position)) * dt, end_effector_z_position)

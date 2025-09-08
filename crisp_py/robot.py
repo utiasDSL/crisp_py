@@ -220,7 +220,9 @@ class Robot:
 
     @property
     def end_effector_twist(self) -> TwistStamped:
-        """Get the current twist of the end effector.
+        """Get the current twist of the end effector as ROS message.
+
+        It is recommended to use end_effector_linear_velocity and end_effector_angular_velocity instead to avoid unnecessary conversions.
 
         Returns:
             TwistStamped: Current end-effector twist message.
