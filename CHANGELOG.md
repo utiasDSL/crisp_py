@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0](https://github.com/utiasDSL/crisp_py/compare/v1.4.0...v1.5.0) (2025-09-08)
+
+
+### Features
+
+* Add twist monitoring in robot object ([738bd86](https://github.com/utiasDSL/crisp_py/commit/738bd8671bb48270f10a0503da6be88c7e213a44))
+* added twist to robot ([651adda](https://github.com/utiasDSL/crisp_py/commit/651addac585ea3cf593866f2d045c3ef37865baa))
+* move Pose and Twist classes to utils/geometry.py ([89ec5a5](https://github.com/utiasDSL/crisp_py/commit/89ec5a59fbfe9e41029b238206031606224898d1))
+
 ## [1.4.0](https://github.com/utiasDSL/crisp_py/compare/v1.3.1...v1.4.0) (2025-08-19)
 
 
