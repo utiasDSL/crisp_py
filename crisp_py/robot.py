@@ -1,13 +1,12 @@
 """Provides a client to control the franka robot. It is the easiest way to control the robot using ROS2."""
 
 import threading
-from dataclasses import dataclass
 from typing import List
 
 import numpy as np
 import rclpy
 import rclpy.executors
-from geometry_msgs.msg import PoseStamped, WrenchStamped
+from geometry_msgs.msg import PoseStamped, TwistStamped, WrenchStamped
 from numpy.typing import NDArray
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
@@ -20,36 +19,7 @@ from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryC
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
 from crisp_py.utils.callback_monitor import CallbackMonitor
-
-
-@dataclass
-class Pose:
-    """Compact representation of an SE3 object."""
-
-    position: np.ndarray
-    orientation: Rotation
-
-    def copy(self) -> "Pose":
-        """Create a copy of this pose."""
-        return Pose(self.position.copy(), Rotation.from_quat(self.orientation.as_quat()))
-
-    def __str__(self) -> str:
-        """Return a string representation of a Pose."""
-        return f"Pos: {np.array2string(self.position, suppress_small=True, precision=2, floatmode='fixed')},\n Orientation: {np.array2string(self.orientation.as_matrix(), suppress_small=True, precision=2, floatmode='fixed')}"
-
-    def __sub__(self, other: "Pose") -> "Pose":
-        """Subtract another pose from this pose, i.e. compute the relative pose."""
-        return Pose(
-            self.position - other.position,
-            self.orientation * other.orientation.inv(),
-        )
-
-    def __add__(self, other: "Pose") -> "Pose":
-        """Add another pose to this pose, i.e. add a relative pose."""
-        return Pose(
-            self.position + other.position,
-            other.orientation * self.orientation,
-        )
+from crisp_py.utils.geometry import Pose, Twist
 
 
 class Robot:
@@ -111,6 +81,7 @@ class Robot:
         self._current_joint = None
         self._target_joint = None
         self._target_wrench = None
+        self._current_twist = None
 
         self._callback_monitor = CallbackMonitor(
             node=self.node,
@@ -140,6 +111,16 @@ class Robot:
             self.config.current_joint_topic,
             self._callback_monitor.monitor(
                 f"{namespace.capitalize()} Current Joint", self._callback_current_joint
+            ),
+            qos_profile_sensor_data,
+            callback_group=ReentrantCallbackGroup(),
+        )
+
+        self.node.create_subscription(
+            TwistStamped,
+            self.config.current_twist_topic,
+            self._callback_monitor.monitor(
+                f"{namespace.capitalize()} Current Twist", self._callback_current_twist
             ),
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
@@ -237,6 +218,22 @@ class Robot:
             )
         return self._target_joint.copy()
 
+    @property
+    def end_effector_twist(self) -> Twist:
+        """Get the current twist of the end effector.
+
+        Returns:
+            Twist: Current end-effector twist message.
+
+        Raises:
+            RuntimeError: If no twist messages have been received yet.
+        """
+        if self._current_twist is None:
+            raise RuntimeError(
+                f"The robot has not received any twists yet. Is the current_twist_topic {self.config.current_twist_topic} correct?"
+            )
+        return self._current_twist.copy()
+
     def is_ready(self) -> bool:
         """Check if the robot is ready for operation.
 
@@ -311,7 +308,11 @@ class Robot:
         """
         if self._target_pose is None or not rclpy.ok():
             return
-        self._target_pose_publisher.publish(self._pose_to_pose_msg(self._target_pose))
+        self._target_pose_publisher.publish(
+            self._target_pose.to_ros_msg(
+                self.config.base_frame, self.node.get_clock().now().to_msg()
+            )
+        )
 
     def _callback_publish_target_joint(self):
         """Publish the current target joint configuration if one exists.
@@ -384,9 +385,20 @@ class Robot:
         Args:
             msg (PoseStamped): ROS message containing the current pose.
         """
-        self._current_pose = self._pose_msg_to_pose(msg)
+        self._current_pose = Pose.from_ros_msg(msg)
         if self._target_pose is None:
             self._target_pose = self._current_pose.copy()
+
+    def _callback_current_twist(self, msg: TwistStamped):
+        """Update the current twist from a ROS message.
+
+        This callback is triggered when a new twist message is received. It updates
+        the current twist.
+
+        Args:
+            msg (TwistStamped): ROS message containing the current twist.
+        """
+        self._current_twist = Twist.from_ros_msg(msg)
 
     def _callback_current_joint(self, msg: JointState):
         """Update the current joint state from a ROS message.
@@ -466,34 +478,6 @@ class Robot:
 
         # if switch_to_default_controller:
         #     self.controller_switcher_client.switch_controller(self.config.default_controller)
-
-    def _pose_msg_to_pose(self, pose: PoseStamped) -> Pose:
-        """Convert a ROS2 pose msg to a pose."""
-        position = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
-        orientation = Rotation.from_quat(
-            [
-                pose.pose.orientation.x,
-                pose.pose.orientation.y,
-                pose.pose.orientation.z,
-                pose.pose.orientation.w,
-            ]
-        )
-        return Pose(position, orientation)
-
-    def _pose_to_pose_msg(self, pose: Pose) -> PoseStamped:
-        """Convert a pose to a pose message."""
-        msg = PoseStamped()
-        msg.header.frame_id = self.config.base_frame
-        msg.header.stamp = self.node.get_clock().now().to_msg()
-        msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = pose.position
-        q = pose.orientation.as_quat()
-        (
-            msg.pose.orientation.x,
-            msg.pose.orientation.y,
-            msg.pose.orientation.z,
-            msg.pose.orientation.w,
-        ) = q
-        return msg
 
     def _joint_to_joint_msg(
         self, q: NDArray, dq: NDArray | None = None, tau: NDArray | None = None
