@@ -17,9 +17,7 @@ robot = Robot(namespace="left")
 robot.wait_until_ready()
 
 # %%
-print(robot.end_effector_linear_velocity)
-print(robot.end_effector_angular_velocity)
-print(robot.end_effector_twist.twist)
+print(robot.end_effector_twist)
 
 # %%
 
@@ -56,7 +54,7 @@ while (time.time() - start_time) < max_duration:
     robot.set_target(pose=target_pose)
 
     end_effector_z_position.append(robot.end_effector_pose.position[2])
-    end_effector_z_velocity.append(robot.end_effector_linear_velocity[2])
+    end_effector_z_velocity.append(robot.end_effector_twist.linear[2])
 
     time.sleep(dt)
 

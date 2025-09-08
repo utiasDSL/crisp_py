@@ -19,7 +19,7 @@ from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryC
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
 from crisp_py.utils.callback_monitor import CallbackMonitor
-from crisp_py.utils.geometry import Pose
+from crisp_py.utils.geometry import Pose, Twist
 
 
 class Robot:
@@ -219,13 +219,11 @@ class Robot:
         return self._target_joint.copy()
 
     @property
-    def end_effector_twist(self) -> TwistStamped:
-        """Get the current twist of the end effector as ROS message.
-
-        It is recommended to use end_effector_linear_velocity and end_effector_angular_velocity instead to avoid unnecessary conversions.
+    def end_effector_twist(self) -> Twist:
+        """Get the current twist of the end effector.
 
         Returns:
-            TwistStamped: Current end-effector twist message.
+            Twist: Current end-effector twist message.
 
         Raises:
             RuntimeError: If no twist messages have been received yet.
@@ -234,51 +232,7 @@ class Robot:
             raise RuntimeError(
                 f"The robot has not received any twists yet. Is the current_twist_topic {self.config.current_twist_topic} correct?"
             )
-        return self._current_twist
-
-    @property
-    def end_effector_linear_velocity(self) -> np.ndarray:
-        """Get the current linear velocity of the end effector.
-
-        Returns:
-            numpy.ndarray: Current end-effector velocity as a 3D vector.
-
-        Raises:
-            RuntimeError: If the robot has not received any twists yet.
-        """
-        if self._current_twist is None:
-            raise RuntimeError(
-                f"The robot has not received any twists yet. Is the current_twist_topic {self.config.current_twist_topic} correct?"
-            )
-        return np.array(
-            [
-                self._current_twist.twist.linear.x,
-                self._current_twist.twist.linear.y,
-                self._current_twist.twist.linear.z,
-            ]
-        )
-
-    @property
-    def end_effector_angular_velocity(self) -> np.ndarray:
-        """Get the current angular velocity of the end effector.
-
-        Returns:
-            numpy.ndarray: Current end-effector angular velocity as a 3D vector.
-
-        Raises:
-            RuntimeError: If no twist messages have been received yet.
-        """
-        if self._current_twist is None:
-            raise RuntimeError(
-                f"The robot has not received any twists yet. Is the current_twist_topic {self.config.current_twist_topic} correct?"
-            )
-        return np.array(
-            [
-                self._current_twist.twist.angular.x,
-                self._current_twist.twist.angular.y,
-                self._current_twist.twist.angular.z,
-            ]
-        )
+        return self._current_twist.copy()
 
     def is_ready(self) -> bool:
         """Check if the robot is ready for operation.
@@ -354,7 +308,11 @@ class Robot:
         """
         if self._target_pose is None or not rclpy.ok():
             return
-        self._target_pose_publisher.publish(self._pose_to_pose_msg(self._target_pose))
+        self._target_pose_publisher.publish(
+            self._target_pose.to_ros_msg(
+                self.config.base_frame, self.node.get_clock().now().to_msg()
+            )
+        )
 
     def _callback_publish_target_joint(self):
         """Publish the current target joint configuration if one exists.
@@ -427,7 +385,7 @@ class Robot:
         Args:
             msg (PoseStamped): ROS message containing the current pose.
         """
-        self._current_pose = self._pose_msg_to_pose(msg)
+        self._current_pose = Pose.from_ros_msg(msg)
         if self._target_pose is None:
             self._target_pose = self._current_pose.copy()
 
@@ -440,7 +398,7 @@ class Robot:
         Args:
             msg (TwistStamped): ROS message containing the current twist.
         """
-        self._current_twist = msg
+        self._current_twist = Twist.from_ros_msg(msg)
 
     def _callback_current_joint(self, msg: JointState):
         """Update the current joint state from a ROS message.
@@ -520,34 +478,6 @@ class Robot:
 
         # if switch_to_default_controller:
         #     self.controller_switcher_client.switch_controller(self.config.default_controller)
-
-    def _pose_msg_to_pose(self, pose: PoseStamped) -> Pose:
-        """Convert a ROS2 pose msg to a pose."""
-        position = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
-        orientation = Rotation.from_quat(
-            [
-                pose.pose.orientation.x,
-                pose.pose.orientation.y,
-                pose.pose.orientation.z,
-                pose.pose.orientation.w,
-            ]
-        )
-        return Pose(position, orientation)
-
-    def _pose_to_pose_msg(self, pose: Pose) -> PoseStamped:
-        """Convert a pose to a pose message."""
-        msg = PoseStamped()
-        msg.header.frame_id = self.config.base_frame
-        msg.header.stamp = self.node.get_clock().now().to_msg()
-        msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = pose.position
-        q = pose.orientation.as_quat()
-        (
-            msg.pose.orientation.x,
-            msg.pose.orientation.y,
-            msg.pose.orientation.z,
-            msg.pose.orientation.w,
-        ) = q
-        return msg
 
     def _joint_to_joint_msg(
         self, q: NDArray, dq: NDArray | None = None, tau: NDArray | None = None
