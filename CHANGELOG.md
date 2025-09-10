@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/utiasDSL/crisp_py/compare/v1.5.0...v1.5.1) (2025-09-10)
+
+
+### Bug Fixes
+
+* gripper manual calibration had a wrong arguument - index ([db211e5](https://github.com/utiasDSL/crisp_py/commit/db211e5aca6a59d32bc7c690bf4fe594b2b610f5))
+
 ## [1.5.0](https://github.com/utiasDSL/crisp_py/compare/v1.4.0...v1.5.0) (2025-09-08)
 
 
