@@ -46,8 +46,8 @@ print(f"Using gripper index: [bold blue]{args.index}[/bold blue]")
 print(":bulb: To modifiy these parameters, add the [bold]--help[/bold] flag to this command.\n")
 
 
-gripper_config = GripperConfig(0.0, 1.0, joint_state_topic=args.joint_state_topic)
-gripper = Gripper(gripper_config=gripper_config, namespace=args.namespace, index=args.index)
+gripper_config = GripperConfig(0.0, 1.0, joint_state_topic=args.joint_state_topic, index=args.index)
+gripper = Gripper(gripper_config=gripper_config, namespace=args.namespace)
 gripper.wait_until_ready()
 
 # %%
