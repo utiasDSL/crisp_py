@@ -1,6 +1,5 @@
 """Util class to get a pose from the tf2 instead of using a dedicated topic."""
 
-import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
 from tf2_ros.buffer import Buffer
