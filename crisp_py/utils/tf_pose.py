@@ -43,12 +43,6 @@ class TfPose:
 
     def _callback_retrieve_pose(self):
         """Retrieve the latest transform between source_frame and target_frame."""
-        # self.node.get_logger().info(
-        #     f"Retrieving transform from {self.source_frame} to {self.target_frame}"
-        # )
-        # self.node.get_logger().info(
-        #     f"Current time: {self.node.get_clock().now().seconds_nanoseconds()}"
-        # )
         try:
             transform = self.tf_buffer.lookup_transform(
                 self.source_frame, self.target_frame, Time()
