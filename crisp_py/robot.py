@@ -64,7 +64,6 @@ class Robot:
             self.node = rclpy.create_node(
                 name,
                 namespace=namespace,
-                # parameter_overrides=[Parameter("use_sim_time", Parameter.Type.BOOL, True)],
             )
         else:
             self.node = node
