@@ -6,6 +6,7 @@ import numpy as np
 from builtin_interfaces.msg import Time as TimeMsg
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from scipy.spatial.transform import Rotation
+from tf2_ros import TransformStamped
 
 
 @dataclass
@@ -47,6 +48,22 @@ class Pose:
                 msg.pose.orientation.y,
                 msg.pose.orientation.z,
                 msg.pose.orientation.w,
+            ]
+        )
+        return cls(position, orientation)
+
+    @classmethod
+    def from_transform_msg(cls, msg: TransformStamped) -> "Pose":
+        """Create Pose from ROS TransformStamped message."""
+        position = np.array(
+            [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z]
+        )
+        orientation = Rotation.from_quat(
+            [
+                msg.transform.rotation.x,
+                msg.transform.rotation.y,
+                msg.transform.rotation.z,
+                msg.transform.rotation.w,
             ]
         )
         return cls(position, orientation)

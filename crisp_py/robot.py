@@ -20,6 +20,7 @@ from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot_config import FrankaConfig, RobotConfig
 from crisp_py.utils.callback_monitor import CallbackMonitor
 from crisp_py.utils.geometry import Pose, Twist
+from crisp_py.utils.tf_pose import TfPose
 
 
 class Robot:
@@ -60,7 +61,10 @@ class Robot:
         if node is None:
             if not rclpy.ok():
                 rclpy.init()
-            self.node = rclpy.create_node(name, namespace=namespace)
+            self.node = rclpy.create_node(
+                name,
+                namespace=namespace,
+            )
         else:
             self.node = node
         self.config = robot_config if robot_config else FrankaConfig()
@@ -82,6 +86,7 @@ class Robot:
         self._target_joint = None
         self._target_wrench = None
         self._current_twist = None
+        self._tf_pose = None
 
         self._callback_monitor = CallbackMonitor(
             node=self.node,
@@ -97,15 +102,23 @@ class Robot:
         self._target_joint_publisher = self.node.create_publisher(
             JointState, self.config.target_joint_topic, qos_profile_system_default
         )
-        self.node.create_subscription(
-            PoseStamped,
-            self.config.current_pose_topic,
-            self._callback_monitor.monitor(
-                f"{namespace.capitalize()} Current Pose", self._callback_current_pose
-            ),
-            qos_profile_sensor_data,
-            callback_group=ReentrantCallbackGroup(),
-        )
+        if self.config.use_tf_pose:
+            self._tf_pose = TfPose(
+                self.node,
+                self.config.target_frame,
+                self.config.base_frame,
+                self.config.tf_retrieve_rate,
+            )
+        else:
+            self.node.create_subscription(
+                PoseStamped,
+                self.config.current_pose_topic,
+                self._callback_monitor.monitor(
+                    f"{namespace.capitalize()} Current Pose", self._callback_current_pose
+                ),
+                qos_profile_sensor_data,
+                callback_group=ReentrantCallbackGroup(),
+            )
         self.node.create_subscription(
             JointState,
             self.config.current_joint_topic,
@@ -126,13 +139,20 @@ class Robot:
             callback_group=ReentrantCallbackGroup(),
         )
 
-        self.node.create_timer(
-            1.0 / self.config.publish_frequency,
-            self._callback_monitor.monitor(
-                f"{namespace.capitalize()} Target Pose", self._callback_publish_target_pose
-            ),
-            ReentrantCallbackGroup(),
-        )
+        if not self.config.use_tf_pose:
+            self.node.create_timer(
+                1.0 / self.config.publish_frequency,
+                self._callback_monitor.monitor(
+                    f"{namespace.capitalize()} Target Pose", self._callback_publish_target_pose
+                ),
+                ReentrantCallbackGroup(),
+            )
+        else:
+            self.node.create_timer(
+                1.0 / self.config.publish_frequency,
+                self._callback_update_tf_pose,
+                ReentrantCallbackGroup(),
+            )
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
             self._callback_monitor.monitor(
@@ -233,6 +253,13 @@ class Robot:
                 f"The robot has not received any twists yet. Is the current_twist_topic {self.config.current_twist_topic} correct?"
             )
         return self._current_twist.copy()
+
+    def _callback_update_tf_pose(self):
+        """Update the current pose from TF if TF pose is enabled."""
+        if self._tf_pose is not None and self._tf_pose.current_pose is not None:
+            self._current_pose = self._tf_pose.pose
+            if self._target_pose is None:
+                self._target_pose = self._current_pose.copy()
 
     def is_ready(self) -> bool:
         """Check if the robot is ready for operation.
