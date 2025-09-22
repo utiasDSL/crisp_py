@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Optional
 
 import yaml
 from rclpy.node import Node
@@ -22,6 +22,7 @@ from crisp_py.sensors.sensor_config import SensorConfig, make_sensor_config
 from crisp_py.types import (
     ComponentType,
     CustomCameraType,
+    CustomGripperType,
     CustomRobotType,
     CustomSensorType,
 )
@@ -297,7 +298,7 @@ class CrispFactory:
     def create_gripper(
         self,
         *,
-        gripper_type: Literal["default", "hello"] = "default",
+        gripper_type: Lit = "default",
         config_name: Optional[str] = None,
         node: Optional[Node] = None,
         **overrides,  # noqa: ANN003
@@ -336,7 +337,7 @@ class CrispFactory:
         sensor_type: CustomSensorType,
         config_name: Optional[str] = None,
         node: Optional[Node] = None,
-        **overrides,
+        **overrides,  # noqa: ANN003
     ) -> Any:
         """Create a sensor instance with automatic configuration resolution.
 
