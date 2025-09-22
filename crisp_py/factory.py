@@ -298,7 +298,7 @@ class CrispFactory:
     def create_gripper(
         self,
         *,
-        gripper_type: Lit = "default",
+        gripper_type: CustomGripperType = "default",
         config_name: Optional[str] = None,
         node: Optional[Node] = None,
         **overrides,  # noqa: ANN003
