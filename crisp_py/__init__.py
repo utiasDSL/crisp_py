@@ -4,6 +4,7 @@ import importlib.metadata
 
 __version__ = importlib.metadata.version("crisp_python")
 
+
 try:
     import rclpy  # noqa: F401
 except ImportError:
