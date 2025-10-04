@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/utiasDSL/crisp_py/compare/v1.5.1...v1.6.0) (2025-10-04)
+
+
+### Features
+
+* added a function to Camera to check if the images changed since the last retrieval ([44094b9](https://github.com/utiasDSL/crisp_py/commit/44094b99ea550a85ed59e66992d6bf182e2a802e))
+
 ## [1.5.1](https://github.com/utiasDSL/crisp_py/compare/v1.5.0...v1.5.1) (2025-09-10)
 
 
