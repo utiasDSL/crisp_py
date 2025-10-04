@@ -99,7 +99,7 @@ class Camera:
         )
 
     def has_image_changed_since_last_retrieval(self) -> bool:
-        """Return true if the image has changed since the last time that the current_image has be accessed.
+        """Return true if the image has changed since the last time that the current_image has been accessed.
 
         This is useful to avoid processing the same image multiple times.
 
