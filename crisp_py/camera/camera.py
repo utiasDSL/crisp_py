@@ -81,6 +81,8 @@ class Camera:
             callback_group=ReentrantCallbackGroup(),
         )
 
+        self._image_has_changed = False
+
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
 
@@ -106,7 +108,7 @@ class Camera:
         Returns:
             bool: True if the image has changed since the last retrieval.
         """
-        return not self._image_has_not_changed
+        return self._image_has_changed
 
     @property
     def current_image(self) -> np.ndarray:
@@ -133,7 +135,7 @@ class Camera:
         except ValueError:
             # Callback not found, which is expected if no data has been received yet
             pass
-        self._image_has_not_changed = True
+        self._image_has_changed = False
         return self._current_image
 
     @property
@@ -161,7 +163,7 @@ class Camera:
         # raw_image = self._image_to_array(msg)
         # if self.config.resolution is not None:
         #     raw_image = self._resize_with_aspect_ratio(raw_image, self.config.resolution)
-        self._image_has_not_changed = False
+        self._image_has_changed = True
         self._current_image = self._resize_with_aspect_ratio(
             self._uncompress(msg), target_res=self.config.resolution
         )
