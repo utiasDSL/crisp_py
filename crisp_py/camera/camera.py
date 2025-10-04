@@ -60,13 +60,6 @@ class Camera:
 
         self.cv_bridge = CvBridge()
 
-        # self.node.create_subscription(
-        #     Image,
-        #     self.config.camera_color_image_topic,
-        #     self._callback_current_color_image,
-        #     qos_profile_system_default,
-        #     callback_group=ReentrantCallbackGroup(),
-        # )
         self.node.create_subscription(
             CompressedImage,
             f"{self.config.camera_color_image_topic}/compressed",
@@ -88,6 +81,8 @@ class Camera:
             callback_group=ReentrantCallbackGroup(),
         )
 
+        self._image_has_changed = False
+
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
 
@@ -104,6 +99,16 @@ class Camera:
         return np.asarray(
             self.cv_bridge.compressed_imgmsg_to_cv2(compressed_image, desired_encoding="rgb8")
         )
+
+    def has_image_changed_since_last_retrieval(self) -> bool:
+        """Return true if the image has changed since the last time that the current_image has been accessed.
+
+        This is useful to avoid processing the same image multiple times.
+
+        Returns:
+            bool: True if the image has changed since the last retrieval.
+        """
+        return self._image_has_changed
 
     @property
     def current_image(self) -> np.ndarray:
@@ -130,6 +135,7 @@ class Camera:
         except ValueError:
             # Callback not found, which is expected if no data has been received yet
             pass
+        self._image_has_changed = False
         return self._current_image
 
     @property
@@ -157,6 +163,7 @@ class Camera:
         # raw_image = self._image_to_array(msg)
         # if self.config.resolution is not None:
         #     raw_image = self._resize_with_aspect_ratio(raw_image, self.config.resolution)
+        self._image_has_changed = True
         self._current_image = self._resize_with_aspect_ratio(
             self._uncompress(msg), target_res=self.config.resolution
         )
