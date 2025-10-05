@@ -110,7 +110,7 @@ class Robot:
                 self.config.tf_retrieve_rate,
             )
         else:
-            self.node.create_subscription(
+            self._pose_subscriber = self.node.create_subscription(
                 PoseStamped,
                 self.config.current_pose_topic,
                 self._callback_monitor.monitor(
@@ -119,7 +119,7 @@ class Robot:
                 qos_profile_sensor_data,
                 callback_group=ReentrantCallbackGroup(),
             )
-        self.node.create_subscription(
+        self._joint_subscriber = self.node.create_subscription(
             JointState,
             self.config.current_joint_topic,
             self._callback_monitor.monitor(
@@ -299,7 +299,15 @@ class Robot:
             rate.sleep()
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
-                raise TimeoutError("Timeout waiting for end-effector pose.")
+                error_msg = "Timeout waiting for robot to be available.\n"
+                error_msg += (
+                    f"Either {self.config.current_pose_topic} is not publishing poses\n"
+                    if not self.config.use_tf_pose
+                    else f"Either TF is not publishing the transform from {self.config.base_frame} to {self.config.target_frame}\n"
+                )
+                error_msg += f"or {self.config.current_joint_topic} is not publishing joint states."
+
+                raise TimeoutError(error_msg)
 
     def set_target(self, position: List | NDArray | None = None, pose: Pose | None = None):
         """Set the target pose for the end-effector.

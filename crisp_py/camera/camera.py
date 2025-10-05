@@ -13,7 +13,7 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 
-from crisp_py.camera.camera_config import CameraConfig
+from crisp_py.camera.camera_config import CameraConfig, DummyCameraConfig
 from crisp_py.utils.callback_monitor import CallbackMonitor
 
 
@@ -29,9 +29,9 @@ class Camera:
 
     def __init__(
         self,
-        node: Optional[Node] = None,
+        node: Node | None = None,
         namespace: str = "",
-        config: Optional[CameraConfig] = None,
+        config: CameraConfig | None = None,
         spin_node: bool = True,
     ):
         """Initialize the camera.
@@ -42,7 +42,9 @@ class Camera:
             config (CameraConfig): Camera configuration.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
         """
-        self.config = config if config else CameraConfig()
+        self.config = (
+            config if config else DummyCameraConfig()
+        )  # NOTE: it would be better to no allow None here
 
         if node is None:
             if not rclpy.ok():
@@ -60,7 +62,7 @@ class Camera:
 
         self.cv_bridge = CvBridge()
 
-        self.node.create_subscription(
+        self._camera_subscriber = self.node.create_subscription(
             CompressedImage,
             f"{self.config.camera_color_image_topic}/compressed",
             self._callback_monitor.monitor(
@@ -70,7 +72,7 @@ class Camera:
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
-        self.node.create_subscription(
+        self._camera_info_subscriber = self.node.create_subscription(
             CameraInfo,
             self.config.camera_color_info_topic,
             self._callback_monitor.monitor(
@@ -154,15 +156,16 @@ class Camera:
             rate.sleep()
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
-                raise TimeoutError(
+                error_msg = (
                     f"Timeout waiting for camera ({self.config.camera_name}) to become ready."
                 )
+                error_msg += (
+                    f"Is the camera publishing to the topic {self._camera_subscriber.topic_name}?"
+                )
+                raise TimeoutError()
 
-    def _callback_current_color_image(self, msg: Image):
+    def _callback_current_color_image(self, msg: CompressedImage):
         """Receive and store the current image."""
-        # raw_image = self._image_to_array(msg)
-        # if self.config.resolution is not None:
-        #     raw_image = self._resize_with_aspect_ratio(raw_image, self.config.resolution)
         self._image_has_changed = True
         self._current_image = self._resize_with_aspect_ratio(
             self._uncompress(msg), target_res=self.config.resolution

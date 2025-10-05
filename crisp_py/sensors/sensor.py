@@ -120,7 +120,9 @@ class Sensor(ABC):
             rate.sleep()
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
-                raise TimeoutError("Timeout waiting for sensor to be ready.")
+                raise TimeoutError(
+                    f"Timeout waiting for sensor to be ready. Is the topic {self.config.data_topic} for the namespace {self.node.get_namespace()} being published to?"
+                )
 
 
 class Float32ArraySensor(Sensor):
