@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/utiasDSL/crisp_py/compare/v1.6.0...v1.6.1) (2025-10-06)
+
+
+### Bug Fixes
+
+* Update gripper example + add new controller configs for tests ([5d6e10b](https://github.com/utiasDSL/crisp_py/commit/5d6e10b6ef6e3d5fcd1864cb100c13061db03ad6))
+
 ## [1.6.0](https://github.com/utiasDSL/crisp_py/compare/v1.5.1...v1.6.0) (2025-10-04)
 
 
