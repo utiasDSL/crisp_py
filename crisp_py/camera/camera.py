@@ -162,7 +162,7 @@ class Camera:
                 error_msg += (
                     f"Is the camera publishing to the topic {self._camera_subscriber.topic_name}?"
                 )
-                raise TimeoutError()
+                raise TimeoutError(error_msg)
 
     def _callback_current_color_image(self, msg: CompressedImage):
         """Receive and store the current image."""
