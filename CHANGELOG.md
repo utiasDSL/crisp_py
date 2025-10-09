@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/utiasDSL/crisp_py/compare/v1.6.1...v1.7.0) (2025-10-09)
+
+
+### Features
+
+* Add a better error logging if topics are not available ([#47](https://github.com/utiasDSL/crisp_py/issues/47)) ([231612c](https://github.com/utiasDSL/crisp_py/commit/231612c25e09ecbc69756cdda2ae3078707985cd))
+
 ## [1.6.1](https://github.com/utiasDSL/crisp_py/compare/v1.6.0...v1.6.1) (2025-10-06)
 
 
