@@ -17,7 +17,7 @@ class TestCameraConfig:
         config = CameraConfig(
             camera_color_image_topic="test/color/image",
             camera_color_info_topic="test/color/info",
-            resolution=(640, 480)
+            resolution=(640, 480),
         )
 
         assert config.camera_name == "camera"
@@ -66,7 +66,7 @@ class TestCameraBasics:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -87,7 +87,7 @@ class TestCameraBasics:
                     camera_name="test_camera",
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=custom_config, spin_node=False)
 
@@ -108,7 +108,7 @@ class TestCameraBasics:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 Camera(config=config, namespace="test_namespace", spin_node=False)
 
@@ -124,7 +124,7 @@ class TestCameraBasics:
             config = CameraConfig(
                 camera_color_image_topic="test/color/image",
                 camera_color_info_topic="test/color/info",
-                resolution=(640, 480)
+                resolution=(640, 480),
             )
             camera = Camera(config=config, node=existing_node, spin_node=False)
 
@@ -147,7 +147,7 @@ class TestCameraProperties:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -167,7 +167,7 @@ class TestCameraProperties:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -187,7 +187,7 @@ class TestCameraProperties:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -213,26 +213,7 @@ class TestCameraProperties:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
-                )
-                camera = Camera(config=config, spin_node=False)
-
-                assert camera.resolution == (640, 480)
-
-    def test_camera_resolution_with_config(self):
-        """Test resolution property with mandatory config."""
-        with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
-            mock_rclpy.ok.return_value = True
-
-            with patch("crisp_py.camera.camera.CallbackMonitor"):
-                mock_node = Mock()
-                mock_node.create_subscription.return_value = Mock()
-                mock_rclpy.create_node.return_value = mock_node
-
-                config = CameraConfig(
-                    camera_color_image_topic="test/color/image",
-                    camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -251,7 +232,7 @@ class TestCameraProperties:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -273,7 +254,7 @@ class TestCameraProperties:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -293,7 +274,7 @@ class TestCameraProperties:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)  # Has resolution set
 
@@ -317,7 +298,7 @@ class TestCameraImageProcessing:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -348,7 +329,7 @@ class TestCameraImageProcessing:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -378,7 +359,7 @@ class TestCameraImageProcessing:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -409,7 +390,7 @@ class TestCameraImageProcessing:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -440,7 +421,7 @@ class TestCameraImageProcessing:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -473,7 +454,7 @@ class TestCameraCallbacks:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(100, 100)
+                    resolution=(100, 100),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -511,7 +492,7 @@ class TestCameraCallbacks:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(100, 100)
+                    resolution=(100, 100),
                 )
                 camera = Camera(config=config, spin_node=False)  # Resolution already set
 
@@ -539,7 +520,7 @@ class TestCameraCallbacks:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(100, 100)
+                    resolution=(100, 100),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -573,7 +554,7 @@ class TestCameraErrorHandling:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -596,7 +577,7 @@ class TestCameraErrorHandling:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(100, 100)
+                    resolution=(100, 100),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -619,7 +600,7 @@ class TestCameraErrorHandling:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -651,7 +632,7 @@ class TestCameraIntegration:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(256, 256)
+                    resolution=(256, 256),
                 )
                 camera = Camera(config=config, spin_node=False)
 
@@ -691,7 +672,7 @@ class TestCameraIntegration:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
-                    resolution=(640, 480)
+                    resolution=(640, 480),
                 )
                 Camera(config=config, spin_node=False)
 
