@@ -1,12 +1,9 @@
 """Generic class for a gripper based on a simple ros2 topic."""
 
 import threading
-from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 import rclpy
-import yaml
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -15,61 +12,8 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from std_srvs.srv import SetBool, Trigger
 
+from crisp_py.gripper.gripper_config import GripperConfig
 from crisp_py.utils.callback_monitor import CallbackMonitor
-
-
-@dataclass
-class GripperConfig:
-    """Gripper default config.
-
-    Can be extented to be used with other grippers.
-    """
-
-    min_value: float
-    max_value: float
-    command_topic: str = "gripper_position_controller/commands"
-    joint_state_topic: str = "joint_states"
-    reboot_service: str = "reboot_gripper"
-    enable_torque_service: str = "dynamixel_hardware_interface/set_dxl_torque"
-    index: int = 0
-    publish_frequency: float = 30.0
-    max_joint_delay: float = 1.0
-    max_delta: float = 0.1
-
-    @classmethod
-    def from_yaml(cls, path: str | Path) -> "GripperConfig":
-        """Create a GripperConfig from a YAML configuration file.
-
-        Args:
-            path (str | Path): Path to the YAML configuration file from the project root or directly full path from the filesystem.
-        """
-        if isinstance(path, str):
-            project_root_path = Path(__file__).parent.parent.parent
-            full_path = project_root_path / path
-        elif isinstance(path, Path):
-            full_path = path
-        else:
-            raise TypeError("Path must be a string or a Path object.")
-
-        with open(full_path, "r") as file:
-            config = yaml.safe_load(file)
-            config = {
-                "min_value": config.get("min_value", 0.0),
-                "max_value": config.get("max_value", 1.0),
-                "command_topic": config.get(
-                    "command_topic", "gripper_position_controller/commands"
-                ),
-                "joint_state_topic": config.get("joint_state_topic", "joint_states"),
-                "reboot_service": config.get("reboot_service", "reboot_gripper"),
-                "enable_torque_service": config.get(
-                    "enable_torque_service", "dynamixel_hardware_interface/set_dxl_torque"
-                ),
-                "index": config.get("index", 0),
-                "publish_frequency": config.get("publish_frequency", 30.0),
-                "max_delta": config.get("max_delta", 0.1),
-                "max_joint_delay": config.get("max_joint_delay", 1.0),
-            }
-        return cls(**config)
 
 
 class Gripper:
@@ -121,7 +65,7 @@ class Gripper:
             qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
         )
-        self.node.create_subscription(
+        self._joint_subscriber = self.node.create_subscription(
             JointState,
             self.config.joint_state_topic,
             self._callback_monitor.monitor(
@@ -162,7 +106,7 @@ class Gripper:
 
     @property
     def max_value(self) -> float:
-        """Returns the minimum width of the gripper."""
+        """Returns the maximum width of the gripper."""
         return self.config.max_value
 
     @property
@@ -223,7 +167,9 @@ class Gripper:
             rate.sleep()
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
-                raise TimeoutError("Timeout waiting for gripper to be ready.")
+                raise TimeoutError(
+                    f"Timeout waiting for gripper to be ready.\n Is the gripper topic {self._joint_subscriber.topic_name} being published?"
+                )
 
     def is_open(self, open_threshold: float = 0.1) -> bool:
         """Returns True if the gripper is open."""
@@ -265,7 +211,7 @@ class Gripper:
             msg (JointState): the message containing the joint state.
         """
         self._value = msg.position[self._index]
-        self._torque = msg.effort[self._index]
+        self._torque = msg.effort[self._index] if msg.effort else None
 
     def set_target(self, target: float, *, epsilon: float = 0.1):
         """Grasp with the gripper by setting a target. This can be a position, velocity or effort depending on the active controller.

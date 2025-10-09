@@ -14,13 +14,17 @@ class TestCameraConfig:
 
     def test_camera_config_defaults(self):
         """Test default CameraConfig values."""
-        config = CameraConfig()
+        config = CameraConfig(
+            camera_color_image_topic="test/color/image",
+            camera_color_info_topic="test/color/info",
+            resolution=(640, 480),
+        )
 
         assert config.camera_name == "camera"
         assert config.camera_frame == "camera_link"
-        assert config.resolution is None
-        assert config.camera_color_image_topic is None
-        assert config.camera_color_info_topic is None
+        assert config.resolution == (640, 480)
+        assert config.camera_color_image_topic == "test/color/image"
+        assert config.camera_color_info_topic == "test/color/info"
         assert config.max_image_delay == 1.0
 
     def test_camera_config_custom_values(self):
@@ -59,7 +63,12 @@ class TestCameraBasics:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 assert isinstance(camera.config, CameraConfig)
                 assert camera.config.camera_name == "camera"
@@ -74,7 +83,12 @@ class TestCameraBasics:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                custom_config = CameraConfig(camera_name="test_camera", resolution=(640, 480))
+                custom_config = CameraConfig(
+                    camera_name="test_camera",
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
                 camera = Camera(config=custom_config, spin_node=False)
 
                 assert camera.config == custom_config
@@ -91,7 +105,12 @@ class TestCameraBasics:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                Camera(namespace="test_namespace", spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                Camera(config=config, namespace="test_namespace", spin_node=False)
 
                 # Check that the node was created with namespace
                 mock_rclpy.create_node.assert_called_once_with("camera", namespace="test_namespace")
@@ -102,7 +121,12 @@ class TestCameraBasics:
             existing_node = Mock()
             existing_node.create_subscription.return_value = Mock()
 
-            camera = Camera(node=existing_node, spin_node=False)
+            config = CameraConfig(
+                camera_color_image_topic="test/color/image",
+                camera_color_info_topic="test/color/info",
+                resolution=(640, 480),
+            )
+            camera = Camera(config=config, node=existing_node, spin_node=False)
 
             assert camera.node == existing_node
 
@@ -120,7 +144,12 @@ class TestCameraProperties:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 assert camera._current_image is None
                 assert not camera.is_ready()
@@ -135,7 +164,12 @@ class TestCameraProperties:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 with pytest.raises(RuntimeError, match="We have not received any images"):
                     camera.current_image
@@ -150,7 +184,12 @@ class TestCameraProperties:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 # Set a test image
                 test_image = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -171,24 +210,14 @@ class TestCameraProperties:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                config = CameraConfig(resolution=(640, 480))
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
                 camera = Camera(config=config, spin_node=False)
 
                 assert camera.resolution == (640, 480)
-
-    def test_camera_resolution_without_config(self):
-        """Test resolution property without config set."""
-        with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
-            mock_rclpy.ok.return_value = True
-
-            with patch("crisp_py.camera.camera.CallbackMonitor"):
-                mock_node = Mock()
-                mock_node.create_subscription.return_value = Mock()
-                mock_rclpy.create_node.return_value = mock_node
-
-                camera = Camera(spin_node=False)
-
-                assert camera.resolution == (0, 0)
 
     def test_camera_is_ready_true_when_both_set(self):
         """Test is_ready returns True when both image and resolution are set."""
@@ -200,7 +229,11 @@ class TestCameraProperties:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                config = CameraConfig(resolution=(640, 480))
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
                 camera = Camera(config=config, spin_node=False)
 
                 # Set image
@@ -218,14 +251,18 @@ class TestCameraProperties:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                config = CameraConfig(resolution=(640, 480))
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
                 camera = Camera(config=config, spin_node=False)
 
                 # Image is None by default
                 assert not camera.is_ready()
 
-    def test_camera_is_ready_false_when_resolution_missing(self):
-        """Test is_ready returns False when resolution is missing."""
+    def test_camera_is_ready_false_when_image_missing_with_resolution(self):
+        """Test is_ready returns False when image is missing but resolution is set."""
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
@@ -234,11 +271,14 @@ class TestCameraProperties:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)  # No resolution set
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)  # Has resolution set
 
-                # Set image
-                camera._current_image = np.zeros((100, 100, 3), dtype=np.uint8)
-
+                # Image is None by default (not set)
                 assert not camera.is_ready()
 
 
@@ -255,7 +295,12 @@ class TestCameraImageProcessing:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 # Mock cv_bridge
                 mock_compressed_image = Mock()
@@ -281,7 +326,12 @@ class TestCameraImageProcessing:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 # Test image that matches target resolution
                 test_image = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -306,7 +356,12 @@ class TestCameraImageProcessing:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 # Test image smaller than target
                 test_image = np.zeros((50, 50, 3), dtype=np.uint8)
@@ -332,7 +387,12 @@ class TestCameraImageProcessing:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 # Test image with different aspect ratio
                 test_image = np.zeros((100, 200, 3), dtype=np.uint8)
@@ -358,7 +418,12 @@ class TestCameraImageProcessing:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 # Mock cv_bridge
                 mock_image_msg = Mock()
@@ -386,7 +451,11 @@ class TestCameraCallbacks:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                config = CameraConfig(resolution=(100, 100))
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(100, 100),
+                )
                 camera = Camera(config=config, spin_node=False)
 
                 # Mock image processing methods
@@ -410,8 +479,8 @@ class TestCameraCallbacks:
                 # Verify image was stored
                 assert np.array_equal(camera._current_image, test_image)
 
-    def test_camera_callback_current_color_info_sets_resolution(self):
-        """Test _callback_current_color_info sets resolution when None."""
+    def test_camera_callback_current_color_info_with_mandatory_resolution(self):
+        """Test _callback_current_color_info with mandatory resolution."""
         with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
@@ -420,7 +489,12 @@ class TestCameraCallbacks:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)  # No resolution set
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(100, 100),
+                )
+                camera = Camera(config=config, spin_node=False)  # Resolution already set
 
                 # Create mock camera info message
                 mock_msg = Mock()
@@ -430,8 +504,8 @@ class TestCameraCallbacks:
                 # Call the callback
                 camera._callback_current_color_info(mock_msg)
 
-                # Verify resolution was set
-                assert camera.config.resolution == (480, 640)
+                # Verify resolution was NOT changed (since it's mandatory and already set)
+                assert camera.config.resolution == (100, 100)
 
     def test_camera_callback_current_color_info_preserves_existing_resolution(self):
         """Test _callback_current_color_info preserves existing resolution."""
@@ -443,7 +517,11 @@ class TestCameraCallbacks:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                config = CameraConfig(resolution=(100, 100))
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(100, 100),
+                )
                 camera = Camera(config=config, spin_node=False)
 
                 # Create mock camera info message
@@ -473,9 +551,14 @@ class TestCameraErrorHandling:
                 mock_node.create_rate.return_value = mock_rate
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
-                # Camera is not ready (image is None, resolution is None)
+                # Camera is not ready (image is None, but resolution is set)
                 with pytest.raises(TimeoutError, match="Timeout waiting for camera"):
                     camera.wait_until_ready(timeout=0.1, check_frequency=10.0)
 
@@ -491,7 +574,11 @@ class TestCameraErrorHandling:
                 mock_node.create_rate.return_value = mock_rate
                 mock_rclpy.create_node.return_value = mock_node
 
-                config = CameraConfig(resolution=(100, 100))
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(100, 100),
+                )
                 camera = Camera(config=config, spin_node=False)
 
                 # Make camera ready immediately
@@ -510,7 +597,12 @@ class TestCameraErrorHandling:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                camera = Camera(spin_node=False)
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
+                )
+                camera = Camera(config=config, spin_node=False)
 
                 # Set image
                 test_image = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -537,7 +629,11 @@ class TestCameraIntegration:
                 mock_node.create_subscription.return_value = Mock()
                 mock_rclpy.create_node.return_value = mock_node
 
-                config = CameraConfig(resolution=(256, 256))
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(256, 256),
+                )
                 camera = Camera(config=config, spin_node=False)
 
                 # Note: CallbackMonitor handles freshness checking automatically
@@ -576,6 +672,7 @@ class TestCameraIntegration:
                 config = CameraConfig(
                     camera_color_image_topic="test/color/image",
                     camera_color_info_topic="test/color/info",
+                    resolution=(640, 480),
                 )
                 Camera(config=config, spin_node=False)
 
