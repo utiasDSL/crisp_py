@@ -1,13 +1,9 @@
 """Example controlling the joints."""
 import time
 
-import numpy as np
+from crisp_py.robot import make_robot
 
-from crisp_py.robot import Robot
-from crisp_py.robot_config import FrankaConfig
-
-robot_config = FrankaConfig(publish_frequency=100.0, target_joint_topic="target_joint")
-robot = Robot(namespace="right")
+robot = make_robot("fr3")
 robot.wait_until_ready()
 
 # %%

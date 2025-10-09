@@ -2,24 +2,11 @@
 
 # %%
 import time
-from pathlib import Path
 
-import yaml
 
-from crisp_py.gripper.gripper import Gripper, GripperConfig
+from crisp_py.gripper.gripper import make_gripper
 
-project_root_path = Path("/home/lsy_franka/repos/crisp_py")
-
-right_config = None
-with open(project_root_path / "config" / "gripper_right_config.yaml", "r") as file:
-    config = yaml.safe_load(file)
-    right_config = GripperConfig(
-        min_value=config.get("min_value"), max_value=config.get("max_value")
-    )
-
-# %%
-
-gripper = Gripper(gripper_config=right_config, namespace="follower")
+gripper = make_gripper("gripper_franka")
 gripper.wait_until_ready()
 
 # %%
