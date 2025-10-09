@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.7.0](https://github.com/utiasDSL/crisp_py/compare/v1.6.1...v1.7.0) (2025-10-09)
+
+
+### Features
+
+* Add a better error logging if topics are not available ([#47](https://github.com/utiasDSL/crisp_py/issues/47)) ([231612c](https://github.com/utiasDSL/crisp_py/commit/231612c25e09ecbc69756cdda2ae3078707985cd))
+
+## [1.6.1](https://github.com/utiasDSL/crisp_py/compare/v1.6.0...v1.6.1) (2025-10-06)
+
+
+### Bug Fixes
+
+* Update gripper example + add new controller configs for tests ([5d6e10b](https://github.com/utiasDSL/crisp_py/commit/5d6e10b6ef6e3d5fcd1864cb100c13061db03ad6))
+
 ## [1.6.0](https://github.com/utiasDSL/crisp_py/compare/v1.5.1...v1.6.0) (2025-10-04)
 
 
