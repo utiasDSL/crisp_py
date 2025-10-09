@@ -1,0 +1,5 @@
+sensor_type: "float32"
+name: "anyskin_sensor"
+data_topic: "tactile_data"
+shape: [5] 
+max_data_delay: 0.1

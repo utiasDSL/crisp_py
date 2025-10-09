@@ -1,0 +1,6 @@
+camera_name: "wrist_camera"
+camera_frame: "wrist_link"
+camera_color_image_topic: "camera/wrist_camera/color/image_rect_raw"
+camera_color_info_topic: "camera/wrist_camera/color/camera_info"
+resolution: [640, 480]
+max_image_delay: 1.0

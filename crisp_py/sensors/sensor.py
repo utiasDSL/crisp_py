@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import rclpy
+import yaml
 from geometry_msgs.msg import WrenchStamped
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
@@ -12,7 +13,8 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from std_msgs.msg import Float32MultiArray
 
-from crisp_py.sensors.sensor_config import SensorConfig
+from crisp_py.config.path import find_config, list_configs_in_folder
+from crisp_py.sensors.sensor_config import SensorConfig, make_sensor_config
 from crisp_py.utils import CallbackMonitor
 
 
@@ -61,6 +63,66 @@ class Sensor(ABC):
 
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
+
+    @classmethod
+    def from_yaml(
+        cls,
+        config_name: str,
+        node: Node | None = None,
+        namespace: str = "",
+        spin_node: bool = True,
+        **overrides,  # noqa: ANN003
+    ) -> "Sensor":
+        """Create a Sensor instance from a YAML configuration file.
+
+        Args:
+            config_name: Name of the config file (with or without .yaml extension)
+            node: ROS2 node to use. If None, creates a new node.
+            namespace: ROS2 namespace for the sensor.
+            spin_node: Whether to spin the node in a separate thread.
+            **overrides: Additional parameters to override YAML values
+
+        Returns:
+            Sensor: Configured sensor instance
+
+        Raises:
+            FileNotFoundError: If the config file is not found
+        """
+        if not config_name.endswith(".yaml"):
+            config_name += ".yaml"
+
+        config_path = find_config(f"sensors/{config_name}")
+        if config_path is None:
+            config_path = find_config(config_name)
+
+        if config_path is None:
+            raise FileNotFoundError(
+                f"Sensor config file '{config_name}' not found in any CRISP config paths"
+            )
+
+        with open(config_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+
+        data.update(overrides)
+
+        namespace = data.pop("namespace", namespace)
+        config_data = data.pop("sensor_config", data)
+
+        sensor_type = config_data.get("sensor_type", "empty")
+        sensor_config = make_sensor_config(sensor_type, **config_data)
+
+        return _make_sensor_from_config(
+            sensor_config=sensor_config,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+        )
+
+    @staticmethod
+    def list_configs() -> list[str]:
+        """List all available sensor configurations."""
+        configs = list_configs_in_folder("sensors")
+        return [config.stem for config in configs if config.suffix == ".yaml"]
 
     @abstractmethod
     def _create_subscription(self):
@@ -175,11 +237,11 @@ class ForceTorqueSensor(Sensor):
             self._baseline = np.zeros_like(self._value)
 
 
-def make_sensor(
+def _make_sensor_from_config(
     sensor_config: SensorConfig,
     **kwargs,  # noqa: ANN003
 ) -> Sensor:
-    """Factory function to create a sensor based on the configuration."""
+    """Internal factory function to create a sensor based on the configuration."""
     if sensor_config.sensor_type == "float32":
         return Float32ArraySensor(
             sensor_config=sensor_config,
@@ -191,3 +253,52 @@ def make_sensor(
             **kwargs,
         )
     raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
+
+
+def make_sensor(
+    config_name: str | None = None,
+    sensor_config: SensorConfig | None = None,
+    node: "Node | None" = None,
+    namespace: str = "",
+    spin_node: bool = True,
+    **overrides,  # noqa: ANN003
+) -> Sensor:
+    """Factory function to create a Sensor from a configuration file.
+
+    Args:
+        config_name: Name of the sensor config file
+        sensor_config: Direct sensor config (if provided, config_name is ignored)
+        node: ROS2 node to use. If None, creates a new node.
+        namespace: ROS2 namespace for the sensor.
+        spin_node: Whether to spin the node in a separate thread.
+        **overrides: Additional parameters to override config values
+
+    Returns:
+        Sensor: Configured sensor instance
+
+    Raises:
+        FileNotFoundError: If the config file is not found
+    """
+    if sensor_config is not None:
+        # Direct sensor config provided, use the internal factory function
+        return _make_sensor_from_config(
+            sensor_config=sensor_config,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+        )
+    elif config_name is not None:
+        return Sensor.from_yaml(
+            config_name=config_name,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+            **overrides,
+        )
+    else:
+        raise ValueError("Either config_name or sensor_config must be provided")
+
+
+def list_sensor_configs() -> list[str]:
+    """List all available sensor configurations."""
+    return Sensor.list_configs()

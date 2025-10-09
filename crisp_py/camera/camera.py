@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import rclpy
 import rclpy.executors
+import yaml
 from cv_bridge import CvBridge
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
@@ -14,6 +15,7 @@ from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 
 from crisp_py.camera.camera_config import CameraConfig, DummyCameraConfig
+from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.utils.callback_monitor import CallbackMonitor
 
 
@@ -88,6 +90,65 @@ class Camera:
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
 
+    @classmethod
+    def from_yaml(
+        cls,
+        config_name: str,
+        node: Node | None = None,
+        namespace: str = "",
+        spin_node: bool = True,
+        **overrides,  # noqa: ANN003
+    ) -> "Camera":
+        """Create a Camera instance from a YAML configuration file.
+
+        Args:
+            config_name: Name of the config file (with or without .yaml extension)
+            node: ROS2 node to use. If None, creates a new node.
+            namespace: ROS2 namespace for the camera.
+            spin_node: Whether to spin the node in a separate thread.
+            **overrides: Additional parameters to override YAML values
+
+        Returns:
+            Camera: Configured camera instance
+
+        Raises:
+            FileNotFoundError: If the config file is not found
+        """
+        if not config_name.endswith(".yaml"):
+            config_name += ".yaml"
+
+        config_path = find_config(f"cameras/{config_name}")
+        if config_path is None:
+            config_path = find_config(config_name)
+
+        if config_path is None:
+            raise FileNotFoundError(
+                f"Camera config file '{config_name}' not found in any CRISP config paths"
+            )
+
+        with open(config_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+
+        data.update(overrides)
+
+        namespace = data.pop("namespace", namespace)
+        config_data = data.pop("camera_config", data)
+
+        config = CameraConfig(**config_data)
+
+        return cls(
+            node=node,
+            namespace=namespace,
+            config=config,
+            spin_node=spin_node,
+        )
+
+    @staticmethod
+    def list_configs() -> list[str]:
+        """List all available camera configurations."""
+        configs = list_configs_in_folder("cameras")
+        return [config.stem for config in configs if config.suffix == ".yaml"]
+
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
@@ -119,9 +180,7 @@ class Camera:
             raise RuntimeError(
                 f"We have not received any images of camera {self.config.camera_name}. Call wait_until_ready to be sure that the camera is available!."
             )
-        # Check if image callback is stale
         try:
-            # Try to find the callback - need to handle namespace properly
             for callback_name in self._callback_monitor.callbacks.keys():
                 if (
                     "Camera" in callback_name
@@ -135,7 +194,6 @@ class Camera:
                         )
                     break
         except ValueError:
-            # Callback not found, which is expected if no data has been received yet
             pass
         self._image_has_changed = False
         return self._current_image
@@ -196,3 +254,39 @@ class Camera:
         cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
 
         return cropped_image
+
+
+def make_camera(
+    config_name: str,
+    node: "Node | None" = None,
+    namespace: str = "",
+    spin_node: bool = True,
+    **overrides,  # noqa: ANN003
+) -> Camera:
+    """Factory function to create a Camera from a configuration file.
+
+    Args:
+        config_name: Name of the camera config file
+        node: ROS2 node to use. If None, creates a new node.
+        namespace: ROS2 namespace for the camera.
+        spin_node: Whether to spin the node in a separate thread.
+        **overrides: Additional parameters to override config values
+
+    Returns:
+        Camera: Configured camera instance
+
+    Raises:
+        FileNotFoundError: If the config file is not found
+    """
+    return Camera.from_yaml(
+        config_name=config_name,
+        node=node,
+        namespace=namespace,
+        spin_node=spin_node,
+        **overrides,
+    )
+
+
+def list_camera_configs() -> list[str]:
+    """List all available camera configurations."""
+    return Camera.list_configs()
