@@ -225,9 +225,7 @@ class Camera:
     def _callback_current_color_image(self, msg: CompressedImage):
         """Receive and store the current image."""
         self._image_has_changed = True
-        self._current_image = self._resize_with_aspect_ratio(
-            self._uncompress(msg), target_res=self.config.resolution
-        )
+        self._current_image = self.ros_msg_to_image(msg)
 
     def _callback_current_color_info(self, msg: CameraInfo):
         """Receive and store the current camera info."""
@@ -254,6 +252,12 @@ class Camera:
         cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
 
         return cropped_image
+
+    def ros_msg_to_image(self, msg: CompressedImage) -> np.ndarray:
+        """Convert a ROS message to numpy array for this camera configuration."""
+        return self._resize_with_aspect_ratio(
+            self._uncompress(msg), target_res=self.config.resolution
+        )
 
 
 def make_camera(

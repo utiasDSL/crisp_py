@@ -348,6 +348,18 @@ class Gripper:
         else:
             self.enable_torque_client.call_async(req)
 
+    def ros_msg_to_gripper_value(self, msg: JointState) -> float:
+        """Convert a ROS JointState message to a gripper value.
+
+        Args:
+            msg (JointState): The ROS JointState message.
+
+        Returns:
+            float: The gripper value.
+        """
+        # TODO: this would method should be use by the value() property to avoid code duplication
+        return np.clip(self._normalize(msg.position[self._index]), 0.0, 1.0)
+
 
 def make_gripper(
     config_name: str,

@@ -59,7 +59,7 @@ class Sensor(ABC):
             self.node, stale_threshold=self.config.max_data_delay
         )
 
-        self._create_subscription()
+        self.sensor_subscriber = self._create_subscription()
 
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
@@ -125,7 +125,7 @@ class Sensor(ABC):
         return [config.stem for config in configs if config.suffix == ".yaml"]
 
     @abstractmethod
-    def _create_subscription(self):
+    def _create_subscription(self) -> rclpy.subscription.Subscription:
         """Create the ROS2 subscription for this sensor type."""
         pass
 
@@ -135,6 +135,17 @@ class Sensor(ABC):
         if self._value is None or self._baseline is None:
             raise ValueError("Sensor value is not available yet.")
         return self._value - self._baseline
+
+    def ros_msg_to_sensor_value(self, msg) -> np.ndarray:
+        """Convert a ROS message to a numpy array.
+
+        Args:
+            msg: ROS message to convert
+
+        Returns:
+            np.ndarray: Converted numpy array
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
 
     def _spin_node(self):
         if not rclpy.ok():
@@ -192,7 +203,7 @@ class Float32ArraySensor(Sensor):
 
     def _create_subscription(self):
         """Create the ROS2 subscription for Float32MultiArray messages."""
-        self.node.create_subscription(
+        return self.node.create_subscription(
             Float32MultiArray,
             self.config.data_topic,
             self._callback_monitor.monitor(name="float32", func=self._callback_sensor_data),
@@ -212,7 +223,7 @@ class ForceTorqueSensor(Sensor):
 
     def _create_subscription(self):
         """Create the ROS2 subscription for WrenchStamped messages."""
-        self.node.create_subscription(
+        return self.node.create_subscription(
             WrenchStamped,
             self.config.data_topic,
             self._callback_monitor.monitor(name="force_torque_monitor", func=self._callback_wrench),
