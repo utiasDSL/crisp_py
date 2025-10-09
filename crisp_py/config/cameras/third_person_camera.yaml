@@ -1,0 +1,6 @@
+camera_name: "third_person"
+camera_frame: "third_person_link"
+camera_color_image_topic: "camera/third_person/color/image_raw"
+camera_color_info_topic: "camera/third_person/color/camera_info"
+resolution: [1280, 720]
+max_image_delay: 0.5

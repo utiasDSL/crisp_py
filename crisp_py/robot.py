@@ -6,6 +6,7 @@ from typing import List
 import numpy as np
 import rclpy
 import rclpy.executors
+import yaml
 from geometry_msgs.msg import PoseStamped, TwistStamped, WrenchStamped
 from numpy.typing import NDArray
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -14,10 +15,11 @@ from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from scipy.spatial.transform import Rotation, Slerp
 from sensor_msgs.msg import JointState
 
+from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
-from crisp_py.robot_config import FrankaConfig, RobotConfig
+from crisp_py.robot_config import FrankaConfig, RobotConfig, make_robot_config
 from crisp_py.utils.callback_monitor import CallbackMonitor
 from crisp_py.utils.geometry import Pose, Twist
 from crisp_py.utils.tf_pose import TfPose
@@ -168,6 +170,67 @@ class Robot:
 
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
+
+    @classmethod
+    def from_yaml(
+        cls,
+        config_name: str,
+        node: Node | None = None,
+        spin_node: bool = True,
+        name: str = "robot_client",
+        **overrides,  # noqa: ANN003
+    ) -> "Robot":
+        """Create a Robot instance from a YAML configuration file.
+
+        Args:
+            config_name: Name of the config file (with or without .yaml extension)
+            node: ROS2 node to use. If None, creates a new node.
+            spin_node: Whether to spin the node in a separate thread.
+            name: Name of the robot client node.
+            **overrides: Additional parameters to override YAML values
+
+        Returns:
+            Robot: Configured robot instance
+
+        Raises:
+            FileNotFoundError: If the config file is not found
+        """
+        if not config_name.endswith(".yaml"):
+            config_name += ".yaml"
+
+        config_path = find_config(f"robots/{config_name}")
+        if config_path is None:
+            config_path = find_config(config_name)
+
+        if config_path is None:
+            raise FileNotFoundError(
+                f"Robot config file '{config_name}' not found in any CRISP config paths"
+            )
+
+        with open(config_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+
+        # Apply overrides
+        data.update(overrides)
+
+        # Extract robot-specific parameters
+        namespace = data.pop("namespace", "")
+        robot_config_data = data.pop("robot_config", data)
+
+        # Create robot config
+        if "robot_type" in robot_config_data:
+            robot_type = robot_config_data.pop("robot_type")
+            robot_config = make_robot_config(robot_type, **robot_config_data)
+        else:
+            robot_config = RobotConfig(**robot_config_data)
+
+        return cls(
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+            robot_config=robot_config,
+            name=name,
+        )
 
     def _spin_node(self):
         if not rclpy.ok():
@@ -557,3 +620,45 @@ class Robot:
         """Shutdown the node."""
         if rclpy.ok():
             rclpy.shutdown()
+
+    @staticmethod
+    def list_configs() -> list[str]:
+        """List all available robot configurations."""
+        configs = list_configs_in_folder("robots")
+        return [config.stem for config in configs if config.suffix == ".yaml"]
+
+
+def make_robot(
+    config_name: str,
+    node: "Node | None" = None,
+    spin_node: bool = True,
+    name: str = "robot_client",
+    **overrides,  # noqa: ANN003
+) -> Robot:
+    """Factory function to create a Robot from a configuration file.
+
+    Args:
+        config_name: Name of the robot config file
+        node: ROS2 node to use. If None, creates a new node.
+        spin_node: Whether to spin the node in a separate thread.
+        name: Name of the robot client node.
+        **overrides: Additional parameters to override config values
+
+    Returns:
+        Robot: Configured robot instance
+
+    Raises:
+        FileNotFoundError: If the config file is not found
+    """
+    return Robot.from_yaml(
+        config_name=config_name,
+        node=node,
+        spin_node=spin_node,
+        name=name,
+        **overrides,
+    )
+
+
+def list_robot_configs() -> list[str]:
+    """List all available robot configurations."""
+    return Robot.list_configs()

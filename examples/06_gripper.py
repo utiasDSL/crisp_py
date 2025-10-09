@@ -2,15 +2,11 @@
 
 # %%
 import time
-from pathlib import Path
 
-from crisp_py.gripper.gripper import Gripper, GripperConfig
 
-# %%
+from crisp_py.gripper.gripper import make_gripper
 
-config = GripperConfig.from_yaml("config/gripper_right.yaml")
-gripper = Gripper(namespace="right", gripper_config=config)
-gripper.config.max_delta = 0.15
+gripper = make_gripper("gripper_franka")
 gripper.wait_until_ready()
 
 

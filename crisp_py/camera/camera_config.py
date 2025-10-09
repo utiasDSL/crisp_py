@@ -1,6 +1,9 @@
 """Camera configuration class."""
 
 from dataclasses import dataclass
+from pathlib import Path
+
+import yaml
 
 
 @dataclass(kw_only=True)
@@ -15,6 +18,25 @@ class CameraConfig:
     camera_frame: str = "camera_link"
 
     max_image_delay: float = 1.0
+
+    @classmethod
+    def from_yaml(cls, yaml_path: Path, **overrides) -> "CameraConfig":  # noqa: ANN003
+        """Load config from YAML file with optional overrides.
+
+        Args:
+            yaml_path: Path to the YAML configuration file
+            **overrides: Additional parameters to override YAML values
+
+        Returns:
+            CameraConfig: Configured camera instance
+        """
+        with open(yaml_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+
+        # Apply overrides
+        data.update(overrides)
+
+        return cls(**data)
 
 
 class DummyCameraConfig:

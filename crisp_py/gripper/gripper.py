@@ -4,6 +4,7 @@ import threading
 
 import numpy as np
 import rclpy
+import yaml
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -12,6 +13,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from std_srvs.srv import SetBool, Trigger
 
+from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.gripper.gripper_config import GripperConfig
 from crisp_py.utils.callback_monitor import CallbackMonitor
 
@@ -91,6 +93,65 @@ class Gripper:
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
 
+    @classmethod
+    def from_yaml(
+        cls,
+        config_name: str,
+        node: Node | None = None,
+        namespace: str = "",
+        spin_node: bool = True,
+        **overrides,  # noqa: ANN003
+    ) -> "Gripper":
+        """Create a Gripper instance from a YAML configuration file.
+
+        Args:
+            config_name: Name of the config file (with or without .yaml extension)
+            node: ROS2 node to use. If None, creates a new node.
+            namespace: ROS2 namespace for the gripper.
+            spin_node: Whether to spin the node in a separate thread.
+            **overrides: Additional parameters to override YAML values
+
+        Returns:
+            Gripper: Configured gripper instance
+
+        Raises:
+            FileNotFoundError: If the config file is not found
+        """
+        if not config_name.endswith(".yaml"):
+            config_name += ".yaml"
+
+        config_path = find_config(f"grippers/{config_name}")
+        if config_path is None:
+            config_path = find_config(config_name)
+
+        if config_path is None:
+            raise FileNotFoundError(
+                f"Gripper config file '{config_name}' not found in any CRISP config paths"
+            )
+
+        with open(config_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+
+        data.update(overrides)
+
+        namespace = data.pop("namespace", namespace)
+        config_data = data.pop("gripper_config", data)
+
+        gripper_config = GripperConfig(**config_data)
+
+        return cls(
+            node=node,
+            namespace=namespace,
+            gripper_config=gripper_config,
+            spin_node=spin_node,
+        )
+
+    @staticmethod
+    def list_configs() -> list[str]:
+        """List all available gripper configurations."""
+        configs = list_configs_in_folder("grippers")
+        return [config.stem for config in configs if config.suffix == ".yaml"]
+
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
@@ -139,7 +200,6 @@ class Gripper:
             raise RuntimeError(
                 f"{self._prefix}Gripper is not initialized. Call wait_until_ready() first."
             )
-        # Check if joint state callback is stale
         namespace_part = self._prefix.rstrip("_").capitalize() if self._prefix else ""
         callback_name = f"{namespace_part} Gripper Joint State".strip()
         try:
@@ -147,7 +207,6 @@ class Gripper:
             if joint_callback_data and joint_callback_data.is_stale:
                 self.node.get_logger().warn(f"{self._prefix}Gripper joint state is stale")
         except ValueError:
-            # Callback not found, which is expected if no data has been received yet
             pass
         return np.clip(self._normalize(self._value), 0.0, 1.0)
 
@@ -288,3 +347,39 @@ class Gripper:
             self.enable_torque_client.call(req)
         else:
             self.enable_torque_client.call_async(req)
+
+
+def make_gripper(
+    config_name: str,
+    node: "Node | None" = None,
+    namespace: str = "",
+    spin_node: bool = True,
+    **overrides,  # noqa: ANN003
+) -> Gripper:
+    """Factory function to create a Gripper from a configuration file.
+
+    Args:
+        config_name: Name of the gripper config file
+        node: ROS2 node to use. If None, creates a new node.
+        namespace: ROS2 namespace for the gripper.
+        spin_node: Whether to spin the node in a separate thread.
+        **overrides: Additional parameters to override config values
+
+    Returns:
+        Gripper: Configured gripper instance
+
+    Raises:
+        FileNotFoundError: If the config file is not found
+    """
+    return Gripper.from_yaml(
+        config_name=config_name,
+        node=node,
+        namespace=namespace,
+        spin_node=spin_node,
+        **overrides,
+    )
+
+
+def list_gripper_configs() -> list[str]:
+    """List all available gripper configurations."""
+    return Gripper.list_configs()

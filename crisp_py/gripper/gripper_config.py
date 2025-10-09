@@ -5,6 +5,8 @@ from pathlib import Path
 
 import yaml
 
+from crisp_py.config.path import find_config
+
 
 @dataclass
 class GripperConfig:
@@ -25,23 +27,33 @@ class GripperConfig:
     max_delta: float = 0.1
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "GripperConfig":
+    def from_yaml(cls, path: str | Path, **overrides) -> "GripperConfig":  # noqa: ANN003
         """Create a GripperConfig from a YAML configuration file.
 
         Args:
-            path (str | Path): Path to the YAML configuration file from the project root or directly full path from the filesystem.
+            path (str | Path): Path to the YAML configuration file. Can be a filename
+                               (searched in config paths) or a full path.
+            **overrides: Additional parameters to override YAML values
         """
         if isinstance(path, str):
-            project_root_path = Path(__file__).parent.parent.parent
-            full_path = project_root_path / path
+            found_path = find_config(path)
+            if found_path is None:
+                if Path(path).is_absolute() and Path(path).exists():
+                    full_path = Path(path)
+                else:
+                    project_root_path = Path(__file__).parent.parent.parent
+                    full_path = project_root_path / path
+            else:
+                full_path = found_path
         elif isinstance(path, Path):
             full_path = path
         else:
             raise TypeError("Path must be a string or a Path object.")
 
         with open(full_path, "r") as file:
-            config = yaml.safe_load(file)
-            config = {
+            config = yaml.safe_load(file) or {}
+
+            config_data = {
                 "min_value": config.get("min_value", 0.0),
                 "max_value": config.get("max_value", 1.0),
                 "command_topic": config.get(
@@ -57,4 +69,7 @@ class GripperConfig:
                 "max_delta": config.get("max_delta", 0.1),
                 "max_joint_delay": config.get("max_joint_delay", 1.0),
             }
-        return cls(**config)
+
+            config_data.update(overrides)
+
+        return cls(**config_data)
