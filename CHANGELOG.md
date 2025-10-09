@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/utiasDSL/crisp_py/compare/v1.7.0...v1.8.0) (2025-10-09)
+
+
+### Features
+
+* Add factories for different classes so that they can be loaded from yaml files ([#49](https://github.com/utiasDSL/crisp_py/issues/49)) ([2f8f734](https://github.com/utiasDSL/crisp_py/commit/2f8f734fd8c3db132c336455bfc3af64600ec000))
+
 ## [1.7.0](https://github.com/utiasDSL/crisp_py/compare/v1.6.1...v1.7.0) (2025-10-09)
 
 
