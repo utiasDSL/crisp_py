@@ -163,7 +163,7 @@ class Gripper:
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
                 raise TimeoutError(
-                    f"Timeout waiting for gripper to be ready.\n Is the gripper topic {self._joint_subscriber.topic_name} being published"
+                    f"Timeout waiting for gripper to be ready.\n Is the gripper topic {self._joint_subscriber.topic_name} being published?"
                 )
 
     def is_open(self, open_threshold: float = 0.1) -> bool:
