@@ -2,9 +2,9 @@
 """Script to check CRISP configuration paths and files."""
 
 from crisp_py.camera.camera import list_camera_configs
+from crisp_py.config.path import CRISP_CONFIG_PATHS
 from crisp_py.gripper.gripper import list_gripper_configs
 from crisp_py.robot import list_robot_configs
-from crisp_py.config.path import CRISP_CONFIG_PATHS
 
 try:
     from rich import print
