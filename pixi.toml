@@ -1,6 +1,9 @@
 [workspace]
 preview = ["pixi-build"]
-authors = ["Daniel San José Pro <42489409+danielsanjosepro@users.noreply.github.com>"]
+authors = [
+    "Maximilian Dösch <doesch.maximilian@gmail.com>",
+    "Daniel San José Pro <42489409+danielsanjosepro@users.noreply.github.com>"
+]
 channels = ["https://fast.prefix.dev/conda-forge"]
 name = "crisp_py"
 platforms = ["linux-64"]

@@ -105,6 +105,11 @@ class Gripper:
         return self.config.min_value
 
     @property
+    def max_value(self) -> float:
+        """Returns the maximum width of the gripper."""
+        return self.config.max_value
+
+    @property
     def torque(self) -> float | None:
         """Returns the current torque of the gripper or None if not initialized."""
         return self._torque
