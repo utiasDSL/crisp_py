@@ -1,12 +1,21 @@
 """Utility functions for geometry operations."""
 
 from dataclasses import dataclass
+from enum import Enum
 
 import numpy as np
 from builtin_interfaces.msg import Time as TimeMsg
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from scipy.spatial.transform import Rotation
 from tf2_ros import TransformStamped
+
+
+class OrientationRepresentation(Enum):
+    """Enum for different orientation representations."""
+
+    QUATERNION = "quaternion"
+    EULER = "euler"
+    ANGLE_AXIS = "angle_axis"
 
 
 @dataclass
@@ -82,6 +91,42 @@ class Pose:
             msg.pose.orientation.w,
         ) = q
         return msg
+
+    def to_pos_euler_array(self) -> np.ndarray:
+        """Convert Pose to a 6D array (position + Euler angles)."""
+        euler = self.orientation.as_euler("xyz", degrees=False)
+        return np.concatenate([self.position, euler], axis=0)
+
+    def to_pos_quat_array(self) -> np.ndarray:
+        """Convert Pose to a 7D array (position + quaternion)."""
+        quat = self.orientation.as_quat()
+        return np.concatenate([self.position, quat], axis=0)
+
+    def to_pos_angle_axis_array(self) -> np.ndarray:
+        """Convert Pose to a 6D array (position + angle-axis)."""
+        angle_axis = self.orientation.as_rotvec()
+        return np.concatenate([self.position, angle_axis], axis=0)
+
+    def to_array(
+        self, representation: OrientationRepresentation = OrientationRepresentation.EULER
+    ) -> np.ndarray:
+        """Convert Pose to an array with the specified orientation representation.
+
+        Args:
+            representation: The orientation representation to use. One of
+                OrientationRepresentation. Defaults to OrientationRepresentation.EULER.
+
+        Returns:
+            A numpy array representing the pose.
+        """
+        if representation == OrientationRepresentation.EULER:
+            return self.to_pos_euler_array()
+        elif representation == OrientationRepresentation.QUATERNION:
+            return self.to_pos_quat_array()
+        elif representation == OrientationRepresentation.ANGLE_AXIS:
+            return self.to_pos_angle_axis_array()
+        else:
+            raise ValueError(f"Unknown orientation representation: {representation}")
 
 
 @dataclass
