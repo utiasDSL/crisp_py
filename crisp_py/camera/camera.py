@@ -261,7 +261,8 @@ class Camera:
 
 
 def make_camera(
-    config_name: str,
+    config_name: str | None = None,
+    camera_config: Optional[CameraConfig] = None,
     node: "Node | None" = None,
     namespace: str = "",
     spin_node: bool = True,
@@ -271,6 +272,7 @@ def make_camera(
 
     Args:
         config_name: Name of the camera config file
+        camera_config: CameraConfig instance to use.
         node: ROS2 node to use. If None, creates a new node.
         namespace: ROS2 namespace for the camera.
         spin_node: Whether to spin the node in a separate thread.
@@ -282,12 +284,31 @@ def make_camera(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    return Camera.from_yaml(
-        config_name=config_name,
+    assert (not config_name and camera_config) or (config_name and not camera_config), (
+        "Either config_name or camera_config must be provided, but not both."
+    )
+
+    if config_name is not None:
+        return Camera.from_yaml(
+            config_name=config_name,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+            **overrides,
+        )
+
+    if overrides:
+        for key, value in overrides.items():
+            if hasattr(camera_config, key):
+                setattr(camera_config, key, value)
+            else:
+                raise ValueError(f"Invalid override key: {key}")
+
+    return Camera(
         node=node,
         namespace=namespace,
+        config=camera_config,
         spin_node=spin_node,
-        **overrides,
     )
 
 

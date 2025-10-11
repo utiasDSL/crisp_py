@@ -507,16 +507,7 @@ class Robot:
         Args:
             msg (JointState): ROS message containing joint states.
         """
-        if self._current_joint is None:
-            self._current_joint = np.zeros(self.nq)
-
-        # self.node.get_logger().info(f"Current joint state: {msg.name} {msg.position}", throttle_duration_sec=1.0)
-        for joint_name, joint_position in zip(msg.name, msg.position):
-            if joint_name.removeprefix(self._prefix) not in self.config.joint_names:
-                continue
-            self._current_joint[
-                self.config.joint_names.index(joint_name.removeprefix(self._prefix))
-            ] = joint_position
+        self._current_joint = self.ros_msg_to_joint(msg).copy()
 
         if self._target_joint is None:
             self._target_joint = self._current_joint.copy()
@@ -590,6 +581,17 @@ class Robot:
         joint_msg.effort = tau.tolist() if tau is not None else [0.0] * len(q)
         return joint_msg
 
+    def ros_msg_to_joint(self, msg: JointState) -> NDArray:
+        """Convert a joint state message to a numpy array of joint values."""
+        joint_values = np.zeros(self.nq)
+        for joint_name, joint_position in zip(msg.name, msg.position):
+            if joint_name.removeprefix(self._prefix) not in self.config.joint_names:
+                continue
+            joint_values[self.config.joint_names.index(joint_name.removeprefix(self._prefix))] = (
+                joint_position
+            )
+        return joint_values
+
     def _parse_pose_or_position(
         self, position: List | NDArray | None = None, pose: Pose | None = None
     ) -> Pose:
@@ -629,7 +631,8 @@ class Robot:
 
 
 def make_robot(
-    config_name: str,
+    config_name: str | None = None,
+    robot_config: RobotConfig | None = None,
     node: "Node | None" = None,
     spin_node: bool = True,
     name: str = "robot_client",
@@ -639,6 +642,7 @@ def make_robot(
 
     Args:
         config_name: Name of the robot config file
+        robot_config: RobotConfig instance to use directly
         node: ROS2 node to use. If None, creates a new node.
         spin_node: Whether to spin the node in a separate thread.
         name: Name of the robot client node.
@@ -650,12 +654,31 @@ def make_robot(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    return Robot.from_yaml(
-        config_name=config_name,
+    assert (not config_name and robot_config) or (config_name and not robot_config), (
+        "Either config_name or robot_config must be provided."
+    )
+
+    if config_name is not None:
+        return Robot.from_yaml(
+            config_name=config_name,
+            node=node,
+            spin_node=spin_node,
+            name=name,
+            **overrides,
+        )
+
+    if overrides:
+        for key, value in overrides.items():
+            if hasattr(robot_config, key):
+                setattr(robot_config, key, value)
+            else:
+                raise ValueError(f"Invalid override key: {key}")
+
+    return Robot(
         node=node,
         spin_node=spin_node,
+        robot_config=robot_config,
         name=name,
-        **overrides,
     )
 
 

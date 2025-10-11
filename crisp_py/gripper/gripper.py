@@ -362,7 +362,8 @@ class Gripper:
 
 
 def make_gripper(
-    config_name: str,
+    config_name: str | None,
+    gripper_config: GripperConfig | None = None,
     node: "Node | None" = None,
     namespace: str = "",
     spin_node: bool = True,
@@ -372,6 +373,7 @@ def make_gripper(
 
     Args:
         config_name: Name of the gripper config file
+        gripper_config: Directly provide a GripperConfig instance instead of loading from file.
         node: ROS2 node to use. If None, creates a new node.
         namespace: ROS2 namespace for the gripper.
         spin_node: Whether to spin the node in a separate thread.
@@ -383,12 +385,21 @@ def make_gripper(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    return Gripper.from_yaml(
-        config_name=config_name,
-        node=node,
-        namespace=namespace,
-        spin_node=spin_node,
-        **overrides,
+    assert (not config_name and gripper_config) or (config_name and not gripper_config), (
+        "Either config_name or gripper_config should be provided, not both."
+    )
+
+    if config_name is not None:
+        return Gripper.from_yaml(
+            config_name=config_name,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+            **overrides,
+        )
+
+    return Gripper(
+        gripper_config=gripper_config, node=node, namespace=namespace, spin_node=spin_node
     )
 
 
