@@ -32,7 +32,6 @@ libgl-devel = "*"
 
 [environments]
 humble = { features = ["humble", "crisp-py", "extra", "dev"] }
-humble2 = { features = ["humble2", "crisp-py", "extra", "dev"] }
 jazzy = { features = ["jazzy", "crisp-py", "extra", "dev"] }
 humble-clean = { features = ["humble"] }
 
@@ -48,33 +47,6 @@ ros-humble-ros2-controllers = "*"
 ros-humble-rmw-zenoh-cpp = "*"
 ros-humble-rmw-cyclonedds-cpp = "*"
 rosdep = "*"
-ros-humble-realsense2-camera = "*"
-# # ros-humble-realsense2-camera-dbgsym = "*"
-# ros-humble-realsense2-camera-msgs= "*"
-# # ros-humble-realsense2-camera-msgs-dbgsym= "*"
-# ros-humble-librealsense2="*"
-# # ros-humble-librealsense2-dbgsym="*"
-# ros-humble-realsense2-description = "*"
-
-
-# humble2
-[feature.humble2]
-channels = ["https://prefix.dev/robostack-humble"]
-
-[feature.humble2.dependencies]
-# ros-humble-desktop = "*"
-# colcon-common-extensions = "*"
-# ros-humble-ros2-control = "*"
-# ros-humble-ros2-controllers = "*"
-# # ros-humble-rmw-zenoh-cpp = "*"
-# # ros-humble-rmw-cyclonedds-cpp = "*"
-# rosdep = "*"
-# # ros-humble-realsense2-camera-dbgsym = "*"
-# ros-humble-realsense2-camera-msgs= "*"
-# # ros-humble-realsense2-camera-msgs-dbgsym= "*"
-# ros-humble-librealsense2="*"
-# # ros-humble-librealsense2-dbgsym="*"
-# ros-humble-realsense2-description = "*"
 
 # jazzy
 [feature.jazzy]
