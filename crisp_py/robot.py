@@ -1,5 +1,6 @@
 """Provides a client to control the franka robot. It is the easiest way to control the robot using ROS2."""
 
+import copy
 import threading
 from typing import List
 
@@ -333,10 +334,12 @@ class Robot:
         This callback is triggered periodically to publish the target pose
         to the ROS topic for the robot controller.
         """
-        if self._target_pose is None or not rclpy.ok():
+
+        target_pose = copy.deepcopy(self._target_pose)
+        if target_pose is None or not rclpy.ok():
             return
         self._target_pose_publisher.publish(
-            self._target_pose.to_ros_msg(
+            target_pose.to_ros_msg(
                 self.config.base_frame, self.node.get_clock().now().to_msg()
             )
         )
