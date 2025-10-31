@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/utiasDSL/crisp_py/compare/v1.8.0...v1.9.0) (2025-10-31)
+
+
+### Features
+
+* Add image cropping and minor improvements to gripper and robot ([#52](https://github.com/utiasDSL/crisp_py/issues/52)) ([9335bcb](https://github.com/utiasDSL/crisp_py/commit/9335bcbec171e12f930c1275063aa747ef038912))
+
 ## [1.8.0](https://github.com/utiasDSL/crisp_py/compare/v1.7.0...v1.8.0) (2025-10-09)
 
 
