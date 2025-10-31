@@ -212,6 +212,11 @@ class Gripper:
         """Returns the current raw value of the gripper or None if not initialized."""
         return self._value
 
+    @property
+    def target(self) -> float:
+        """Returns the target value of the gripper."""
+        return np.clip(self._normalize(self._target), 0.0, 1.0)
+
     def is_ready(self) -> bool:
         """Returns True if the gripper is fully ready to operate."""
         return self._value is not None
