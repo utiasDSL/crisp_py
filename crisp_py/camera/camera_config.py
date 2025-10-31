@@ -19,6 +19,10 @@ class CameraConfig:
 
     max_image_delay: float = 1.0
 
+    resolution: tuple[int, int] | None = None
+    crop_width: tuple[int, int] | None = None
+    crop_height: tuple[int, int] | None = None
+
     @classmethod
     def from_yaml(cls, yaml_path: Path, **overrides) -> "CameraConfig":  # noqa: ANN003
         """Load config from YAML file with optional overrides.
@@ -37,10 +41,6 @@ class CameraConfig:
         data.update(overrides)
 
         return cls(**data)
-
-    resolution: tuple[int, int] | None = None
-    crop_width: tuple[int, int] | None = None
-    crop_height: tuple[int, int] | None = None
 
 
 class DummyCameraConfig:
