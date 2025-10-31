@@ -9,7 +9,7 @@ from crisp_py.gripper.gripper import Gripper, GripperConfig
 # %%
 
 config = GripperConfig.from_yaml("config/gripper_right.yaml")
-gripper = Gripper(namespace="right", gripper_config=config)
+gripper = Gripper(gripper_config=config)
 gripper.config.max_delta = 0.15
 gripper.wait_until_ready()
 

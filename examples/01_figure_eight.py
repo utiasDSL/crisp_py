@@ -6,7 +6,7 @@ import numpy as np
 
 from crisp_py.robot import Robot
 
-left_arm = Robot(namespace="left")
+left_arm = Robot()
 left_arm.wait_until_ready()
 
 # %%
