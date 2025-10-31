@@ -258,8 +258,28 @@ class Camera:
     ) -> np.ndarray:
         """Resize an image to fit within a target resolution while maintaining aspect ratio, cropping if necessary."""
         if crop_height is not None:
+            h = image.shape[0]
+            if (
+                not isinstance(crop_height, tuple)
+                or len(crop_height) != 2
+                or not all(isinstance(x, int) for x in crop_height)
+                or not (0 <= crop_height[0] < crop_height[1] <= h)
+            ):
+                raise ValueError(
+                    f"Invalid crop_height {crop_height}: must satisfy 0 <= start < end <= image height ({h})"
+                )
             image = image[crop_height[0] : crop_height[1]]
         if crop_width is not None:
+            w = image.shape[1]
+            if (
+                not isinstance(crop_width, tuple)
+                or len(crop_width) != 2
+                or not all(isinstance(x, int) for x in crop_width)
+                or not (0 <= crop_width[0] < crop_width[1] <= w)
+            ):
+                raise ValueError(
+                    f"Invalid crop_width {crop_width}: must satisfy 0 <= start < end <= image width ({w})"
+                )
             image = image[:, crop_width[0] : crop_width[1]]
 
         h, w = image.shape[:2]
