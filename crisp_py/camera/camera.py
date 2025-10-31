@@ -253,34 +253,11 @@ class Camera:
         self,
         image: np.ndarray,
         target_res: tuple,
-        crop_height: tuple[int, int] | None,
-        crop_width: tuple[int, int] | None,
+        crop_height: tuple[int | float, int | float] | None = None,
+        crop_width: tuple[int | float, int | float] | None = None,
     ) -> np.ndarray:
         """Resize an image to fit within a target resolution while maintaining aspect ratio, cropping if necessary."""
-        if crop_height is not None:
-            h = image.shape[0]
-            if (
-                not isinstance(crop_height, tuple)
-                or len(crop_height) != 2
-                or not all(isinstance(x, int) for x in crop_height)
-                or not (0 <= crop_height[0] < crop_height[1] <= h)
-            ):
-                raise ValueError(
-                    f"Invalid crop_height {crop_height}: must satisfy 0 <= start < end <= image height ({h})"
-                )
-            image = image[crop_height[0] : crop_height[1]]
-        if crop_width is not None:
-            w = image.shape[1]
-            if (
-                not isinstance(crop_width, tuple)
-                or len(crop_width) != 2
-                or not all(isinstance(x, int) for x in crop_width)
-                or not (0 <= crop_width[0] < crop_width[1] <= w)
-            ):
-                raise ValueError(
-                    f"Invalid crop_width {crop_width}: must satisfy 0 <= start < end <= image width ({w})"
-                )
-            image = image[:, crop_width[0] : crop_width[1]]
+        image = self._pre_crop(image, crop_height, crop_width)
 
         h, w = image.shape[:2]
         target_h, target_w = target_res
@@ -299,6 +276,100 @@ class Camera:
         cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
 
         return cropped_image
+
+    def _pre_crop(
+        self,
+        image: np.ndarray,
+        crop_height: tuple[int | float, int | float] | None,
+        crop_width: tuple[int | float, int | float] | None,
+    ) -> np.ndarray:
+        """Crop the image according to specified height and width ranges.
+
+        Args:
+            image: Input image as a numpy array
+            crop_height: Tuple specifying the height crop (start, end).
+                        Use integers for absolute pixel values, or floats (0.0-1.0) for relative cropping.
+            crop_width: Tuple specifying the width crop (start, end).
+                       Use integers for absolute pixel values, or floats (0.0-1.0) for relative cropping.
+
+        Returns:
+            Cropped image as a numpy array
+
+        Raises:
+            ValueError: If crop parameters are invalid
+
+        """
+        if crop_height is not None:
+            h = image.shape[0]
+            if not isinstance(crop_height, (list, tuple)) or len(crop_height) != 2:
+                raise ValueError(
+                    f"Invalid crop_height {crop_height}: must be a list or tuple of length 2"
+                )
+
+            if isinstance(crop_height[0], float) or isinstance(crop_height[1], float):
+                if not all(isinstance(x, float) for x in crop_height):
+                    raise ValueError(
+                        "crop_height values must be either all int or all float, not mixed."
+                    )
+                if not all(0.0 <= x <= 1.0 for x in crop_height):
+                    raise ValueError(
+                        f"Float crop_height values must be between 0.0 and 1.0. Got: {crop_height}"
+                    )
+                if crop_height[0] >= crop_height[1]:
+                    raise ValueError(f"crop_height start must be less than end. Got: {crop_height}")
+
+                crop_start = int(crop_height[0] * h)
+                crop_end = int(crop_height[1] * h)
+            else:
+                if not all(isinstance(x, int) for x in crop_height):
+                    raise ValueError(
+                        "crop_height values must be either all int or all float, not mixed."
+                    )
+                if not (0 <= crop_height[0] < crop_height[1] <= h):
+                    raise ValueError(
+                        f"Invalid crop_height {crop_height}: must satisfy 0 <= start < end <= image height ({h})"
+                    )
+                crop_start = crop_height[0]
+                crop_end = crop_height[1]
+
+            image = image[crop_start:crop_end]
+
+        if crop_width is not None:
+            w = image.shape[1]
+            if not isinstance(crop_width, (list, tuple)) or len(crop_width) != 2:
+                raise ValueError(
+                    f"Invalid crop_width {crop_width}: must be a list or tuple of length 2"
+                )
+
+            if isinstance(crop_width[0], float) or isinstance(crop_width[1], float):
+                if not all(isinstance(x, float) for x in crop_width):
+                    raise ValueError(
+                        "crop_width values must be either all int or all float, not mixed."
+                    )
+                if not all(0.0 <= x <= 1.0 for x in crop_width):
+                    raise ValueError(
+                        f"Float crop_width values must be between 0.0 and 1.0. Got: {crop_width}"
+                    )
+                if crop_width[0] >= crop_width[1]:
+                    raise ValueError(f"crop_width start must be less than end. Got: {crop_width}")
+
+                crop_start = int(crop_width[0] * w)
+                crop_end = int(crop_width[1] * w)
+            else:
+                if not all(isinstance(x, int) for x in crop_width):
+                    raise ValueError(
+                        "crop_width values must be either all int or all float, not mixed."
+                    )
+                if not (0 <= crop_width[0] < crop_width[1] <= w):
+                    raise ValueError(
+                        f"Invalid crop_width {crop_width}: must satisfy 0 <= start < end <= image width ({w})"
+                    )
+                crop_start = crop_width[0]
+                crop_end = crop_width[1]
+
+            image = image[:, crop_start:crop_end]
+
+        return image
 
 
 def make_camera(
