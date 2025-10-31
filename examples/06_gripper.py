@@ -7,8 +7,6 @@ import time
 from crisp_py.gripper.gripper import make_gripper
 
 gripper = make_gripper("gripper_franka")
-config = GripperConfig.from_yaml("config/gripper_right.yaml")
-gripper = Gripper(gripper_config=config)
 gripper.config.max_delta = 0.15
 gripper.wait_until_ready()
 
