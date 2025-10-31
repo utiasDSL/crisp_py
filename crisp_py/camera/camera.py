@@ -74,16 +74,24 @@ class Camera:
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
-        self._camera_info_subscriber = self.node.create_subscription(
-            CameraInfo,
-            self.config.camera_color_info_topic,
-            self._callback_monitor.monitor(
-                f"{self._namespace.capitalize()} Camera {self.config.camera_name} Info".strip(),
-                self._callback_current_color_info,
-            ),
-            qos_profile_system_default,
-            callback_group=ReentrantCallbackGroup(),
-        )
+        assert (
+            self.config.camera_color_info_topic is not None or self.config.resolution is not None
+        ), "You have to set resolution or camera info topic"
+        if self.config.camera_color_info_topic is None or self.config.resolution is None:
+            print(
+                "[Camera warning] You have set resolution and camera info topic, camera info topic will be ignored"
+            )
+        if self.config.camera_color_info_topic is not None:
+            self.node.create_subscription(
+                CameraInfo,
+                self.config.camera_color_info_topic,
+                self._callback_monitor.monitor(
+                    f"{self._namespace.capitalize()} Camera {self.config.camera_name} Info".strip(),
+                    self._callback_current_color_info,
+                ),
+                qos_profile_system_default,
+                callback_group=ReentrantCallbackGroup(),
+            )
 
         self._image_has_changed = False
 
@@ -226,7 +234,10 @@ class Camera:
         """Receive and store the current image."""
         self._image_has_changed = True
         self._current_image = self._resize_with_aspect_ratio(
-            self._uncompress(msg), target_res=self.config.resolution
+            self._uncompress(msg),
+            target_res=self.config.resolution,
+            crop_width=self.config.crop_width,
+            crop_height=self.config.crop_height,
         )
 
     def _callback_current_color_info(self, msg: CameraInfo):
@@ -238,10 +249,24 @@ class Camera:
         """Converts an Image message to a numpy array."""
         return np.asarray(self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8"))
 
-    def _resize_with_aspect_ratio(self, image: np.ndarray, target_res: tuple) -> np.ndarray:
+    def _resize_with_aspect_ratio(
+        self,
+        image: np.ndarray,
+        target_res: tuple,
+        crop_height: tuple[int, int] | None,
+        crop_width: tuple[int, int] | None,
+    ) -> np.ndarray:
         """Resize an image to fit within a target resolution while maintaining aspect ratio, cropping if necessary."""
+        if crop_height is not None:
+            image = image[crop_height[0] : crop_height[1]]
+        if crop_width is not None:
+            image = image[:, crop_width[0] : crop_width[1]]
+
         h, w = image.shape[:2]
         target_h, target_w = target_res
+
+        if h == target_h and w == target_w:
+            return image
 
         scale = max(target_w / w, target_h / h)
         new_w, new_h = int(w * scale), int(h * scale)

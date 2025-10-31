@@ -38,6 +38,10 @@ class CameraConfig:
 
         return cls(**data)
 
+    resolution: tuple[int, int] | None = None
+    crop_width: tuple[int, int] | None = None
+    crop_height: tuple[int, int] | None = None
+
 
 class DummyCameraConfig:
     """Dummy camera configuration class for testing purposes."""
