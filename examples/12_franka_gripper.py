@@ -3,7 +3,6 @@
 # %%
 import time
 
-from crisp_py.gripper import Gripper, GripperConfig
 from crisp_py.gripper.gripper import make_gripper
 
 
