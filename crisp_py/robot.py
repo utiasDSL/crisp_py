@@ -590,7 +590,7 @@ class Robot:
             joint_values[self.config.joint_names.index(joint_name.removeprefix(self._prefix))] = (
                 joint_position
             )
-        return joint_values
+        return joint_values.astype(np.float32)
 
     def _parse_pose_or_position(
         self, position: List | NDArray | None = None, pose: Pose | None = None
