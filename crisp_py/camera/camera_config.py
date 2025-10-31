@@ -11,6 +11,8 @@ class CameraConfig:
     camera_frame: str = "camera_link"
 
     resolution: tuple[int, int] | None = None
+    crop_width: tuple[int, int] | None = None
+    crop_height: tuple[int, int] | None = None
 
     camera_color_image_topic: str | None = None
     camera_color_info_topic: str | None = None
