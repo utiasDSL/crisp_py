@@ -127,12 +127,6 @@ class Sensor(ABC):
             spin_node=spin_node,
         )
 
-    @staticmethod
-    def list_configs() -> list[str]:
-        """List all available sensor configurations."""
-        configs = list_configs_in_folder("sensors")
-        return [config.stem for config in configs if config.suffix == ".yaml"]
-
     @abstractmethod
     def _create_subscription(self) -> rclpy.subscription.Subscription:
         """Create the ROS2 subscription for this sensor type."""
@@ -265,4 +259,5 @@ def make_sensor(
 
 def list_sensor_configs() -> list[str]:
     """List all available sensor configurations."""
-    return Sensor.list_configs()
+    configs = list_configs_in_folder("sensors")
+    return [config.stem for config in configs if config.suffix == ".yaml"]

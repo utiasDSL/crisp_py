@@ -20,7 +20,7 @@ from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
-from crisp_py.robot_config import FrankaConfig, RobotConfig, make_robot_config
+from crisp_py.robot.robot_config import FrankaConfig, RobotConfig, make_robot_config
 from crisp_py.utils.callback_monitor import CallbackMonitor
 from crisp_py.utils.geometry import Pose, Twist
 from crisp_py.utils.tf_pose import TfPose
@@ -620,12 +620,6 @@ class Robot:
         if rclpy.ok():
             rclpy.shutdown()
 
-    @staticmethod
-    def list_configs() -> list[str]:
-        """List all available robot configurations."""
-        configs = list_configs_in_folder("robots")
-        return [config.stem for config in configs if config.suffix == ".yaml"]
-
 
 def make_robot(
     config_name: str | None = None,
@@ -681,4 +675,5 @@ def make_robot(
 
 def list_robot_configs() -> list[str]:
     """List all available robot configurations."""
-    return Robot.list_configs()
+    configs = list_configs_in_folder("robots")
+    return [config.stem for config in configs if config.suffix == ".yaml"]

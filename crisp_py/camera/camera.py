@@ -151,12 +151,6 @@ class Camera:
             spin_node=spin_node,
         )
 
-    @staticmethod
-    def list_configs() -> list[str]:
-        """List all available camera configurations."""
-        configs = list_configs_in_folder("cameras")
-        return [config.stem for config in configs if config.suffix == ".yaml"]
-
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
@@ -430,4 +424,5 @@ def make_camera(
 
 def list_camera_configs() -> list[str]:
     """List all available camera configurations."""
-    return Camera.list_configs()
+    configs = list_configs_in_folder("cameras")
+    return [config.stem for config in configs if config.suffix == ".yaml"]

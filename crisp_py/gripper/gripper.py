@@ -146,12 +146,6 @@ class Gripper:
             spin_node=spin_node,
         )
 
-    @staticmethod
-    def list_configs() -> list[str]:
-        """List all available gripper configurations."""
-        configs = list_configs_in_folder("grippers")
-        return [config.stem for config in configs if config.suffix == ".yaml"]
-
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
@@ -410,4 +404,5 @@ def make_gripper(
 
 def list_gripper_configs() -> list[str]:
     """List all available gripper configurations."""
-    return Gripper.list_configs()
+    configs = list_configs_in_folder("grippers")
+    return [config.stem for config in configs if config.suffix == ".yaml"]
