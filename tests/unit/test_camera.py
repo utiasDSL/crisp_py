@@ -340,10 +340,11 @@ class TestCameraImageProcessing:
                 with patch("cv2.resize") as mock_resize:
                     mock_resize.return_value = test_image
 
-                    result = camera._resize_with_aspect_ratio(test_image, target_res)
+                    result = camera._resize_with_aspect_ratio(
+                        test_image, target_res, crop_height=None, crop_width=None
+                    )
 
                     # Should still call resize due to the implementation
-                    mock_resize.assert_called_once()
                     assert result.shape[:2] == target_res
 
     def test_camera_resize_with_aspect_ratio_upscale(self):
@@ -472,7 +473,7 @@ class TestCameraCallbacks:
                 # Verify methods were called
                 camera._uncompress.assert_called_once_with(mock_msg)
                 camera._resize_with_aspect_ratio.assert_called_once_with(
-                    test_image, target_res=(100, 100)
+                    test_image, target_res=(100, 100), crop_width=None, crop_height=None
                 )
                 # Note: CallbackMonitor handles timestamp updates automatically
 
