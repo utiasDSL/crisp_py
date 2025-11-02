@@ -652,7 +652,7 @@ def make_robot(
         FileNotFoundError: If the config file is not found
     """
     assert (not config_name and robot_config) or (config_name and not robot_config), (
-        "Either config_name or robot_config must be provided."
+        "Exactly one of config_name or robot_config must be provided, but not both."
     )
 
     if config_name is not None:
