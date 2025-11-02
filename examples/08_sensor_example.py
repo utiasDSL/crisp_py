@@ -2,7 +2,7 @@
 # Launch in terminal:
 # python scripts/mock/mock_force_torque_sensor.py
 
-from crisp_py.sensors.sensor import make_sensor
+from crisp_py.sensors import make_sensor
 import matplotlib.pyplot as plt
 import time
 
@@ -10,6 +10,13 @@ sensor = make_sensor("mock_force_torque_sensor", namespace="sensor")
 sensor.wait_until_ready()
 
 CALIBRATE_TO_ZERO = False
+#%%
+for force_torque in sensor.buffer.get()[-10:]:
+    print(force_torque[2])
+print("===")
+time.sleep(0.01)
+for force_torque in sensor.buffer.get()[-10:]:
+    print(force_torque[2])
 #%%
 
 

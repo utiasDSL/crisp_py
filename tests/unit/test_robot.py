@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
-from crisp_py.robot import Pose, Robot
-from crisp_py.robot_config import RobotConfig
+from crisp_py.robot import Pose, Robot, RobotConfig
 
 
 class TestRobotBasics:
@@ -19,16 +18,16 @@ class TestRobotBasics:
 
     def test_robot_config_assignment(self):
         """Test that custom config is properly assigned."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
             mock_rclpy.create_node.return_value = Mock()
 
             # Mock all the ROS2 components
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 # Mock node methods
                 mock_node = Mock()
@@ -46,14 +45,14 @@ class TestRobotBasics:
 
     def test_robot_nq_property(self):
         """Test nq property returns correct number of joints."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -72,14 +71,14 @@ class TestRobotReadinessChecks:
 
     def test_robot_is_ready_false_initially(self):
         """Test robot is not ready initially."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -93,14 +92,14 @@ class TestRobotReadinessChecks:
 
     def test_robot_is_ready_true_when_all_set(self):
         """Test robot is ready when all required values are set."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -120,14 +119,14 @@ class TestRobotReadinessChecks:
 
     def test_robot_reset_targets(self):
         """Test reset_targets method."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -154,14 +153,14 @@ class TestRobotPropertyErrors:
 
     def test_end_effector_pose_error_when_none(self):
         """Test end_effector_pose raises error when not set."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -176,14 +175,14 @@ class TestRobotPropertyErrors:
 
     def test_joint_values_error_when_none(self):
         """Test joint_values raises error when not set."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -202,14 +201,14 @@ class TestRobotTargetSetting:
 
     def test_set_target_joint_correct_size(self):
         """Test set_target_joint with correct size."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -227,14 +226,14 @@ class TestRobotTargetSetting:
 
     def test_set_target_joint_wrong_size(self):
         """Test set_target_joint with wrong size."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -252,14 +251,14 @@ class TestRobotTargetSetting:
 
     def test_set_target_wrench_defaults(self):
         """Test set_target_wrench with default values."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -278,14 +277,14 @@ class TestRobotTargetSetting:
 
     def test_set_target_wrench_wrong_size(self):
         """Test set_target_wrench with wrong size vectors."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -309,14 +308,14 @@ class TestRobotUtilities:
 
     def test_parse_pose_or_position_neither(self):
         """Test _parse_pose_or_position with neither position nor pose."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()
@@ -333,14 +332,14 @@ class TestRobotUtilities:
 
     def test_parse_pose_or_position_wrong_position_size(self):
         """Test _parse_pose_or_position with wrong position size."""
-        with patch("crisp_py.robot.rclpy") as mock_rclpy:
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
             mock_rclpy.ok.return_value = True
 
             with (
-                patch("crisp_py.robot.ControllerSwitcherClient"),
-                patch("crisp_py.robot.JointTrajectoryControllerClient"),
-                patch("crisp_py.robot.ParametersClient"),
-                patch("crisp_py.robot.CallbackMonitor"),
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
             ):
                 mock_node = Mock()
                 mock_node.create_publisher.return_value = Mock()

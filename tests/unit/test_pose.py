@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from crisp_py.robot import Pose
+from crisp_py.utils.geometry import Pose
 
 
 class TestPose:
