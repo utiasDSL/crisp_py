@@ -2,9 +2,11 @@
 
 import threading
 from abc import ABC, abstractmethod
+from typing import Any
 
 import numpy as np
 import rclpy
+import rclpy.subscription
 import yaml
 from geometry_msgs.msg import WrenchStamped
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -136,7 +138,8 @@ class Sensor(ABC):
             raise ValueError("Sensor value is not available yet.")
         return self._value - self._baseline
 
-    def ros_msg_to_sensor_value(self, msg) -> np.ndarray:
+    @abstractmethod
+    def ros_msg_to_sensor_value(self, msg: Any) -> np.ndarray:
         """Convert a ROS message to a numpy array.
 
         Args:
@@ -201,7 +204,7 @@ class Sensor(ABC):
 class Float32ArraySensor(Sensor):
     """Sensor that subscribes to Float32MultiArray messages."""
 
-    def _create_subscription(self):
+    def _create_subscription(self) -> rclpy.subscription.Subscription:
         """Create the ROS2 subscription for Float32MultiArray messages."""
         return self.node.create_subscription(
             Float32MultiArray,
@@ -221,7 +224,7 @@ class Float32ArraySensor(Sensor):
 class ForceTorqueSensor(Sensor):
     """Torque sensor that subscribes to WrenchStamped messages."""
 
-    def _create_subscription(self):
+    def _create_subscription(self) -> rclpy.subscription.Subscription:
         """Create the ROS2 subscription for WrenchStamped messages."""
         return self.node.create_subscription(
             WrenchStamped,

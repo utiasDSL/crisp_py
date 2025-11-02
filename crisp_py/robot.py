@@ -565,9 +565,6 @@ class Robot:
         if blocking:
             self.wait_until_ready()
 
-        # if switch_to_default_controller:
-        #     self.controller_switcher_client.switch_controller(self.config.default_controller)
-
     def _joint_to_joint_msg(
         self, q: NDArray, dq: NDArray | None = None, tau: NDArray | None = None
     ) -> JointState:
