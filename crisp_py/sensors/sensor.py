@@ -3,6 +3,7 @@
 import threading
 from abc import ABC, abstractmethod
 from typing import Any
+from typing_extensions import override
 
 import numpy as np
 import rclpy
@@ -220,6 +221,18 @@ class Float32ArraySensor(Sensor):
         if self._baseline is None:
             self._baseline = np.zeros_like(self._value)
 
+    @override
+    def ros_msg_to_sensor_value(self, msg: Float32MultiArray) -> np.ndarray:
+        """Convert a Float32MultiArray message to a numpy array.
+
+        Args:
+            msg: Float32MultiArray ROS message to convert
+
+        Returns:
+            np.ndarray: Converted numpy array
+        """
+        return np.array(msg.data[:], dtype=np.float32)
+
 
 class ForceTorqueSensor(Sensor):
     """Torque sensor that subscribes to WrenchStamped messages."""
@@ -236,7 +249,21 @@ class ForceTorqueSensor(Sensor):
 
     def _callback_wrench(self, msg: WrenchStamped):
         """Callback for wrench data."""
-        self._value = np.array(
+        self._value = self.ros_msg_to_sensor_value(msg)
+        if self._baseline is None:
+            self._baseline = np.zeros_like(self._value)
+
+    @override
+    def ros_msg_to_sensor_value(self, msg: WrenchStamped) -> np.ndarray:
+        """Convert a WrenchStamped message to a numpy array.
+
+        Args:
+            msg: WrenchStamped ROS message to convert
+
+        Returns:
+            np.ndarray: Converted numpy array
+        """
+        return np.array(
             [
                 msg.wrench.force.x,
                 msg.wrench.force.y,
@@ -247,8 +274,6 @@ class ForceTorqueSensor(Sensor):
             ],
             dtype=np.float32,
         )
-        if self._baseline is None:
-            self._baseline = np.zeros_like(self._value)
 
 
 def _make_sensor_from_config(
