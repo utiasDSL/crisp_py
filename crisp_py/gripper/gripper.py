@@ -391,7 +391,7 @@ def make_gripper(
         FileNotFoundError: If the config file is not found
     """
     assert (not config_name and gripper_config) or (config_name and not gripper_config), (
-        "Either config_name or gripper_config should be provided, not both."
+        "Either config_name or gripper_config must be provided, not both."
     )
 
     if config_name is not None:
