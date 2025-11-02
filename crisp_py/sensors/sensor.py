@@ -3,7 +3,6 @@
 import threading
 from abc import ABC, abstractmethod
 from typing import Any
-from typing_extensions import override
 
 import numpy as np
 import rclpy
@@ -15,6 +14,7 @@ from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from std_msgs.msg import Float32MultiArray
+from typing_extensions import override
 
 from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.sensors.sensor_config import SensorConfig, make_sensor_config
