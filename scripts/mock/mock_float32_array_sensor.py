@@ -34,12 +34,10 @@ class MockFloat32ArraySensorNode(Node):
         self.array_size = array_size
         self.noise_amplitude = noise_amplitude
 
-        # Create publisher
         self.publisher = self.create_publisher(
             Float32MultiArray, topic_name, qos_profile_sensor_data
         )
 
-        # Create timer for publishing
         timer_period = 1.0 / publish_rate  # seconds
         self.timer = self.create_timer(timer_period, self.publish_sensor_data)
 
@@ -51,7 +49,6 @@ class MockFloat32ArraySensorNode(Node):
         """Publish mock sensor data."""
         msg = Float32MultiArray()
 
-        # Generate mock data with some pattern and noise
         t = time.time()
         base_values = [
             np.sin(t * 0.5) + random.uniform(-self.noise_amplitude, self.noise_amplitude),
@@ -59,11 +56,9 @@ class MockFloat32ArraySensorNode(Node):
             np.sin(t * 0.7) * 0.5 + random.uniform(-self.noise_amplitude, self.noise_amplitude),
         ]
 
-        # Extend to desired array size
         while len(base_values) < self.array_size:
             base_values.append(random.uniform(-self.noise_amplitude, self.noise_amplitude))
 
-        # Trim to exact size if needed
         msg.data = base_values[: self.array_size]
 
         self.publisher.publish(msg)
@@ -73,7 +68,6 @@ def main(args=None):  # noqa: ANN001
     """Main entry point."""
     rclpy.init(args=args)
 
-    # Parse command line arguments or use defaults
     import argparse
 
     parser = argparse.ArgumentParser(description="Mock Float32Array Sensor")

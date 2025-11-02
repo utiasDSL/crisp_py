@@ -37,10 +37,8 @@ class MockForceTorqueSensorNode(Node):
         self.torque_noise_amplitude = torque_noise_amplitude
         self.frame_id = frame_id
 
-        # Create publisher
         self.publisher = self.create_publisher(WrenchStamped, topic_name, qos_profile_sensor_data)
 
-        # Create timer for publishing
         timer_period = 1.0 / publish_rate  # seconds
         self.timer = self.create_timer(timer_period, self.publish_sensor_data)
 
@@ -52,14 +50,11 @@ class MockForceTorqueSensorNode(Node):
         """Publish mock force-torque sensor data."""
         msg = WrenchStamped()
 
-        # Set header
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = self.frame_id
 
-        # Generate mock force data with some pattern and noise
         t = time.time()
 
-        # Simulate some periodic forces (e.g., from robot motion)
         base_fx = 2.0 * np.sin(t * 0.5) + random.uniform(
             -self.force_noise_amplitude, self.force_noise_amplitude
         )
@@ -74,7 +69,6 @@ class MockForceTorqueSensorNode(Node):
 
         msg.wrench.force = Vector3(x=base_fx, y=base_fy, z=base_fz)
 
-        # Generate mock torque data
         base_tx = 0.1 * np.sin(t * 0.8) + random.uniform(
             -self.torque_noise_amplitude, self.torque_noise_amplitude
         )
@@ -94,7 +88,6 @@ def main(args=None):  # noqa: ANN001
     """Main entry point."""
     rclpy.init(args=args)
 
-    # Parse command line arguments or use defaults
     import argparse
 
     parser = argparse.ArgumentParser(description="Mock Force-Torque Sensor")
