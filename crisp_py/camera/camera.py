@@ -394,9 +394,8 @@ def make_camera(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    assert (not config_name and camera_config) or (config_name and not camera_config), (
-        "Either config_name or camera_config must be provided, but not both."
-    )
+    if not ((not config_name and camera_config) or (config_name and not camera_config)):
+        raise ValueError("Either config_name or camera_config must be provided, but not both.")
 
     if config_name is not None:
         return Camera.from_yaml(
