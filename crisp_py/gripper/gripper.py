@@ -384,10 +384,8 @@ def make_gripper(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    assert (not config_name and gripper_config) or (config_name and not gripper_config), (
-        "Either config_name or gripper_config must be provided, not both."
-    )
-
+    if not ((not config_name and gripper_config) or (config_name and not gripper_config)):
+        raise ValueError("Either config_name or gripper_config must be provided, not both.")
     if config_name is not None:
         return Gripper.from_yaml(
             config_name=config_name,
