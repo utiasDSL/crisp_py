@@ -91,7 +91,7 @@ class MockGripperNode(Node):
             self.target_position = np.clip(target, self.min_value, self.max_value)
             self.get_logger().debug(f"New target position: {self.target_position:.3f}")
 
-    def reboot_callback(self, request, response):
+    def reboot_callback(self, request, response):  # noqa: ANN001, ANN201
         """Handle gripper reboot service calls."""
         self.get_logger().info("Rebooting gripper...")
 
@@ -105,7 +105,7 @@ class MockGripperNode(Node):
         response.message = "Gripper rebooted successfully"
         return response
 
-    def enable_torque_callback(self, request, response):
+    def enable_torque_callback(self, request, response):  # noqa: ANN001, ANN201
         """Handle enable/disable torque service calls."""
         self.torque_enabled = request.data
         status = "enabled" if self.torque_enabled else "disabled"

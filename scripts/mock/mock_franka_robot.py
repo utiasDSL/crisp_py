@@ -2,7 +2,6 @@
 """Mock Franka Robot that publishes pose, joint states, and twist to ROS2 topics."""
 
 import argparse
-import time
 
 import numpy as np
 import rclpy
@@ -71,7 +70,7 @@ class MockFrankaRobotNode(Node):
 
         # Control parameters
         self.joint_max_velocity = 0.5  # rad/s
-        self.pose_max_velocity = 0.1   # m/s for position, rad/s for orientation
+        self.pose_max_velocity = 0.1  # m/s for position, rad/s for orientation
 
         # Create publishers
         self.pose_publisher = self.create_publisher(
@@ -86,16 +85,10 @@ class MockFrankaRobotNode(Node):
 
         # Create subscribers for targets
         self.target_pose_subscriber = self.create_subscription(
-            PoseStamped,
-            target_pose_topic,
-            self.target_pose_callback,
-            qos_profile_system_default
+            PoseStamped, target_pose_topic, self.target_pose_callback, qos_profile_system_default
         )
         self.target_joint_subscriber = self.create_subscription(
-            JointState,
-            target_joint_topic,
-            self.target_joint_callback,
-            qos_profile_system_default
+            JointState, target_joint_topic, self.target_joint_callback, qos_profile_system_default
         )
 
         # Create timer for publishing
@@ -138,12 +131,14 @@ class MockFrankaRobotNode(Node):
         """Handle incoming target pose messages."""
         self.target_pose = {
             "position": [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z],
-            "orientation": self._quat_to_euler([
-                msg.pose.orientation.x,
-                msg.pose.orientation.y,
-                msg.pose.orientation.z,
-                msg.pose.orientation.w
-            ])
+            "orientation": self._quat_to_euler(
+                [
+                    msg.pose.orientation.x,
+                    msg.pose.orientation.y,
+                    msg.pose.orientation.z,
+                    msg.pose.orientation.w,
+                ]
+            ),
         }
         self.get_logger().debug(f"Received target pose: {self.target_pose}")
 
@@ -159,15 +154,13 @@ class MockFrankaRobotNode(Node):
                     self.target_joints[i] = msg.position[idx]
             self.get_logger().debug(f"Received target joints: {self.target_joints}")
 
-    def _quat_to_euler(self, quat):
+    def _quat_to_euler(self, quat):  # noqa: ANN001, ANN202
         """Convert quaternion [x, y, z, w] to Euler angles [roll, pitch, yaw]."""
         r = Rotation.from_quat(quat)
-        return r.as_euler('xyz')
-
+        return r.as_euler("xyz")
 
     def _follow_targets(self, dt: float):
         """Make the robot smoothly follow target values."""
-        # Follow joint targets
         joint_errors = self.target_joints - self.current_joints
         for i in range(7):
             max_delta = self.joint_max_velocity * dt
@@ -175,22 +168,22 @@ class MockFrankaRobotNode(Node):
             self.current_joints[i] += delta
             self.joint_velocities[i] = delta / dt
 
-        # Follow pose targets (independent of joints)
-        # Position
-        pos_errors = np.array(self.target_pose["position"]) - np.array(self.current_pose["position"])
+        pos_errors = np.array(self.target_pose["position"]) - np.array(
+            self.current_pose["position"]
+        )
         max_pos_delta = self.pose_max_velocity * dt
         for i in range(3):
             delta = np.clip(pos_errors[i], -max_pos_delta, max_pos_delta)
             self.current_pose["position"][i] += delta
 
-        # Orientation (simplified)
-        ori_errors = np.array(self.target_pose["orientation"]) - np.array(self.current_pose["orientation"])
+        ori_errors = np.array(self.target_pose["orientation"]) - np.array(
+            self.current_pose["orientation"]
+        )
         max_ori_delta = self.pose_max_velocity * dt
         for i in range(3):
             delta = np.clip(ori_errors[i], -max_ori_delta, max_ori_delta)
             self.current_pose["orientation"][i] += delta
 
-        # Calculate twist from velocity
         self.current_twist[:3] = pos_errors / dt if np.linalg.norm(pos_errors) > 1e-6 else [0, 0, 0]
         self.current_twist[3:] = ori_errors / dt if np.linalg.norm(ori_errors) > 1e-6 else [0, 0, 0]
 
@@ -265,8 +258,12 @@ def main(args=None):  # noqa: ANN001
     parser.add_argument("--pose-topic", default="/current_pose", help="Current pose topic name")
     parser.add_argument("--joint-topic", default="/joint_states", help="Joint states topic name")
     parser.add_argument("--twist-topic", default="/current_twist", help="Current twist topic name")
-    parser.add_argument("--target-pose-topic", default="/target_pose", help="Target pose topic name")
-    parser.add_argument("--target-joint-topic", default="/target_joint", help="Target joint topic name")
+    parser.add_argument(
+        "--target-pose-topic", default="/target_pose", help="Target pose topic name"
+    )
+    parser.add_argument(
+        "--target-joint-topic", default="/target_joint", help="Target joint topic name"
+    )
     parser.add_argument("--rate", type=float, default=50.0, help="Publishing rate (Hz)")
     parser.add_argument("--base-frame", default="base", help="Base frame name")
     parser.add_argument("--target-frame", default="fr3_hand_tcp", help="Target frame name")
@@ -297,4 +294,3 @@ def main(args=None):  # noqa: ANN001
 
 if __name__ == "__main__":
     main()
-

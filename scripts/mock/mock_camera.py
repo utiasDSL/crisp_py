@@ -2,7 +2,6 @@
 """Mock Camera that publishes compressed images and camera info to ROS2 topics."""
 
 import argparse
-import time
 
 import cv2
 import numpy as np
@@ -82,7 +81,6 @@ class MockCameraNode(Node):
 
     def publish_data(self):
         """Publish camera image and info."""
-
         image = self._generate_test_image()
 
         compressed_msg = CompressedImage()
