@@ -6,9 +6,9 @@ import time
 
 import numpy as np
 import rclpy
+from geometry_msgs.msg import Vector3, WrenchStamped
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
-from geometry_msgs.msg import WrenchStamped, Vector3
 
 
 class MockForceTorqueSensorNode(Node):
@@ -38,9 +38,7 @@ class MockForceTorqueSensorNode(Node):
         self.frame_id = frame_id
 
         # Create publisher
-        self.publisher = self.create_publisher(
-            WrenchStamped, topic_name, qos_profile_sensor_data
-        )
+        self.publisher = self.create_publisher(WrenchStamped, topic_name, qos_profile_sensor_data)
 
         # Create timer for publishing
         timer_period = 1.0 / publish_rate  # seconds
@@ -53,35 +51,41 @@ class MockForceTorqueSensorNode(Node):
     def publish_sensor_data(self):
         """Publish mock force-torque sensor data."""
         msg = WrenchStamped()
-        
+
         # Set header
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = self.frame_id
 
         # Generate mock force data with some pattern and noise
         t = time.time()
-        
+
         # Simulate some periodic forces (e.g., from robot motion)
-        base_fx = 2.0 * np.sin(t * 0.5) + random.uniform(-self.force_noise_amplitude, self.force_noise_amplitude)
-        base_fy = 1.5 * np.cos(t * 0.3) + random.uniform(-self.force_noise_amplitude, self.force_noise_amplitude)
-        base_fz = -9.81 + 0.5 * np.sin(t * 0.7) + random.uniform(-self.force_noise_amplitude, self.force_noise_amplitude)  # Gravity + variation
-        
-        msg.wrench.force = Vector3(
-            x=base_fx,
-            y=base_fy,
-            z=base_fz
+        base_fx = 2.0 * np.sin(t * 0.5) + random.uniform(
+            -self.force_noise_amplitude, self.force_noise_amplitude
         )
+        base_fy = 1.5 * np.cos(t * 0.3) + random.uniform(
+            -self.force_noise_amplitude, self.force_noise_amplitude
+        )
+        base_fz = (
+            -9.81
+            + 0.5 * np.sin(t * 0.7)
+            + random.uniform(-self.force_noise_amplitude, self.force_noise_amplitude)
+        )  # Gravity + variation
+
+        msg.wrench.force = Vector3(x=base_fx, y=base_fy, z=base_fz)
 
         # Generate mock torque data
-        base_tx = 0.1 * np.sin(t * 0.8) + random.uniform(-self.torque_noise_amplitude, self.torque_noise_amplitude)
-        base_ty = 0.15 * np.cos(t * 0.4) + random.uniform(-self.torque_noise_amplitude, self.torque_noise_amplitude)
-        base_tz = 0.05 * np.sin(t * 1.2) + random.uniform(-self.torque_noise_amplitude, self.torque_noise_amplitude)
-        
-        msg.wrench.torque = Vector3(
-            x=base_tx,
-            y=base_ty,
-            z=base_tz
+        base_tx = 0.1 * np.sin(t * 0.8) + random.uniform(
+            -self.torque_noise_amplitude, self.torque_noise_amplitude
         )
+        base_ty = 0.15 * np.cos(t * 0.4) + random.uniform(
+            -self.torque_noise_amplitude, self.torque_noise_amplitude
+        )
+        base_tz = 0.05 * np.sin(t * 1.2) + random.uniform(
+            -self.torque_noise_amplitude, self.torque_noise_amplitude
+        )
+
+        msg.wrench.torque = Vector3(x=base_tx, y=base_ty, z=base_tz)
 
         self.publisher.publish(msg)
 
@@ -97,7 +101,9 @@ def main(args=None):  # noqa: ANN001
     parser.add_argument("--topic", default="/sensor/force_torque", help="Topic name")
     parser.add_argument("--rate", type=float, default=100.0, help="Publishing rate (Hz)")
     parser.add_argument("--force-noise", type=float, default=0.5, help="Force noise amplitude (N)")
-    parser.add_argument("--torque-noise", type=float, default=0.1, help="Torque noise amplitude (Nm)")
+    parser.add_argument(
+        "--torque-noise", type=float, default=0.1, help="Torque noise amplitude (Nm)"
+    )
     parser.add_argument("--frame-id", default="force_torque_sensor", help="Frame ID")
 
     parsed_args = parser.parse_args()
