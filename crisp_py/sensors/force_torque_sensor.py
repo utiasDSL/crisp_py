@@ -3,9 +3,9 @@
 import numpy as np
 import rclpy
 import rclpy.subscription
+from geometry_msgs.msg import WrenchStamped
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.qos import qos_profile_sensor_data
-from geometry_msgs.msg import WrenchStamped
 from typing_extensions import override
 
 from crisp_py.sensors.sensor import Sensor, register_sensor
