@@ -1,23 +1,34 @@
 """Example using the sensor module to read data from a sensor."""
+# Launch in terminal:
+# python scripts/mock/mock_force_torque_sensor.py
 
-from crisp_py.sensors.sensor import Sensor
-from crisp_py.sensors.sensor_config import AnySkinSensorConfig
+from crisp_py.sensors import make_sensor
 import matplotlib.pyplot as plt
 import time
 
-sensor = Sensor(namespace="anyskin", sensor_config=AnySkinSensorConfig())
+sensor = make_sensor("mock_force_torque_sensor", namespace="sensor")
 sensor.wait_until_ready()
 
+CALIBRATE_TO_ZERO = False
+#%%
+for force_torque in sensor.buffer.get()[-10:]:
+    print(force_torque[2])
+print("===")
+time.sleep(0.01)
+for force_torque in sensor.buffer.get()[-10:]:
+    print(force_torque[2])
 #%%
 
-duration = 10
+
+duration = 20
 dt = 0.01  # seconds
 
 t = []
 data = []
 start_time = time.time()
 
-sensor.calibrate_to_zero()  # Calibrate the sensor to zero
+if CALIBRATE_TO_ZERO:
+    sensor.calibrate_to_zero()  # Calibrate the sensor to zero
 
 while time.time() - start_time < duration:
     t.append(time.time() - start_time)

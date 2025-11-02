@@ -1,0 +1,8 @@
+sensor_type: "force_torque"
+
+name: "ft_sensor"
+data_topic: "force_torque"
+
+shape: [6]
+max_data_delay: 1.0
+buffer_size: 100

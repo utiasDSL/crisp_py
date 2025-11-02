@@ -151,12 +151,6 @@ class Camera:
             spin_node=spin_node,
         )
 
-    @staticmethod
-    def list_configs() -> list[str]:
-        """List all available camera configurations."""
-        configs = list_configs_in_folder("cameras")
-        return [config.stem for config in configs if config.suffix == ".yaml"]
-
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
@@ -233,12 +227,7 @@ class Camera:
     def _callback_current_color_image(self, msg: CompressedImage):
         """Receive and store the current image."""
         self._image_has_changed = True
-        self._current_image = self._resize_with_aspect_ratio(
-            self._uncompress(msg),
-            target_res=self.config.resolution,
-            crop_width=self.config.crop_width,
-            crop_height=self.config.crop_height,
-        )
+        self._current_image = self.ros_msg_to_image(msg)
 
     def _callback_current_color_info(self, msg: CameraInfo):
         """Receive and store the current camera info."""
@@ -276,6 +265,15 @@ class Camera:
         cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
 
         return cropped_image
+
+    def ros_msg_to_image(self, msg: CompressedImage) -> np.ndarray:
+        """Convert a ROS message to numpy array for this camera configuration."""
+        return self._resize_with_aspect_ratio(
+            self._uncompress(msg),
+            target_res=self.config.resolution,
+            crop_width=self.config.crop_width,
+            crop_height=self.config.crop_height,
+        )
 
     def _pre_crop(
         self,
@@ -373,7 +371,8 @@ class Camera:
 
 
 def make_camera(
-    config_name: str,
+    config_name: str | None = None,
+    camera_config: Optional[CameraConfig] = None,
     node: "Node | None" = None,
     namespace: str = "",
     spin_node: bool = True,
@@ -383,6 +382,7 @@ def make_camera(
 
     Args:
         config_name: Name of the camera config file
+        camera_config: CameraConfig instance to use.
         node: ROS2 node to use. If None, creates a new node.
         namespace: ROS2 namespace for the camera.
         spin_node: Whether to spin the node in a separate thread.
@@ -394,15 +394,34 @@ def make_camera(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    return Camera.from_yaml(
-        config_name=config_name,
+    if not ((not config_name and camera_config) or (config_name and not camera_config)):
+        raise ValueError("Either config_name or camera_config must be provided, but not both.")
+
+    if config_name is not None:
+        return Camera.from_yaml(
+            config_name=config_name,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+            **overrides,
+        )
+
+    if overrides:
+        for key, value in overrides.items():
+            if hasattr(camera_config, key):
+                setattr(camera_config, key, value)
+            else:
+                raise ValueError(f"Invalid override key: {key}")
+
+    return Camera(
         node=node,
         namespace=namespace,
+        config=camera_config,
         spin_node=spin_node,
-        **overrides,
     )
 
 
 def list_camera_configs() -> list[str]:
     """List all available camera configurations."""
-    return Camera.list_configs()
+    configs = list_configs_in_folder("cameras")
+    return [config.stem for config in configs if config.suffix == ".yaml"]

@@ -1,245 +1,368 @@
 """Unit tests for the Sensor classes and SensorConfig."""
 
-from unittest.mock import Mock, patch
+from typing import Any
+from unittest.mock import Mock, mock_open, patch
 
 import numpy as np
 import pytest
 from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray
 
-from crisp_py.sensors.sensor import Float32ArraySensor, ForceTorqueSensor, Sensor
-from crisp_py.sensors.sensor_config import EmptySensorConfig, SensorConfig
+from crisp_py.sensors import (
+    Sensor,
+    SensorConfig,
+    get_float32_array_sensor_spec,
+    get_force_torque_sensor_spec,
+    get_sensor_spec,
+    list_sensor_configs,
+    make_sensor,
+    register_sensor,
+    sensor_registry,
+)
 
 
 class TestSensorConfig:
     """Test cases for the SensorConfig class."""
 
-    def test_sensor_config_creation(self):
+    def test_sensor_config_creation(self) -> None:
         """Test basic sensor config creation."""
-        config = SensorConfig(shape=(3,), sensor_type="float32")
-
-        assert config.shape == (3,)
-        assert config.sensor_type == "float32"
-        assert config.name == "sensor"
-        assert config.data_topic == "sensor_data"
-        assert config.max_data_delay == 1.0
-
-    def test_sensor_config_custom_values(self):
-        """Test SensorConfig with custom values."""
         config = SensorConfig(
-            shape=(6,),
-            sensor_type="force_torque",
-            name="custom_sensor",
-            data_topic="custom/data",
-            max_data_delay=2.0,
+            name="test_sensor", 
+            shape=(3, 3), 
+            sensor_type="float32_array"
         )
+        assert config.name == "test_sensor"
+        assert config.shape == (3, 3)
+        assert config.sensor_type == "float32_array"
+        assert config.data_topic == "sensor_data"  # default
+        assert config.max_data_delay == 1.0  # default
 
-        assert config.shape == (6,)
-        assert config.sensor_type == "force_torque"
+    def test_sensor_config_custom_values(self) -> None:
+        """Test sensor config with custom values."""
+        config = SensorConfig(
+            name="custom_sensor",
+            shape=(2, 2),
+            data_topic="custom_topic",
+            max_data_delay=2.0,
+            sensor_type="force_torque",
+            buffer_size=100,
+        )
         assert config.name == "custom_sensor"
-        assert config.data_topic == "custom/data"
+        assert config.shape == (2, 2)
+        assert config.data_topic == "custom_topic"
         assert config.max_data_delay == 2.0
+        assert config.sensor_type == "force_torque"
+        assert config.buffer_size == 100
+
+    def test_sensor_config_from_yaml(self) -> None:
+        """Test loading sensor config from YAML."""
+        yaml_data = """
+name: yaml_sensor
+shape: [6]
+sensor_type: force_torque
+data_topic: wrench_topic
+max_data_delay: 0.5
+"""
+        with patch("builtins.open", mock_open(read_data=yaml_data)):
+            config = SensorConfig.from_yaml("test.yaml")
+            assert config.name == "yaml_sensor"
+            assert config.shape == [6]  # YAML loads as list, not tuple
+            assert config.sensor_type == "force_torque"
+            assert config.data_topic == "wrench_topic"
+            assert config.max_data_delay == 0.5
+
+
+class TestSensorRegistry:
+    """Test cases for sensor registration and spec retrieval."""
+
+    def test_register_sensor_decorator(self) -> None:
+        """Test registering a sensor type."""
+        @register_sensor("test_sensor")
+        def test_sensor_spec() -> tuple[type, Any]:
+            return (Float32MultiArray, lambda msg: np.array([1.0, 2.0]))
+        
+        assert "test_sensor" in sensor_registry
+        assert sensor_registry["test_sensor"] == test_sensor_spec
+
+    def test_get_sensor_spec(self) -> None:
+        """Test retrieving sensor spec."""
+        # Register a test sensor
+        @register_sensor("test_spec")
+        def test_spec() -> tuple[type, Any]:
+            return (Float32MultiArray, lambda msg: np.array([1.0]))
+        
+        msg_type, conversion_func = get_sensor_spec("test_spec")
+        assert msg_type == Float32MultiArray
+        
+        # Test conversion function
+        msg = Float32MultiArray()
+        msg.data = [5.0]
+        result = conversion_func(msg)
+        assert np.array_equal(result, np.array([1.0]))
+
+    def test_get_sensor_spec_unknown_type(self) -> None:
+        """Test error when getting unknown sensor type."""
+        with pytest.raises(ValueError, match="Unknown sensor type: unknown"):
+            get_sensor_spec("unknown")
+
+
+class TestSensorSpecs:
+    """Test cases for built-in sensor specifications."""
+
+    def test_float32_array_sensor_spec(self) -> None:
+        """Test Float32Array sensor specification."""
+        msg_type, conversion_func = get_float32_array_sensor_spec()
+        
+        assert msg_type == Float32MultiArray
+        
+        # Test conversion function
+        msg = Float32MultiArray()
+        msg.data = [1.0, 2.0, 3.0]
+        result = conversion_func(msg)
+        
+        np.testing.assert_array_equal(result, np.array([1.0, 2.0, 3.0], dtype=np.float32))
+
+    def test_force_torque_sensor_spec(self) -> None:
+        """Test force-torque sensor specification."""
+        msg_type, conversion_func = get_force_torque_sensor_spec()
+        
+        assert msg_type == WrenchStamped
+        
+        # Test conversion function
+        msg = WrenchStamped()
+        msg.wrench.force.x = 0.5
+        msg.wrench.force.y = 1.0
+        msg.wrench.force.z = 1.5
+        msg.wrench.torque.x = 0.1
+        msg.wrench.torque.y = 0.2
+        msg.wrench.torque.z = 0.3
+        
+        result = conversion_func(msg)
+        expected = np.array([0.5, 1.0, 1.5, 0.1, 0.2, 0.3], dtype=np.float32)
+        
+        np.testing.assert_array_equal(result, expected)
 
 
 class TestSensor:
-    """Test cases for the abstract Sensor class."""
-
-    def test_sensor_cannot_be_instantiated(self):
-        """Test that Sensor abstract class cannot be instantiated."""
-        with pytest.raises(TypeError):
-            Sensor()
+    """Test cases for the Sensor class."""
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_initialization_with_node(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
+    def test_sensor_initialization_with_node(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
         """Test sensor initialization with provided node."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
+        mock_node.create_subscription.return_value = Mock()
 
-        class ConcreteSensor(Sensor):
-            def _create_subscription(self):
-                pass
-
-        sensor_config = EmptySensorConfig(name="sensor", shape=(3,))
-        sensor = ConcreteSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
+        sensor_config = SensorConfig(
+            name="test_sensor", 
+            shape=(3,), 
+            sensor_type="float32_array"
+        )
+        sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
         assert sensor.node == mock_node
-        assert sensor.config.name == "sensor"
+        assert sensor.config.name == "test_sensor"
         mock_callback_monitor.assert_called_once()
+        mock_node.create_subscription.assert_called_once()
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_initialization_without_node(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
+    def test_sensor_initialization_without_node(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
         """Test sensor initialization without provided node."""
         mock_rclpy.ok.return_value = True
         mock_node = Mock()
         mock_rclpy.create_node.return_value = mock_node
+        mock_node.create_subscription.return_value = Mock()
 
-        class ConcreteSensor(Sensor):
-            def _create_subscription(self):
-                pass
-
-        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=None, spin_node=False)
+        sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
+        sensor = Sensor(sensor_config=sensor_config, node=None, spin_node=False)
 
         assert sensor.node == mock_node
         mock_rclpy.create_node.assert_called_once()
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_is_ready(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
+    def test_sensor_is_ready(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
         """Test sensor is_ready method."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
+        mock_node.create_subscription.return_value = Mock()
 
-        class ConcreteSensor(Sensor):
-            def _create_subscription(self):
-                pass
+        sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
+        sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
-        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
-
+        # Initially not ready
         assert not sensor.is_ready()
 
-        sensor._value = np.array([1.0, 2.0])
+        # Set value to make it ready
+        sensor._value = np.array([1.0, 2.0, 3.0])
         assert sensor.is_ready()
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_value_property_not_ready(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
-        """Test sensor value property when not ready."""
+    def test_sensor_value_property(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
+        """Test sensor value property."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
+        mock_node.create_subscription.return_value = Mock()
 
-        class ConcreteSensor(Sensor):
-            def _create_subscription(self):
-                pass
+        sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
+        sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
-        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
-
+        # Test error when not ready
         with pytest.raises(ValueError, match="Sensor value is not available yet"):
             _ = sensor.value
 
-    @patch("crisp_py.sensors.sensor.rclpy")
-    @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_value_property_ready(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
-        """Test sensor value property when ready."""
-        mock_node = Mock()
-        mock_rclpy.ok.return_value = True
-        mock_callback_monitor_instance = Mock()
-        mock_callback_monitor.return_value = mock_callback_monitor_instance
-
-        class ConcreteSensor(Sensor):
-            def _create_subscription(self):
-                pass
-
-        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
-        sensor._value = np.array([3.0, 4.0])
-        sensor._baseline = np.array([1.0, 2.0])
+        # Test value when ready
+        sensor._value = np.array([3.0, 4.0, 5.0])
+        sensor._baseline = np.array([1.0, 1.0, 1.0])
 
         result = sensor.value
-
-        np.testing.assert_array_equal(result, np.array([2.0, 2.0]))
+        np.testing.assert_array_equal(result, np.array([2.0, 3.0, 4.0]))
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_calibrate_to_zero(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
+    def test_sensor_calibrate_to_zero(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
         """Test sensor calibrate_to_zero method."""
         mock_node = Mock()
         mock_rate = Mock()
         mock_node.create_rate.return_value = mock_rate
+        mock_node.create_subscription.return_value = Mock()
         mock_rclpy.ok.return_value = True
-        mock_callback_monitor_instance = Mock()
-        mock_callback_monitor.return_value = mock_callback_monitor_instance
 
-        class ConcreteSensor(Sensor):
-            def _create_subscription(self):
-                pass
+        sensor_config = SensorConfig(shape=(2,), sensor_type="float32_array")
+        sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
-        sensor = ConcreteSensor(sensor_config=EmptySensorConfig(), node=mock_node, spin_node=False)
-        sensor._value = np.array([1.0, 2.0])
+        # Set initial values
+        sensor._value = np.array([2.0, 3.0])
         sensor._baseline = np.array([0.0, 0.0])
 
         sensor.calibrate_to_zero(num_samples=2, sample_rate=10.0)
 
-        np.testing.assert_array_equal(sensor._baseline, np.array([1.0, 2.0]))
-        assert mock_rate.sleep.call_count == 2
-
-
-class TestFloat32ArraySensor:
-    """Test cases for the Float32ArraySensor class."""
+        # Check that baseline was set
+        np.testing.assert_array_equal(sensor._baseline, np.array([2.0, 3.0]))
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_float32array_sensor_subscription(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
-        """Test Float32ArraySensor creates correct subscription."""
+    def test_sensor_callback(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
+        """Test sensor callback processing."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
+        mock_node.create_subscription.return_value = Mock()
 
-        Float32ArraySensor(
-            sensor_config=EmptySensorConfig(shape=(7,)), node=mock_node, spin_node=False
-        )
+        sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
+        sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
-        mock_node.create_subscription.assert_called_once()
-        args, _ = mock_node.create_subscription.call_args
-        assert args[0] == Float32MultiArray
-        assert args[1] == "sensor_data"  # default topic
-
-    @patch("crisp_py.sensors.sensor.rclpy")
-    @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_float32array_sensor_callback(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
-        """Test Float32ArraySensor callback processing."""
-        mock_node = Mock()
-        mock_rclpy.ok.return_value = True
-
-        sensor = Float32ArraySensor(
-            sensor_config=EmptySensorConfig(shape=(3,)), node=mock_node, spin_node=False
-        )
-
+        # Simulate callback
         msg = Float32MultiArray()
         msg.data = [1.0, 2.0, 3.0]
-
-        sensor._callback_sensor_data(msg)
-
+        
+        sensor._sensor_callback(msg)
+        
         np.testing.assert_array_equal(sensor._value, np.array([1.0, 2.0, 3.0]))
         np.testing.assert_array_equal(sensor._baseline, np.array([0.0, 0.0, 0.0]))
 
+    @patch("crisp_py.sensors.sensor.rclpy")
+    @patch("crisp_py.sensors.sensor.CallbackMonitor")
+    def test_sensor_buffer_property(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
+        """Test sensor buffer property."""
+        mock_node = Mock()
+        mock_rclpy.ok.return_value = True
+        mock_node.create_subscription.return_value = Mock()
 
-class TestTorqueSensor:
-    """Test cases for the TorqueSensor class."""
+        sensor_config = SensorConfig(shape=(2,), sensor_type="float32_array", buffer_size=5)
+        sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
+
+        # Test buffer property
+        buffer = sensor.buffer
+        assert buffer is not None
+        assert hasattr(buffer, 'add')  # SlidingBuffer should have add method
+
+
+class TestMakeSensor:
+    """Test cases for the make_sensor factory function."""
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_torque_sensor_subscription(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
-        """Test TorqueSensor creates correct subscription."""
+    def test_make_sensor_from_yaml(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
+        """Test make_sensor from YAML config."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
-        sensor_config = EmptySensorConfig(shape=(3,))
+        mock_node.create_subscription.return_value = Mock()
 
-        ForceTorqueSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
+        yaml_data = """
+name: test_sensor
+shape: [3]
+sensor_type: float32_array
+data_topic: test_topic
+"""
+        
+        with patch("crisp_py.sensors.sensor.find_config") as mock_find_config:
+            with patch("builtins.open", mock_open(read_data=yaml_data)):
+                mock_find_config.return_value = "/path/to/test_config.yaml"
+                
+                sensor = make_sensor(config_name="test_config", node=mock_node, spin_node=False)
 
-        mock_node.create_subscription.assert_called_once()
-        args, _ = mock_node.create_subscription.call_args
-        assert args[0] == WrenchStamped
-        assert args[1] == "sensor_data"  # default topic
+                assert isinstance(sensor, Sensor)
+                assert sensor.config.name == "test_sensor"
+                assert sensor.config.sensor_type == "float32_array"
+                assert sensor.config.data_topic == "test_topic"
+
+    @patch("crisp_py.sensors.sensor.find_config")
+    def test_make_sensor_file_not_found(self, mock_find_config: Any) -> None:
+        """Test make_sensor with missing config file."""
+        mock_find_config.return_value = None
+        
+        with pytest.raises(FileNotFoundError, match="Sensor config file 'missing.yaml' not found"):
+            make_sensor(config_name="missing")
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_torque_sensor_callback(self, mock_callback_monitor, mock_rclpy):  # noqa: ANN001
-        """Test TorqueSensor callback processing."""
+    def test_make_sensor_with_overrides(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
+        """Test make_sensor with parameter overrides."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
+        mock_node.create_subscription.return_value = Mock()
 
-        sensor_config = EmptySensorConfig(shape=(3,))
-        sensor = ForceTorqueSensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
+        yaml_data = """
+name: base_sensor
+shape: [3]
+sensor_type: float32_array
+"""
+        
+        with patch("crisp_py.sensors.sensor.find_config") as mock_find_config:
+            with patch("builtins.open", mock_open(read_data=yaml_data)):
+                mock_find_config.return_value = "/path/to/config.yaml"
+                
+                sensor = make_sensor(
+                    config_name="config", 
+                    node=mock_node, 
+                    spin_node=False,
+                    name="overridden_sensor",
+                    data_topic="overridden_topic"
+                )
 
-        msg = WrenchStamped()
-        msg.wrench.force.x = 0.5
-        msg.wrench.force.y = 1.0
-        msg.wrench.force.z = 1.5
-        msg.wrench.torque.x = 0.0
-        msg.wrench.torque.y = 0.0
-        msg.wrench.torque.z = 0.0
+                assert sensor.config.name == "overridden_sensor"
+                assert sensor.config.data_topic == "overridden_topic"
 
-        sensor._callback_wrench(msg)
 
-        np.testing.assert_array_equal(sensor._value, np.array([0.5, 1.0, 1.5, 0.0, 0.0, 0.0]))
-        np.testing.assert_array_equal(sensor._baseline, np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
+class TestUtilityFunctions:
+    """Test cases for utility functions."""
+
+    @patch("crisp_py.sensors.sensor.list_configs_in_folder")
+    def test_list_sensor_configs(self, mock_list_configs: Any) -> None:
+        """Test listing sensor configurations."""
+        from pathlib import Path
+        
+        mock_configs = [
+            Path("sensor1.yaml"),
+            Path("sensor2.yaml"),
+            Path("not_yaml.txt"),
+        ]
+        mock_list_configs.return_value = mock_configs
+        
+        configs = list_sensor_configs()
+        
+        assert configs == ["sensor1", "sensor2"]
+        mock_list_configs.assert_called_once_with("sensors")

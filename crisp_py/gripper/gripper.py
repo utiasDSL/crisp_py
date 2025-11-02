@@ -146,12 +146,6 @@ class Gripper:
             spin_node=spin_node,
         )
 
-    @staticmethod
-    def list_configs() -> list[str]:
-        """List all available gripper configurations."""
-        configs = list_configs_in_folder("grippers")
-        return [config.stem for config in configs if config.suffix == ".yaml"]
-
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
@@ -353,9 +347,22 @@ class Gripper:
         else:
             self.enable_torque_client.call_async(req)
 
+    def ros_msg_to_gripper_value(self, msg: JointState) -> float:
+        """Convert a ROS JointState message to a gripper value.
+
+        Args:
+            msg (JointState): The ROS JointState message.
+
+        Returns:
+            float: The gripper value.
+        """
+        # TODO: this would method should be use by the value() property to avoid code duplication
+        return np.clip(self._normalize(msg.position[self._index]), 0.0, 1.0)
+
 
 def make_gripper(
-    config_name: str,
+    config_name: str | None,
+    gripper_config: GripperConfig | None = None,
     node: "Node | None" = None,
     namespace: str = "",
     spin_node: bool = True,
@@ -365,6 +372,7 @@ def make_gripper(
 
     Args:
         config_name: Name of the gripper config file
+        gripper_config: Directly provide a GripperConfig instance instead of loading from file.
         node: ROS2 node to use. If None, creates a new node.
         namespace: ROS2 namespace for the gripper.
         spin_node: Whether to spin the node in a separate thread.
@@ -376,15 +384,23 @@ def make_gripper(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    return Gripper.from_yaml(
-        config_name=config_name,
-        node=node,
-        namespace=namespace,
-        spin_node=spin_node,
-        **overrides,
+    if not ((not config_name and gripper_config) or (config_name and not gripper_config)):
+        raise ValueError("Either config_name or gripper_config must be provided, not both.")
+    if config_name is not None:
+        return Gripper.from_yaml(
+            config_name=config_name,
+            node=node,
+            namespace=namespace,
+            spin_node=spin_node,
+            **overrides,
+        )
+
+    return Gripper(
+        gripper_config=gripper_config, node=node, namespace=namespace, spin_node=spin_node
     )
 
 
 def list_gripper_configs() -> list[str]:
     """List all available gripper configurations."""
-    return Gripper.list_configs()
+    configs = list_configs_in_folder("grippers")
+    return [config.stem for config in configs if config.suffix == ".yaml"]

@@ -2,7 +2,13 @@
 
 import numpy as np
 
-from crisp_py.robot_config import FrankaConfig, IiwaConfig, KinovaConfig, RobotConfig, SO101Config
+from crisp_py.robot.robot_config import (
+    FrankaConfig,
+    IiwaConfig,
+    KinovaConfig,
+    RobotConfig,
+    SO101Config,
+)
 
 
 class TestRobotConfig:
