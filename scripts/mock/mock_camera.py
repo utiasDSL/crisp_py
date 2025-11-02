@@ -77,7 +77,7 @@ class MockCameraNode(Node):
 
     def _generate_test_image(self) -> np.ndarray:
         """Generate a test image with moving patterns."""
-        return np.random.randint((self.height, self.width, 3), dtype=np.uint8)
+        return np.random.randint(0, 256, size=(self.height, self.width, 3), dtype=np.uint8)
 
     def publish_data(self):
         """Publish camera image and info."""
