@@ -118,8 +118,7 @@ class Sensor(ABC):
         namespace = data.pop("namespace", namespace)
         config_data = data.pop("sensor_config", data)
 
-        sensor_type = config_data.get("sensor_type", "empty")
-        sensor_config = make_sensor_config(sensor_type, **config_data)
+        sensor_config = make_sensor_config(**config_data)
 
         return _make_sensor_from_config(
             sensor_config=sensor_config,
@@ -223,7 +222,7 @@ def _make_sensor_from_config(
 def make_sensor(
     config_name: str | None = None,
     sensor_config: SensorConfig | None = None,
-    node: "Node | None" = None,
+    node: Node | None = None,
     namespace: str = "",
     spin_node: bool = True,
     **overrides,  # noqa: ANN003
