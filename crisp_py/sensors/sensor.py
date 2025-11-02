@@ -2,23 +2,30 @@
 
 import threading
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import rclpy
 import rclpy.subscription
 import yaml
-from geometry_msgs.msg import WrenchStamped
-from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
-from std_msgs.msg import Float32MultiArray
-from typing_extensions import override
 
 from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.sensors.sensor_config import SensorConfig, make_sensor_config
 from crisp_py.utils import CallbackMonitor
+
+sensor_registry: dict[str, type["Sensor"]] = {}
+
+
+def register_sensor(sensor_type: str) -> Callable:
+    """Decorator to register a sensor class in the sensor registry."""
+
+    def decorator(sensor_cls: type["Sensor"]) -> type["Sensor"]:
+        sensor_registry[sensor_type] = sensor_cls
+        return sensor_cls
+
+    return decorator
 
 
 class Sensor(ABC):
@@ -202,96 +209,15 @@ class Sensor(ABC):
                 )
 
 
-class Float32ArraySensor(Sensor):
-    """Sensor that subscribes to Float32MultiArray messages."""
-
-    def _create_subscription(self) -> rclpy.subscription.Subscription:
-        """Create the ROS2 subscription for Float32MultiArray messages."""
-        return self.node.create_subscription(
-            Float32MultiArray,
-            self.config.data_topic,
-            self._callback_monitor.monitor(name="float32", func=self._callback_sensor_data),
-            qos_profile_sensor_data,
-            callback_group=ReentrantCallbackGroup(),
-        )
-
-    def _callback_sensor_data(self, msg: Float32MultiArray):
-        """Callback for sensor data."""
-        self._value = np.array(msg.data[:], dtype=np.float32)
-        if self._baseline is None:
-            self._baseline = np.zeros_like(self._value)
-
-    @override
-    def ros_msg_to_sensor_value(self, msg: Float32MultiArray) -> np.ndarray:
-        """Convert a Float32MultiArray message to a numpy array.
-
-        Args:
-            msg: Float32MultiArray ROS message to convert
-
-        Returns:
-            np.ndarray: Converted numpy array
-        """
-        return np.array(msg.data[:], dtype=np.float32)
-
-
-class ForceTorqueSensor(Sensor):
-    """Torque sensor that subscribes to WrenchStamped messages."""
-
-    def _create_subscription(self) -> rclpy.subscription.Subscription:
-        """Create the ROS2 subscription for WrenchStamped messages."""
-        return self.node.create_subscription(
-            WrenchStamped,
-            self.config.data_topic,
-            self._callback_monitor.monitor(name="force_torque_monitor", func=self._callback_wrench),
-            qos_profile_sensor_data,
-            callback_group=ReentrantCallbackGroup(),
-        )
-
-    def _callback_wrench(self, msg: WrenchStamped):
-        """Callback for wrench data."""
-        self._value = self.ros_msg_to_sensor_value(msg)
-        if self._baseline is None:
-            self._baseline = np.zeros_like(self._value)
-
-    @override
-    def ros_msg_to_sensor_value(self, msg: WrenchStamped) -> np.ndarray:
-        """Convert a WrenchStamped message to a numpy array.
-
-        Args:
-            msg: WrenchStamped ROS message to convert
-
-        Returns:
-            np.ndarray: Converted numpy array
-        """
-        return np.array(
-            [
-                msg.wrench.force.x,
-                msg.wrench.force.y,
-                msg.wrench.force.z,
-                msg.wrench.torque.x,
-                msg.wrench.torque.y,
-                msg.wrench.torque.z,
-            ],
-            dtype=np.float32,
-        )
-
-
 def _make_sensor_from_config(
     sensor_config: SensorConfig,
     **kwargs,  # noqa: ANN003
 ) -> Sensor:
     """Internal factory function to create a sensor based on the configuration."""
-    if sensor_config.sensor_type == "float32":
-        return Float32ArraySensor(
-            sensor_config=sensor_config,
-            **kwargs,
-        )
-    elif sensor_config.sensor_type == "force_torque":
-        return ForceTorqueSensor(
-            sensor_config=sensor_config,
-            **kwargs,
-        )
-    raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
+    sensor_cls = sensor_registry.get(sensor_config.sensor_type)
+    if sensor_cls is None:
+        raise ValueError(f"Unknown sensor type: {sensor_config.sensor_type}")
+    return sensor_cls(sensor_config=sensor_config, **kwargs)
 
 
 def make_sensor(
