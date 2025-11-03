@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/utiasDSL/crisp_py/compare/v1.9.0...v2.0.0) (2025-11-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add orientation representation object + Mock scripts for debugging purposes + Simplify Sensors + some refactoring ([#54](https://github.com/utiasDSL/crisp_py/issues/54))
+
+### Features
+
+* Add orientation representation object + Mock scripts for debugging purposes + Simplify Sensors + some refactoring ([#54](https://github.com/utiasDSL/crisp_py/issues/54)) ([e897cc0](https://github.com/utiasDSL/crisp_py/commit/e897cc064af54be4a4c823ce03bc697e1994b00c))
+
 ## [1.9.0](https://github.com/utiasDSL/crisp_py/compare/v1.8.0...v1.9.0) (2025-10-31)
 
 
