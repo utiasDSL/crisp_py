@@ -1,6 +1,7 @@
 """Contains objects to create sensor readers, basically objects that subscribe to a data stream topic."""
 
 import threading
+import time
 from abc import ABC
 from typing import Any, Callable
 
@@ -12,6 +13,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.node import MsgType, Node
 from rclpy.qos import qos_profile_sensor_data
+from std_srvs.srv import Trigger
 
 from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.sensors.sensor_config import SensorConfig
@@ -63,7 +65,7 @@ def get_sensor_spec(sensor_type: str) -> SensorSpec:
 class Sensor(ABC):
     """Abstract base class for sensor wrappers."""
 
-    THREADS_REQUIRED = 1
+    THREADS_REQUIRED = 2
 
     def __init__(
         self,
@@ -96,7 +98,6 @@ class Sensor(ABC):
         )
 
         self._value: np.ndarray | None = None
-        self._baseline: np.ndarray | None = None
 
         self._buffer = SlidingBuffer(
             size=self.config.buffer_size if self.config.buffer_size else 1,
@@ -121,6 +122,11 @@ class Sensor(ABC):
             qos_profile_sensor_data,
             callback_group=ReentrantCallbackGroup(),
         )
+        self.reset_client = (
+            self.node.create_client(Trigger, self.config.reset_service)
+            if self.config.reset_service
+            else None
+        )
 
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
@@ -129,15 +135,13 @@ class Sensor(ABC):
         """Internal callback for sensor data subscription."""
         self._value = self.ros_msg_to_sensor_value(msg)
         self._buffer.add(self._value)
-        if self._baseline is None:
-            self._baseline = np.zeros_like(self._value)
 
     @property
     def value(self) -> np.ndarray:
-        """Get the latest calibrated sensor value."""
-        if self._value is None or self._baseline is None:
+        """Get the latest sensor value."""
+        if self._value is None:
             raise ValueError("Sensor value is not available yet.")
-        return self._value - self._baseline
+        return self._value
 
     @property
     def buffer(self) -> SlidingBuffer:
@@ -156,35 +160,62 @@ class Sensor(ABC):
         while rclpy.ok():
             executor.spin_once(timeout_sec=0.1)
 
-    def calibrate_to_zero(self, num_samples: int = 10, sample_rate: float = 10.0):
-        """Calibrate the sensor to zero.
-
-        This function computes the average of a number of samples to compute the baseline.
-        The value is then normalized by this average with the formula:
-
-            calibrated_value = value - average(samples)
-
-        Args:
-            num_samples (int): Number of samples to take for calibration.
-            sample_rate (float): Rate at which to take samples in Hz.
-        """
-        if self._value is None:
-            raise ValueError("Sensor value is not available yet.")
-        samples = np.zeros((num_samples, len(self._value)), dtype=np.float32)
-        rate = self.node.create_rate(sample_rate)  # 10 Hz
-
-        for sample_num in range(num_samples):
-            samples[sample_num] = self.value
-            rate.sleep()
-
-        self._baseline = np.mean(samples, axis=0)
-
     def is_ready(self) -> bool:
         """Check if the sensor has a value."""
-        return self._value is not None
+        return self._value is not None and self._reset_service_is_available()
+
+    def _reset_service_is_available(self) -> bool:
+        """Check if the reset service is available, if configured."""
+        if self.reset_client is None:
+            return True
+        return self.reset_client.service_is_ready()
+
+    def reset(self, timeout: float = 5.0):
+        """Reset the sensor by calling the reset service if configured.
+
+        This method will call the reset service (if configured) and clear the buffer.
+        If the service call times out, a warning is logged but the method does not fail.
+        If no reset service is configured, the method silently clears the buffer.
+
+        Args:
+            timeout (float): Timeout in seconds for the service call. Default is 5.0 seconds.
+        """
+        if self.reset_client is not None:
+            request = Trigger.Request()
+            future = self.reset_client.call_async(request)
+            start_time = time.time()
+            while rclpy.ok():
+                time.sleep(0.1)
+                if future.done():
+                    try:
+                        response = future.result()
+                        if response is None:
+                            self.node.get_logger().warning(
+                                "Reset service call returned None response"
+                            )
+                        elif not response.success:
+                            self.node.get_logger().warning(
+                                f"Reset service call returned success=False: {response.message}"
+                            )
+                    except Exception as e:
+                        self.node.get_logger().warning(
+                            f"Reset service call failed with exception: {e}"
+                        )
+                    break
+
+                elapsed = time.time() - start_time
+                if elapsed >= timeout:
+                    self.node.get_logger().warning(f"Reset service call timed out after {timeout}s")
+                    break
+
+        self._buffer = SlidingBuffer(
+            size=self.config.buffer_size if self.config.buffer_size else 1,
+            fill_value=np.zeros(self.config.shape, dtype=np.float32),
+            buffer_type=np.ndarray,
+        )
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
-        """Wait until the gripper is available."""
+        """Wait until the sensor is ready."""
         rate = self.node.create_rate(check_frequency)
         while not self.is_ready():
             rate.sleep()

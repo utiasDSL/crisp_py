@@ -135,4 +135,3 @@ def main(args=None):  # noqa: ANN001
 
 if __name__ == "__main__":
     main()
-

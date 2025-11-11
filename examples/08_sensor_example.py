@@ -9,7 +9,6 @@ import time
 sensor = make_sensor("mock_force_torque_sensor", namespace="sensor")
 sensor.wait_until_ready()
 
-CALIBRATE_TO_ZERO = False
 #%%
 for force_torque in sensor.buffer.get()[-10:]:
     print(force_torque[2])
@@ -26,9 +25,6 @@ dt = 0.01  # seconds
 t = []
 data = []
 start_time = time.time()
-
-if CALIBRATE_TO_ZERO:
-    sensor.calibrate_to_zero()  # Calibrate the sensor to zero
 
 while time.time() - start_time < duration:
     t.append(time.time() - start_time)

@@ -18,6 +18,7 @@ class SensorConfig:
     max_data_delay: float = 1.0
 
     buffer_size: int | None = None
+    reset_service: str | None = None
 
     @classmethod
     def from_yaml(cls, yaml_path: Path, **overrides) -> "SensorConfig":  # noqa: ANN003
