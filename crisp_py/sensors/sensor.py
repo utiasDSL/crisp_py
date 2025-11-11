@@ -1,8 +1,8 @@
 """Contains objects to create sensor readers, basically objects that subscribe to a data stream topic."""
 
 import threading
-from abc import ABC
 import time
+from abc import ABC
 from typing import Any, Callable
 
 import numpy as np
@@ -10,10 +10,10 @@ import rclpy
 import rclpy.subscription
 import yaml
 from rclpy.callback_groups import ReentrantCallbackGroup
-from std_srvs.srv import Trigger
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.node import MsgType, Node
 from rclpy.qos import qos_profile_sensor_data
+from std_srvs.srv import Trigger
 
 from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.sensors.sensor_config import SensorConfig

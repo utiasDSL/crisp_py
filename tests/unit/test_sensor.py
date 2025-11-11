@@ -26,11 +26,7 @@ class TestSensorConfig:
 
     def test_sensor_config_creation(self) -> None:
         """Test basic sensor config creation."""
-        config = SensorConfig(
-            name="test_sensor", 
-            shape=(3, 3), 
-            sensor_type="float32_array"
-        )
+        config = SensorConfig(name="test_sensor", shape=(3, 3), sensor_type="float32_array")
         assert config.name == "test_sensor"
         assert config.shape == (3, 3)
         assert config.sensor_type == "float32_array"
@@ -77,23 +73,25 @@ class TestSensorRegistry:
 
     def test_register_sensor_decorator(self) -> None:
         """Test registering a sensor type."""
+
         @register_sensor("test_sensor")
         def test_sensor_spec() -> tuple[type, Any]:
             return (Float32MultiArray, lambda msg: np.array([1.0, 2.0]))
-        
+
         assert "test_sensor" in sensor_registry
         assert sensor_registry["test_sensor"] == test_sensor_spec
 
     def test_get_sensor_spec(self) -> None:
         """Test retrieving sensor spec."""
+
         # Register a test sensor
         @register_sensor("test_spec")
         def test_spec() -> tuple[type, Any]:
             return (Float32MultiArray, lambda msg: np.array([1.0]))
-        
+
         msg_type, conversion_func = get_sensor_spec("test_spec")
         assert msg_type == Float32MultiArray
-        
+
         # Test conversion function
         msg = Float32MultiArray()
         msg.data = [5.0]
@@ -112,22 +110,22 @@ class TestSensorSpecs:
     def test_float32_array_sensor_spec(self) -> None:
         """Test Float32Array sensor specification."""
         msg_type, conversion_func = get_float32_array_sensor_spec()
-        
+
         assert msg_type == Float32MultiArray
-        
+
         # Test conversion function
         msg = Float32MultiArray()
         msg.data = [1.0, 2.0, 3.0]
         result = conversion_func(msg)
-        
+
         np.testing.assert_array_equal(result, np.array([1.0, 2.0, 3.0], dtype=np.float32))
 
     def test_force_torque_sensor_spec(self) -> None:
         """Test force-torque sensor specification."""
         msg_type, conversion_func = get_force_torque_sensor_spec()
-        
+
         assert msg_type == WrenchStamped
-        
+
         # Test conversion function
         msg = WrenchStamped()
         msg.wrench.force.x = 0.5
@@ -136,10 +134,10 @@ class TestSensorSpecs:
         msg.wrench.torque.x = 0.1
         msg.wrench.torque.y = 0.2
         msg.wrench.torque.z = 0.3
-        
+
         result = conversion_func(msg)
         expected = np.array([0.5, 1.0, 1.5, 0.1, 0.2, 0.3], dtype=np.float32)
-        
+
         np.testing.assert_array_equal(result, expected)
 
 
@@ -148,18 +146,16 @@ class TestSensor:
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_initialization_with_node(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
+    def test_sensor_initialization_with_node(
+        self, mock_callback_monitor: Any, mock_rclpy: Any
+    ) -> None:
         """Test sensor initialization with provided node."""
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
         mock_node.create_client.return_value = Mock()
 
-        sensor_config = SensorConfig(
-            name="test_sensor",
-            shape=(3,),
-            sensor_type="float32_array"
-        )
+        sensor_config = SensorConfig(name="test_sensor", shape=(3,), sensor_type="float32_array")
         sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
 
         assert sensor.node == mock_node
@@ -169,7 +165,9 @@ class TestSensor:
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_initialization_without_node(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
+    def test_sensor_initialization_without_node(
+        self, mock_callback_monitor: Any, mock_rclpy: Any
+    ) -> None:
         """Test sensor initialization without provided node."""
         mock_rclpy.ok.return_value = True
         mock_node = Mock()
@@ -259,7 +257,7 @@ class TestSensor:
         # Test buffer property
         buffer = sensor.buffer
         assert buffer is not None
-        assert hasattr(buffer, 'add')  # SlidingBuffer should have add method
+        assert hasattr(buffer, "add")  # SlidingBuffer should have add method
 
 
 class TestMakeSensor:
@@ -296,7 +294,7 @@ data_topic: test_topic
     def test_make_sensor_file_not_found(self, mock_find_config: Any) -> None:
         """Test make_sensor with missing config file."""
         mock_find_config.return_value = None
-        
+
         with pytest.raises(FileNotFoundError, match="Sensor config file 'missing.yaml' not found"):
             make_sensor(config_name="missing")
 
@@ -324,7 +322,7 @@ sensor_type: float32_array
                     node=mock_node,
                     spin_node=False,
                     name="overridden_sensor",
-                    data_topic="overridden_topic"
+                    data_topic="overridden_topic",
                 )
 
                 assert sensor.config.name == "overridden_sensor"
@@ -338,15 +336,15 @@ class TestUtilityFunctions:
     def test_list_sensor_configs(self, mock_list_configs: Any) -> None:
         """Test listing sensor configurations."""
         from pathlib import Path
-        
+
         mock_configs = [
             Path("sensor1.yaml"),
             Path("sensor2.yaml"),
             Path("not_yaml.txt"),
         ]
         mock_list_configs.return_value = mock_configs
-        
+
         configs = list_sensor_configs()
-        
+
         assert configs == ["sensor1", "sensor2"]
         mock_list_configs.assert_called_once_with("sensors")
