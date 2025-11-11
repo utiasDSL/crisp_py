@@ -153,10 +153,11 @@ class TestSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         sensor_config = SensorConfig(
-            name="test_sensor", 
-            shape=(3,), 
+            name="test_sensor",
+            shape=(3,),
             sensor_type="float32_array"
         )
         sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
@@ -174,6 +175,7 @@ class TestSensor:
         mock_node = Mock()
         mock_rclpy.create_node.return_value = mock_node
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
         sensor = Sensor(sensor_config=sensor_config, node=None, spin_node=False)
@@ -188,6 +190,7 @@ class TestSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
         sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
@@ -206,6 +209,7 @@ class TestSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
         sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
@@ -216,32 +220,9 @@ class TestSensor:
 
         # Test value when ready
         sensor._value = np.array([3.0, 4.0, 5.0])
-        sensor._baseline = np.array([1.0, 1.0, 1.0])
 
         result = sensor.value
-        np.testing.assert_array_equal(result, np.array([2.0, 3.0, 4.0]))
-
-    @patch("crisp_py.sensors.sensor.rclpy")
-    @patch("crisp_py.sensors.sensor.CallbackMonitor")
-    def test_sensor_calibrate_to_zero(self, mock_callback_monitor: Any, mock_rclpy: Any) -> None:
-        """Test sensor calibrate_to_zero method."""
-        mock_node = Mock()
-        mock_rate = Mock()
-        mock_node.create_rate.return_value = mock_rate
-        mock_node.create_subscription.return_value = Mock()
-        mock_rclpy.ok.return_value = True
-
-        sensor_config = SensorConfig(shape=(2,), sensor_type="float32_array")
-        sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
-
-        # Set initial values
-        sensor._value = np.array([2.0, 3.0])
-        sensor._baseline = np.array([0.0, 0.0])
-
-        sensor.calibrate_to_zero(num_samples=2, sample_rate=10.0)
-
-        # Check that baseline was set
-        np.testing.assert_array_equal(sensor._baseline, np.array([2.0, 3.0]))
+        np.testing.assert_array_equal(result, np.array([3.0, 4.0, 5.0]))
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
@@ -250,6 +231,7 @@ class TestSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         sensor_config = SensorConfig(shape=(3,), sensor_type="float32_array")
         sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
@@ -257,11 +239,10 @@ class TestSensor:
         # Simulate callback
         msg = Float32MultiArray()
         msg.data = [1.0, 2.0, 3.0]
-        
+
         sensor._sensor_callback(msg)
-        
+
         np.testing.assert_array_equal(sensor._value, np.array([1.0, 2.0, 3.0]))
-        np.testing.assert_array_equal(sensor._baseline, np.array([0.0, 0.0, 0.0]))
 
     @patch("crisp_py.sensors.sensor.rclpy")
     @patch("crisp_py.sensors.sensor.CallbackMonitor")
@@ -270,6 +251,7 @@ class TestSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         sensor_config = SensorConfig(shape=(2,), sensor_type="float32_array", buffer_size=5)
         sensor = Sensor(sensor_config=sensor_config, node=mock_node, spin_node=False)
@@ -290,6 +272,7 @@ class TestMakeSensor:
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         yaml_data = """
 name: test_sensor
@@ -297,11 +280,11 @@ shape: [3]
 sensor_type: float32_array
 data_topic: test_topic
 """
-        
+
         with patch("crisp_py.sensors.sensor.find_config") as mock_find_config:
             with patch("builtins.open", mock_open(read_data=yaml_data)):
                 mock_find_config.return_value = "/path/to/test_config.yaml"
-                
+
                 sensor = make_sensor(config_name="test_config", node=mock_node, spin_node=False)
 
                 assert isinstance(sensor, Sensor)
@@ -324,20 +307,21 @@ data_topic: test_topic
         mock_node = Mock()
         mock_rclpy.ok.return_value = True
         mock_node.create_subscription.return_value = Mock()
+        mock_node.create_client.return_value = Mock()
 
         yaml_data = """
 name: base_sensor
 shape: [3]
 sensor_type: float32_array
 """
-        
+
         with patch("crisp_py.sensors.sensor.find_config") as mock_find_config:
             with patch("builtins.open", mock_open(read_data=yaml_data)):
                 mock_find_config.return_value = "/path/to/config.yaml"
-                
+
                 sensor = make_sensor(
-                    config_name="config", 
-                    node=mock_node, 
+                    config_name="config",
+                    node=mock_node,
                     spin_node=False,
                     name="overridden_sensor",
                     data_topic="overridden_topic"
