@@ -215,7 +215,7 @@ class Sensor(ABC):
         )
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
-        """Wait until the gripper is available."""
+        """Wait until the sensor is ready."""
         rate = self.node.create_rate(check_frequency)
         while not self.is_ready():
             rate.sleep()
