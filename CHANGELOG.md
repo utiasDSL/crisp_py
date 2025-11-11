@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/utiasDSL/crisp_py/compare/v2.0.0...v2.1.0) (2025-11-11)
+
+
+### Features
+
+* Add an optional reset sensor option as a ROS service ([#56](https://github.com/utiasDSL/crisp_py/issues/56)) ([40a575b](https://github.com/utiasDSL/crisp_py/commit/40a575b0d5a949fe71fc1f2e2d463e93deef89b4))
+
 ## [2.0.0](https://github.com/utiasDSL/crisp_py/compare/v1.9.0...v2.0.0) (2025-11-02)
 
 
