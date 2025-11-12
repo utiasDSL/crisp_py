@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/utiasDSL/crisp_py/compare/v2.1.0...v3.0.0) (2025-11-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* use of prefix for joint is now toggleable AND is set to false as default (Breaking Changes)
+
+### Features
+
+* use of prefix for joint is now toggleable AND is set to false as default (Breaking Changes) ([a572c67](https://github.com/utiasDSL/crisp_py/commit/a572c67e1e38156edf90e26bc3fd69d003c34a78))
+
 ## [2.1.0](https://github.com/utiasDSL/crisp_py/compare/v2.0.0...v2.1.0) (2025-11-11)
 
 
