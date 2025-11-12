@@ -72,10 +72,12 @@ class Robot:
             self.node = node
         self.config = robot_config if robot_config else FrankaConfig()
 
-        self._prefix = f"{namespace}_" if namespace else ""
+        self._prefix = f"{namespace}_" if namespace and self.config.use_prefix else ""
 
         self.controller_switcher_client = ControllerSwitcherClient(self.node)
-        self.joint_trajectory_controller_client = JointTrajectoryControllerClient(self.node)
+        self.joint_trajectory_controller_client = JointTrajectoryControllerClient(
+            self.node, use_prefix=self.config.use_prefix
+        )
         self.cartesian_controller_parameters_client = ParametersClient(
             self.node, target_node=self.config.cartesian_impedance_controller_name
         )

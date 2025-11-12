@@ -21,3 +21,4 @@ tests/unit/__pycache__
 **/__pycache__
 .venv
 crisp_py/config/__pycache__
+crisp_py/config/__pycache__
