@@ -1,0 +1,2 @@
+robot_type: "franka"
+namespace: "right"

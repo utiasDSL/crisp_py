@@ -1,8 +1,7 @@
 import time
-from crisp_py.gripper.gripper import Gripper, GripperConfig
+from crisp_py.gripper.gripper import make_gripper
 
-gripper_cfg = GripperConfig.from_yaml("/home/linusschwarz/crisp_configs/aloha-gripper.yaml")
-gripper = Gripper(gripper_config=gripper_cfg)
+gripper = make_gripper("gripper_aloha")
 gripper.wait_until_ready()
 
 gripper.open()

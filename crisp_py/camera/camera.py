@@ -7,13 +7,15 @@ import cv2
 import numpy as np
 import rclpy
 import rclpy.executors
+import yaml
 from cv_bridge import CvBridge
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 
-from crisp_py.camera.camera_config import CameraConfig
+from crisp_py.camera.camera_config import CameraConfig, DummyCameraConfig
+from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.utils.callback_monitor import CallbackMonitor
 
 
@@ -29,9 +31,9 @@ class Camera:
 
     def __init__(
         self,
-        node: Optional[Node] = None,
+        node: Node | None = None,
         namespace: str = "",
-        config: Optional[CameraConfig] = None,
+        config: CameraConfig | None = None,
         spin_node: bool = True,
     ):
         """Initialize the camera.
@@ -42,8 +44,11 @@ class Camera:
             config (CameraConfig): Camera configuration.
             spin_node (bool, optional): Whether to spin the node in a separate thread.
         """
-        self.config = config if config else CameraConfig()
+        self.config = (
+            config if config else DummyCameraConfig()
+        )  # NOTE: it would be better to no allow None here
         print(f"[Camera] Initializing camera '{self.config.camera_name}' with depth = {self.config.is_depth_camera}'")
+
         if node is None:
             if not rclpy.ok():
                 rclpy.init()
@@ -61,7 +66,7 @@ class Camera:
         self.cv_bridge = CvBridge()
 
         if self.config.is_depth_camera:
-            self.node.create_subscription(
+            self._camera_subscriber = self.node.create_subscription(
                 Image,
                 self.config.camera_color_image_topic,
                 self._callback_monitor.monitor(
@@ -72,7 +77,7 @@ class Camera:
                 callback_group=ReentrantCallbackGroup(),
             )
         else:
-            self.node.create_subscription(
+            self._camera_subscriber = self.node.create_subscription(
                 CompressedImage,
                 f"{self.config.camera_color_image_topic}/compressed",
                 self._callback_monitor.monitor(
@@ -82,9 +87,13 @@ class Camera:
                 qos_profile_sensor_data,
                 callback_group=ReentrantCallbackGroup(),
             )
-        assert self.config.camera_color_info_topic is not None or self.config.resolution is not None, "You have to set resolution or camera info topic"
+        assert (
+            self.config.camera_color_info_topic is not None or self.config.resolution is not None
+        ), "You have to set resolution or camera info topic"
         if self.config.camera_color_info_topic is None or self.config.resolution is None:
-            print("[Camera warning] You have set resolution and camera info topic, camera info topic will be ignored")
+            print(
+                "[Camera warning] You have set resolution and camera info topic, camera info topic will be ignored"
+            )
         if self.config.camera_color_info_topic is not None:
             self.node.create_subscription(
                 CameraInfo,
@@ -101,6 +110,65 @@ class Camera:
 
         if spin_node:
             threading.Thread(target=self._spin_node, daemon=True).start()
+
+    @classmethod
+    def from_yaml(
+        cls,
+        config_name: str,
+        node: Node | None = None,
+        namespace: str = "",
+        spin_node: bool = True,
+        **overrides,  # noqa: ANN003
+    ) -> "Camera":
+        """Create a Camera instance from a YAML configuration file.
+
+        Args:
+            config_name: Name of the config file (with or without .yaml extension)
+            node: ROS2 node to use. If None, creates a new node.
+            namespace: ROS2 namespace for the camera.
+            spin_node: Whether to spin the node in a separate thread.
+            **overrides: Additional parameters to override YAML values
+
+        Returns:
+            Camera: Configured camera instance
+
+        Raises:
+            FileNotFoundError: If the config file is not found
+        """
+        if not config_name.endswith(".yaml"):
+            config_name += ".yaml"
+
+        config_path = find_config(f"cameras/{config_name}")
+        if config_path is None:
+            config_path = find_config(config_name)
+
+        if config_path is None:
+            raise FileNotFoundError(
+                f"Camera config file '{config_name}' not found in any CRISP config paths"
+            )
+
+        with open(config_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+
+        data.update(overrides)
+
+        namespace = data.pop("namespace", namespace)
+        config_data = data.pop("camera_config", data)
+
+        config = CameraConfig(**config_data)
+
+        return cls(
+            node=node,
+            namespace=namespace,
+            config=config,
+            spin_node=spin_node,
+        )
+
+    @staticmethod
+    def list_configs() -> list[str]:
+        """List all available camera configurations."""
+        configs = list_configs_in_folder("cameras")
+        return [config.stem for config in configs if config.suffix == ".yaml"]
 
     def _spin_node(self):
         if not rclpy.ok():
@@ -135,9 +203,7 @@ class Camera:
             raise RuntimeError(
                 f"We have not received any images of camera {self.config.camera_name}. Call wait_until_ready to be sure that the camera is available!."
             )
-        # Check if image callback is stale
         try:
-            # Try to find the callback - need to handle namespace properly
             for callback_name in self._callback_monitor.callbacks.keys():
                 if (
                     "Camera" in callback_name
@@ -151,7 +217,6 @@ class Camera:
                         )
                     break
         except ValueError:
-            # Callback not found, which is expected if no data has been received yet
             pass
         self._image_has_changed = False
         return self._current_image
@@ -172,19 +237,22 @@ class Camera:
             rate.sleep()
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
-                raise TimeoutError(
+                error_msg = (
                     f"Timeout waiting for camera ({self.config.camera_name}) to become ready."
                 )
+                error_msg += (
+                    f"Is the camera publishing to the topic {self._camera_subscriber.topic_name}?"
+                )
+                raise TimeoutError(error_msg)
 
-    def _callback_current_color_image(self, msg: Image):
+    def _callback_current_color_image(self, msg: CompressedImage):
         """Receive and store the current image."""
-        # raw_image = self._image_to_array(msg)
-        # if self.config.resolution is not None:
-        #     raw_image = self._resize_with_aspect_ratio(raw_image, self.config.resolution)
         self._image_has_changed = True
         self._current_image = self._resize_with_aspect_ratio(
-            self._uncompress(msg), target_res=self.config.resolution,
-            crop_width=self.config.crop_width,  crop_height=self.config.crop_height
+            self._uncompress(msg),
+            target_res=self.config.resolution,
+            crop_width=self.config.crop_width,
+            crop_height=self.config.crop_height,
         )
 
     def _callback_current_color_info(self, msg: CameraInfo):
@@ -196,13 +264,16 @@ class Camera:
         """Converts an Image message to a numpy array."""
         return np.asarray(self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8"))
 
-    def _resize_with_aspect_ratio(self, image: np.ndarray, target_res: tuple, crop_height: tuple[int, int] | None, crop_width: tuple[int, int] | None) -> np.ndarray:
+    def _resize_with_aspect_ratio(
+        self,
+        image: np.ndarray,
+        target_res: tuple,
+        crop_height: tuple[int | float, int | float] | None = None,
+        crop_width: tuple[int | float, int | float] | None = None,
+    ) -> np.ndarray:
         """Resize an image to fit within a target resolution while maintaining aspect ratio, cropping if necessary."""
-        if crop_height is not None:
-            image = image[crop_height[0]:crop_height[1]]
-        if crop_width is not None:
-            image = image[:, crop_width[0]:crop_width[1]]
-        
+        image = self._pre_crop(image, crop_height, crop_width)
+
         h, w = image.shape[:2]
         target_h, target_w = target_res
 
@@ -220,3 +291,133 @@ class Camera:
         cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
 
         return cropped_image
+
+    def _pre_crop(
+        self,
+        image: np.ndarray,
+        crop_height: tuple[int | float, int | float] | None,
+        crop_width: tuple[int | float, int | float] | None,
+    ) -> np.ndarray:
+        """Crop the image according to specified height and width ranges.
+
+        Args:
+            image: Input image as a numpy array
+            crop_height: Tuple specifying the height crop (start, end).
+                        Use integers for absolute pixel values, or floats (0.0-1.0) for relative cropping.
+            crop_width: Tuple specifying the width crop (start, end).
+                       Use integers for absolute pixel values, or floats (0.0-1.0) for relative cropping.
+
+        Returns:
+            Cropped image as a numpy array
+
+        Raises:
+            ValueError: If crop parameters are invalid
+
+        """
+        if crop_height is not None:
+            h = image.shape[0]
+            if not isinstance(crop_height, (list, tuple)) or len(crop_height) != 2:
+                raise ValueError(
+                    f"Invalid crop_height {crop_height}: must be a list or tuple of length 2"
+                )
+
+            if isinstance(crop_height[0], float) or isinstance(crop_height[1], float):
+                if not all(isinstance(x, float) for x in crop_height):
+                    raise ValueError(
+                        "crop_height values must be either all int or all float, not mixed."
+                    )
+                if not all(0.0 <= x <= 1.0 for x in crop_height):
+                    raise ValueError(
+                        f"Float crop_height values must be between 0.0 and 1.0. Got: {crop_height}"
+                    )
+                if crop_height[0] >= crop_height[1]:
+                    raise ValueError(f"crop_height start must be less than end. Got: {crop_height}")
+
+                crop_start = int(crop_height[0] * h)
+                crop_end = int(crop_height[1] * h)
+            else:
+                if not all(isinstance(x, int) for x in crop_height):
+                    raise ValueError(
+                        "crop_height values must be either all int or all float, not mixed."
+                    )
+                if not (0 <= crop_height[0] < crop_height[1] <= h):
+                    raise ValueError(
+                        f"Invalid crop_height {crop_height}: must satisfy 0 <= start < end <= image height ({h})"
+                    )
+                crop_start = crop_height[0]
+                crop_end = crop_height[1]
+
+            image = image[crop_start:crop_end]
+
+        if crop_width is not None:
+            w = image.shape[1]
+            if not isinstance(crop_width, (list, tuple)) or len(crop_width) != 2:
+                raise ValueError(
+                    f"Invalid crop_width {crop_width}: must be a list or tuple of length 2"
+                )
+
+            if isinstance(crop_width[0], float) or isinstance(crop_width[1], float):
+                if not all(isinstance(x, float) for x in crop_width):
+                    raise ValueError(
+                        "crop_width values must be either all int or all float, not mixed."
+                    )
+                if not all(0.0 <= x <= 1.0 for x in crop_width):
+                    raise ValueError(
+                        f"Float crop_width values must be between 0.0 and 1.0. Got: {crop_width}"
+                    )
+                if crop_width[0] >= crop_width[1]:
+                    raise ValueError(f"crop_width start must be less than end. Got: {crop_width}")
+
+                crop_start = int(crop_width[0] * w)
+                crop_end = int(crop_width[1] * w)
+            else:
+                if not all(isinstance(x, int) for x in crop_width):
+                    raise ValueError(
+                        "crop_width values must be either all int or all float, not mixed."
+                    )
+                if not (0 <= crop_width[0] < crop_width[1] <= w):
+                    raise ValueError(
+                        f"Invalid crop_width {crop_width}: must satisfy 0 <= start < end <= image width ({w})"
+                    )
+                crop_start = crop_width[0]
+                crop_end = crop_width[1]
+
+            image = image[:, crop_start:crop_end]
+
+        return image
+
+
+def make_camera(
+    config_name: str,
+    node: "Node | None" = None,
+    namespace: str = "",
+    spin_node: bool = True,
+    **overrides,  # noqa: ANN003
+) -> Camera:
+    """Factory function to create a Camera from a configuration file.
+
+    Args:
+        config_name: Name of the camera config file
+        node: ROS2 node to use. If None, creates a new node.
+        namespace: ROS2 namespace for the camera.
+        spin_node: Whether to spin the node in a separate thread.
+        **overrides: Additional parameters to override config values
+
+    Returns:
+        Camera: Configured camera instance
+
+    Raises:
+        FileNotFoundError: If the config file is not found
+    """
+    return Camera.from_yaml(
+        config_name=config_name,
+        node=node,
+        namespace=namespace,
+        spin_node=spin_node,
+        **overrides,
+    )
+
+
+def list_camera_configs() -> list[str]:
+    """List all available camera configurations."""
+    return Camera.list_configs()

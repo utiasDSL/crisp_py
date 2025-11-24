@@ -3,15 +3,11 @@
 # %%
 import time
 
-from crisp_py.gripper import Gripper, GripperConfig
-
-# %%
-config = GripperConfig.from_yaml(path="config/gripper_franka.yaml")
+from crisp_py.gripper.gripper import make_gripper
 
 
-config.max_delta = 10.0
-print(config)
-gripper = Gripper(gripper_config=config)
+gripper = make_gripper("gripper_franka")
+gripper.config.max_delta = 10.0
 print(gripper._joint_state_sub.topic_name)
 print(gripper.wait_until_ready())
 

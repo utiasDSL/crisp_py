@@ -18,7 +18,7 @@ homing_pose = left_arm.end_effector_pose.copy()
 
 
 # %%
-# Paremeters for the circle
+# Parameters for the circle
 radius = 0.1  # [m]
 center = np.array([0.4, 0.0, 0.4])
 ctrl_freq = 50.0

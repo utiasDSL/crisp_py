@@ -7,13 +7,12 @@ from rich import print
 import numpy as np
 import matplotlib.pyplot as plt
 
-from crisp_py.robot import Robot
+from crisp_py.robot import make_robot
 from crisp_py.utils.geometry import Pose
 
 # %%
 
-# robot = Robot()
-robot = Robot(namespace="left")
+robot = make_robot("fr3")
 robot.wait_until_ready()
 
 # %%

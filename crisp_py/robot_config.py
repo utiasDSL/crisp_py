@@ -1,8 +1,10 @@
 """Provides configuration classes for different robot types."""
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
+import yaml
 
 
 @dataclass(kw_only=True)
@@ -55,6 +57,30 @@ class RobotConfig:
     def num_joints(self) -> int:
         """Returns the number of joints in the robot."""
         return len(self.joint_names)
+
+    @classmethod
+    def from_yaml(cls, yaml_path: Path, **overrides) -> "RobotConfig":  # noqa: ANN003
+        """Load config from YAML file with optional overrides.
+
+        Args:
+            yaml_path: Path to the YAML configuration file
+            **overrides: Additional parameters to override YAML values
+
+        Returns:
+            RobotConfig: Configured robot instance
+        """
+        with open(yaml_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+
+        # Apply overrides
+        data.update(overrides)
+
+        # Handle robot_type if specified
+        if "robot_type" in data:
+            robot_type = data.pop("robot_type")
+            return make_robot_config(robot_type, **data)
+
+        return cls(**data)
 
 
 @dataclass

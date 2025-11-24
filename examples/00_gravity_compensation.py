@@ -1,9 +1,9 @@
-"""Try to follow a "figure eight" target on the yz plane."""
+"""A simple example to demonstrate gravity compensation mode."""
 
 # %%
-from crisp_py.robot import Robot
+from crisp_py.robot import make_robot
 
-robot = Robot()
+robot = make_robot("fr3")
 robot.wait_until_ready()
 
 # %%
@@ -12,4 +12,3 @@ robot.cartesian_controller_parameters_client.load_param_config(
 )
 robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
 robot.shutdown()
-
