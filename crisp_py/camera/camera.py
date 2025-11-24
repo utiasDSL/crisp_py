@@ -43,7 +43,7 @@ class Camera:
             spin_node (bool, optional): Whether to spin the node in a separate thread.
         """
         self.config = config if config else CameraConfig()
-
+        print(f"[Camera] Initializing camera '{self.config.camera_name}' with depth = {self.config.is_depth_camera}'")
         if node is None:
             if not rclpy.ok():
                 rclpy.init()
@@ -60,16 +60,28 @@ class Camera:
 
         self.cv_bridge = CvBridge()
 
-        self.node.create_subscription(
-            CompressedImage,
-            f"{self.config.camera_color_image_topic}/compressed",
-            self._callback_monitor.monitor(
-                f"{self._namespace.capitalize()} Camera {self.config.camera_name} Image".strip(),
-                self._callback_current_color_image,
-            ),
-            qos_profile_sensor_data,
-            callback_group=ReentrantCallbackGroup(),
-        )
+        if self.config.is_depth_camera:
+            self.node.create_subscription(
+                Image,
+                self.config.camera_color_image_topic,
+                self._callback_monitor.monitor(
+                    f"{self._namespace.capitalize()} Camera {self.config.camera_name} Image".strip(),
+                    self._callback_current_color_image,
+                ),
+                qos_profile_sensor_data,
+                callback_group=ReentrantCallbackGroup(),
+            )
+        else:
+            self.node.create_subscription(
+                CompressedImage,
+                f"{self.config.camera_color_image_topic}/compressed",
+                self._callback_monitor.monitor(
+                    f"{self._namespace.capitalize()} Camera {self.config.camera_name} Image".strip(),
+                    self._callback_current_color_image,
+                ),
+                qos_profile_sensor_data,
+                callback_group=ReentrantCallbackGroup(),
+            )
         assert self.config.camera_color_info_topic is not None or self.config.resolution is not None, "You have to set resolution or camera info topic"
         if self.config.camera_color_info_topic is None or self.config.resolution is None:
             print("[Camera warning] You have set resolution and camera info topic, camera info topic will be ignored")
@@ -100,7 +112,9 @@ class Camera:
 
     def _uncompress(self, compressed_image: CompressedImage) -> Image:
         """Uncompress a CompressedImage message to an Image message."""
+
         return np.asarray(
+            self.cv_bridge.imgmsg_to_cv2(compressed_image, "passthrough") if self.config.is_depth_camera is True else
             self.cv_bridge.compressed_imgmsg_to_cv2(compressed_image, desired_encoding="rgb8")
         )
 
