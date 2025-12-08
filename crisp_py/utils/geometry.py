@@ -51,7 +51,7 @@ class Pose:
     def from_ros_msg(cls, msg: PoseStamped) -> "Pose":
         """Create Pose from ROS PoseStamped message."""
         position = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
-        orientation = Rotation.from_quat(
+        quat = np.array(
             [
                 msg.pose.orientation.x,
                 msg.pose.orientation.y,
@@ -59,6 +59,9 @@ class Pose:
                 msg.pose.orientation.w,
             ]
         )
+        quat_x_sign = np.sign(quat[0]) if quat[0] != 0 else 1.0
+        quat *= quat_x_sign  # Ensure a consistent quaternion sign
+        orientation = Rotation.from_quat(quat)
         return cls(position, orientation)
 
     @classmethod
@@ -67,7 +70,7 @@ class Pose:
         position = np.array(
             [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z]
         )
-        orientation = Rotation.from_quat(
+        quat = np.array(
             [
                 msg.transform.rotation.x,
                 msg.transform.rotation.y,
@@ -75,6 +78,9 @@ class Pose:
                 msg.transform.rotation.w,
             ]
         )
+        quat_x_sign = np.sign(quat[0]) if quat[0] != 0 else 1.0
+        quat *= quat_x_sign  # Ensure a consistent quaternion sign
+        orientation = Rotation.from_quat(quat)
         return cls(position, orientation)
 
     def to_ros_msg(self, frame_id: str, stamp: TimeMsg) -> PoseStamped:
