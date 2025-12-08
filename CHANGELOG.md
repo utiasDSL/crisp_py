@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/utiasDSL/crisp_py/compare/v3.0.0...v3.0.1) (2025-12-08)
+
+
+### Bug Fixes
+
+* ensure quaternion sign always the same ([8b82f2d](https://github.com/utiasDSL/crisp_py/commit/8b82f2dbba1a97fed45fe4b4affa903bfb637935))
+
 ## [3.0.0](https://github.com/utiasDSL/crisp_py/compare/v2.1.0...v3.0.0) (2025-11-12)
 
 

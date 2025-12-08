@@ -1,6 +1,6 @@
 [project]
 name = "crisp-python"
-version = "3.0.0"
+version = "3.0.1"
 description = "Simple python interface to control robots that use crisp_controllers and other ROS2 components."
 readme = "README.md"
 license-files = ["LICENSE.md"]
