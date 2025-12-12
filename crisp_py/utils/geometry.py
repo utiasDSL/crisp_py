@@ -25,6 +25,13 @@ class Pose:
     position: np.ndarray
     orientation: Rotation
 
+    def __post_init__(self):
+        """Validate the inputs."""
+        if self.position.shape != (3,):
+            raise ValueError("Position must be a 3D vector.")
+        if not isinstance(self.orientation, Rotation):
+            raise ValueError("Orientation must be a scipy Rotation object.")
+
     def copy(self) -> "Pose":
         """Create a copy of this pose."""
         return Pose(self.position.copy(), Rotation.from_quat(self.orientation.as_quat()))
