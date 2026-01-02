@@ -27,6 +27,11 @@ class RobotConfig:
         current_joint_topic (str): Topic name for subscribing to current joint states
         publish_frequency (float): Frequency for publishing control commands
         time_to_home (float): Time taken to reach home position
+        max_pose_delay (float): Maximum allowed delay for pose updates
+        max_joint_delay (float): Maximum allowed delay for joint updates
+        use_tf_pose (bool): Whether to use TF for retrieving the target pose
+        tf_retrieve_rate (float): Rate for retrieving TF transforms
+        use_prefix (bool): Whether to use namespace prefix for joint names or not.
     """
 
     joint_names: list
@@ -53,6 +58,8 @@ class RobotConfig:
 
     use_tf_pose: bool = False
     tf_retrieve_rate: float = 50.0
+
+    use_prefix: bool = False
 
     def num_joints(self) -> int:
         """Returns the number of joints in the robot."""

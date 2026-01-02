@@ -45,11 +45,13 @@ class JointTrajectoryControllerClient(ActionClient):
         node (Node): The ROS2 node that will own this client.
     """
 
-    def __init__(self, node: Node) -> None:
+    def __init__(self, node: Node, use_prefix: bool = False) -> None:
         """Initialize the JointTrajectoryControllerClient.
 
         Args:
             node (Node): The ROS2 node that will own this client.
+            use_prefix (bool, optional): Whether to use the node's namespace as a prefix for joint names.
+                Defaults to False.
         """
         self.node = node
         super().__init__(
@@ -57,7 +59,7 @@ class JointTrajectoryControllerClient(ActionClient):
         )
         self._goal = FollowJointTrajectory.Goal()
         namespace = self.node.get_namespace().strip("/")
-        self._prefix = f"{namespace}_" if namespace else ""
+        self._prefix = f"{namespace}_" if namespace and use_prefix else ""
 
     def send_joint_config(
         self,

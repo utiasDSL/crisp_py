@@ -1,5 +1,41 @@
 # Changelog
 
+## [3.0.0](https://github.com/utiasDSL/crisp_py/compare/v2.1.0...v3.0.0) (2025-11-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* use of prefix for joint is now toggleable AND is set to false as default (Breaking Changes)
+
+### Features
+
+* use of prefix for joint is now toggleable AND is set to false as default (Breaking Changes) ([a572c67](https://github.com/utiasDSL/crisp_py/commit/a572c67e1e38156edf90e26bc3fd69d003c34a78))
+
+## [2.1.0](https://github.com/utiasDSL/crisp_py/compare/v2.0.0...v2.1.0) (2025-11-11)
+
+
+### Features
+
+* Add an optional reset sensor option as a ROS service ([#56](https://github.com/utiasDSL/crisp_py/issues/56)) ([40a575b](https://github.com/utiasDSL/crisp_py/commit/40a575b0d5a949fe71fc1f2e2d463e93deef89b4))
+
+## [2.0.0](https://github.com/utiasDSL/crisp_py/compare/v1.9.0...v2.0.0) (2025-11-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add orientation representation object + Mock scripts for debugging purposes + Simplify Sensors + some refactoring ([#54](https://github.com/utiasDSL/crisp_py/issues/54))
+
+### Features
+
+* Add orientation representation object + Mock scripts for debugging purposes + Simplify Sensors + some refactoring ([#54](https://github.com/utiasDSL/crisp_py/issues/54)) ([e897cc0](https://github.com/utiasDSL/crisp_py/commit/e897cc064af54be4a4c823ce03bc697e1994b00c))
+
+## [1.9.0](https://github.com/utiasDSL/crisp_py/compare/v1.8.0...v1.9.0) (2025-10-31)
+
+
+### Features
+
+* Add image cropping and minor improvements to gripper and robot ([#52](https://github.com/utiasDSL/crisp_py/issues/52)) ([9335bcb](https://github.com/utiasDSL/crisp_py/commit/9335bcbec171e12f930c1275063aa747ef038912))
+
 ## [1.8.0](https://github.com/utiasDSL/crisp_py/compare/v1.7.0...v1.8.0) (2025-10-09)
 
 

@@ -20,7 +20,7 @@ from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
 from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
 from crisp_py.control.parameters_client import ParametersClient
-from crisp_py.robot_config import FrankaConfig, RobotConfig, make_robot_config
+from crisp_py.robot.robot_config import FrankaConfig, RobotConfig, make_robot_config
 from crisp_py.utils.callback_monitor import CallbackMonitor
 from crisp_py.utils.geometry import Pose, Twist
 from crisp_py.utils.tf_pose import TfPose
@@ -72,10 +72,12 @@ class Robot:
             self.node = node
         self.config = robot_config if robot_config else FrankaConfig()
 
-        self._prefix = f"{namespace}_" if namespace else ""
+        self._prefix = f"{namespace}_" if namespace and self.config.use_prefix else ""
 
         self.controller_switcher_client = ControllerSwitcherClient(self.node)
-        self.joint_trajectory_controller_client = JointTrajectoryControllerClient(self.node)
+        self.joint_trajectory_controller_client = JointTrajectoryControllerClient(
+            self.node, use_prefix=self.config.use_prefix
+        )
         self.cartesian_controller_parameters_client = ParametersClient(
             self.node, target_node=self.config.cartesian_impedance_controller_name
         )
@@ -507,16 +509,7 @@ class Robot:
         Args:
             msg (JointState): ROS message containing joint states.
         """
-        if self._current_joint is None:
-            self._current_joint = np.zeros(self.nq)
-
-        # self.node.get_logger().info(f"Current joint state: {msg.name} {msg.position}", throttle_duration_sec=1.0)
-        for joint_name, joint_position in zip(msg.name, msg.position):
-            if joint_name.removeprefix(self._prefix) not in self.config.joint_names:
-                continue
-            self._current_joint[
-                self.config.joint_names.index(joint_name.removeprefix(self._prefix))
-            ] = joint_position
+        self._current_joint = self.ros_msg_to_joint(msg).copy()
 
         if self._target_joint is None:
             self._target_joint = self._current_joint.copy()
@@ -574,9 +567,6 @@ class Robot:
         if blocking:
             self.wait_until_ready()
 
-        # if switch_to_default_controller:
-        #     self.controller_switcher_client.switch_controller(self.config.default_controller)
-
     def _joint_to_joint_msg(
         self, q: NDArray, dq: NDArray | None = None, tau: NDArray | None = None
     ) -> JointState:
@@ -589,6 +579,17 @@ class Robot:
         joint_msg.velocity = dq.tolist() if dq is not None else [0.0] * len(q)
         joint_msg.effort = tau.tolist() if tau is not None else [0.0] * len(q)
         return joint_msg
+
+    def ros_msg_to_joint(self, msg: JointState) -> NDArray:
+        """Convert a joint state message to a numpy array of joint values."""
+        joint_values = np.zeros(self.nq)
+        for joint_name, joint_position in zip(msg.name, msg.position):
+            if joint_name.removeprefix(self._prefix) not in self.config.joint_names:
+                continue
+            joint_values[self.config.joint_names.index(joint_name.removeprefix(self._prefix))] = (
+                joint_position
+            )
+        return joint_values.astype(np.float32)
 
     def _parse_pose_or_position(
         self, position: List | NDArray | None = None, pose: Pose | None = None
@@ -621,15 +622,10 @@ class Robot:
         if rclpy.ok():
             rclpy.shutdown()
 
-    @staticmethod
-    def list_configs() -> list[str]:
-        """List all available robot configurations."""
-        configs = list_configs_in_folder("robots")
-        return [config.stem for config in configs if config.suffix == ".yaml"]
-
 
 def make_robot(
-    config_name: str,
+    config_name: str | None = None,
+    robot_config: RobotConfig | None = None,
     node: "Node | None" = None,
     spin_node: bool = True,
     name: str = "robot_client",
@@ -639,6 +635,7 @@ def make_robot(
 
     Args:
         config_name: Name of the robot config file
+        robot_config: RobotConfig instance to use directly
         node: ROS2 node to use. If None, creates a new node.
         spin_node: Whether to spin the node in a separate thread.
         name: Name of the robot client node.
@@ -650,15 +647,35 @@ def make_robot(
     Raises:
         FileNotFoundError: If the config file is not found
     """
-    return Robot.from_yaml(
-        config_name=config_name,
+    assert (not config_name and robot_config) or (config_name and not robot_config), (
+        "Exactly one of config_name or robot_config must be provided, but not both."
+    )
+
+    if config_name is not None:
+        return Robot.from_yaml(
+            config_name=config_name,
+            node=node,
+            spin_node=spin_node,
+            name=name,
+            **overrides,
+        )
+
+    if overrides:
+        for key, value in overrides.items():
+            if hasattr(robot_config, key):
+                setattr(robot_config, key, value)
+            else:
+                raise ValueError(f"Invalid override key: {key}")
+
+    return Robot(
         node=node,
         spin_node=spin_node,
+        robot_config=robot_config,
         name=name,
-        **overrides,
     )
 
 
 def list_robot_configs() -> list[str]:
     """List all available robot configurations."""
-    return Robot.list_configs()
+    configs = list_configs_in_folder("robots")
+    return [config.stem for config in configs if config.suffix == ".yaml"]
