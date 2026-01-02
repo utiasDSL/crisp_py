@@ -71,7 +71,8 @@ class Gripper:
             JointState,
             self.config.joint_state_topic,
             self._callback_monitor.monitor(
-                f"{namespace.capitalize()} Gripper Joint State", self._callback_joint_state
+                f"{namespace.capitalize()} Gripper Joint State",
+                self._callback_joint_state,
             ),
             qos_profile_system_default,
             callback_group=ReentrantCallbackGroup(),
@@ -80,7 +81,8 @@ class Gripper:
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
             self._callback_monitor.monitor(
-                f"{namespace.capitalize()} Gripper Target Publisher", self._callback_publish_target
+                f"{namespace.capitalize()} Gripper Target Publisher",
+                self._callback_publish_target,
             ),
             ReentrantCallbackGroup(),
         )
@@ -275,6 +277,8 @@ class Gripper:
             msg (JointState): the message containing the joint state.
         """
         self._value = msg.position[self._index]
+        if self._target is None:
+            self._target = self._value
         self._torque = msg.effort[self._index] if msg.effort else None
 
     def set_target(self, target: float, *, epsilon: float = 0.1):
