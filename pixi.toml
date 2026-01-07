@@ -48,6 +48,7 @@ ros-humble-ros2-controllers = "*"
 ros-humble-rmw-zenoh-cpp = "*"
 ros-humble-rmw-cyclonedds-cpp = "*"
 rosdep = "*"
+libstdcxx-ng = "*"
 
 [feature.humble.pypi-dependencies]
 viser = ">=1.0.16, <2"
@@ -78,3 +79,6 @@ crisp_python = { path = ".", editable = true }
 [feature.extra.pypi-dependencies]
 rich = "*"  # For nice prints
 matplotlib = "*"  # to do some plots
+
+[pypi-dependencies]
+yourdfpy = ">=0.0.58, <0.0.59"
