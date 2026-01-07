@@ -6,8 +6,7 @@ import numpy as np
 
 from crisp_py.robot import make_robot
 
-left_arm = make_robot("fr3_left")
-print(left_arm._current_joint)
+left_arm = make_robot("fr3")
 left_arm.wait_until_ready()
 
 # %%

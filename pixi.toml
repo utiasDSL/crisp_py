@@ -24,6 +24,7 @@ test_raw = "pytest --cov=crisp_py --cov-report=html"
 test = [{task="test_raw", environment="humble"}]
 view_diagnostics = "python scripts/view_diagnostics.py"
 view_diagnostics_humble = [{task="view_diagnostics", environment="humble"}]
+view_diagnostics_jazzy = [{task="view_diagnostics", environment="jazzy"}]
 
 
 
@@ -47,6 +48,9 @@ ros-humble-ros2-controllers = "*"
 ros-humble-rmw-zenoh-cpp = "*"
 ros-humble-rmw-cyclonedds-cpp = "*"
 rosdep = "*"
+
+[feature.humble.pypi-dependencies]
+viser = ">=1.0.16, <2"
 
 # jazzy
 [feature.jazzy]
