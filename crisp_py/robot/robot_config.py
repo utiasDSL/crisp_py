@@ -126,6 +126,41 @@ class FrankaConfig(RobotConfig):
 
 
 @dataclass
+class PandaConfig(RobotConfig):
+    """Configuration specific to Franka Emika Panda robots.
+
+    Provides default values for frame names, joint names, and home configuration
+    specifically for Franka Emika Panda robots.
+    """
+
+    joint_names: list = field(
+        default_factory=lambda: [
+            "panda_joint1",
+            "panda_joint2",
+            "panda_joint3",
+            "panda_joint4",
+            "panda_joint5",
+            "panda_joint6",
+            "panda_joint7",
+        ]
+    )
+    home_config: list = field(
+        default_factory=lambda: [
+            0,
+            -np.pi / 4,
+            0,
+            -3 * np.pi / 4,
+            0,
+            np.pi / 2,
+            np.pi / 4,
+        ]
+    )
+    base_frame: str = "base"
+    target_frame: str = "panda_hand_tcp"
+    # target_frame: str = "panda_link8"
+
+
+@dataclass
 class KinovaConfig(RobotConfig):
     """Configuration specific to Kinova robots.
 
@@ -240,6 +275,8 @@ def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
 
     if robot_type == "franka":
         return FrankaConfig(**kwargs)
+    elif robot_type == "panda":
+        return PandaConfig(**kwargs)
     elif robot_type == "kinova":
         return KinovaConfig(**kwargs)
     elif robot_type == "iiwa":
@@ -248,5 +285,5 @@ def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
         return SO101Config(**kwargs)
     else:
         raise ValueError(
-            f"Unsupported robot type: {robot_type}. Supported types: franka, kinova, iiwa, so101"
+            f"Unsupported robot type: {robot_type}. Supported types: franka, panda, kinova, iiwa, so101"
         )
