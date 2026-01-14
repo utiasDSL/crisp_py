@@ -57,7 +57,9 @@ ros-jazzy-desktop = "*"
 ros-jazzy-ros2-control = "*"
 ros-jazzy-ros2-controllers = "*"
 colcon-common-extensions = "*"
+ros-jazzy-rmw-cyclonedds-cpp = ">=2.2.3,<3"
 rosdep = "*"
+scipy = "*"
 
 [feature.dev.pypi-dependencies]
 ruff= "*"
