@@ -34,6 +34,8 @@ libgl-devel = "*"
 [environments]
 humble = { features = ["humble", "crisp-py", "extra", "dev"] }
 jazzy = { features = ["jazzy", "crisp-py", "extra", "dev"] }
+humble-viser = { features = ["jazzy", "viser", "crisp-py", "extra", "dev"] }
+jazzy-viser = { features = ["jazzy", "viser", "crisp-py", "extra", "dev"] }
 humble-clean = { features = ["humble"] }
 
 # humble
@@ -63,6 +65,10 @@ ros-jazzy-ros2-control = "*"
 ros-jazzy-ros2-controllers = "*"
 colcon-common-extensions = "*"
 rosdep = "*"
+
+[feature.viser.pypi-dependencies]
+viser = ">=1.0.19, <2"
+robot-descriptions = ">=1.22.0, <2"
 
 [feature.dev.pypi-dependencies]
 ruff= "*"
