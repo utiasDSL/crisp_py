@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 import time
 from typing import Literal
 
@@ -8,14 +7,34 @@ import numpy as np
 import viser
 from viser.extras import ViserUrdf
 from scipy.spatial.transform import Rotation
+from robot_descriptions.loaders.yourdfpy import load_robot_description
 
 from crisp_py.robot import make_robot
 from crisp_py.utils.geometry import Pose
 
-robot = make_robot("fr3_left")
+# TODO: Set robot type here.
+ROBOT_TYPE: Literal["fr3", "panda", "iiwa14"] = "fr3"
+
+# ===
+
+def get_description_name(robot_type: str) -> str:
+    if robot_type in ["fr3", "panda"]:
+        return "panda_description"
+    elif robot_type == "iiwa":
+        return "iiwa14_description"
+    else:
+        return f"{robot_type}_description"
+
+def should_add_gripper_to_config(robot_type: str) -> bool:
+    if robot_type in ["fr3", "panda"]:
+        return True
+    return False
+
+robot = make_robot(ROBOT_TYPE)
 robot.wait_until_ready()
 
-# robot.home()
+robot.config.time_to_home = 2.0
+robot.home()
 start_pose = robot.end_effector_pose
 
 robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
@@ -23,7 +42,6 @@ robot.cartesian_controller_parameters_client.load_param_config(
     file_path="config/control/default_cartesian_impedance.yaml"
 )
 
-robot_type: Literal["fr3"] = "fr3"
 load_meshes: bool = True
 load_collision_meshes: bool = False
 
@@ -33,9 +51,11 @@ server = viser.ViserServer()
 # Load URDF.
 #
 # This takes either a yourdfpy.URDF object or a path to a .urdf file.
+
+urdf = load_robot_description(get_description_name(ROBOT_TYPE))
 viser_urdf = ViserUrdf(
     server,
-    urdf_or_path=Path("assets/fr3_franka_hand.urdf"),
+    urdf_or_path=urdf,
     load_meshes=load_meshes,
     load_collision_meshes=load_collision_meshes,
     collision_mesh_color_override=(1.0, 0.0, 0.0, 0.5),
@@ -64,7 +84,8 @@ show_meshes_cb.visible = load_meshes
 show_collision_meshes_cb.visible = load_collision_meshes
 
 # Set initial robot configuration.
-viser_urdf.update_cfg(np.array(robot.joint_values))
+actuation = np.array([*robot.joint_values, 0.0]) if should_add_gripper_to_config(ROBOT_TYPE) else np.array(robot.joint_values)
+viser_urdf.update_cfg(actuation)
 
 # Create grid.
 trimesh_scene = viser_urdf._urdf.scene or viser_urdf._urdf.collision_scene
@@ -98,5 +119,6 @@ def update_robot_target(handle: viser.TransformControlsEvent) -> None:
 
 # Sleep forever.
 while True:
-    viser_urdf.update_cfg(np.array(robot.joint_values))
+    actuation = np.array([*robot.joint_values, 0.0]) if should_add_gripper_to_config(ROBOT_TYPE) else np.array(robot.joint_values)
+    viser_urdf.update_cfg(actuation)
     time.sleep(0.01)

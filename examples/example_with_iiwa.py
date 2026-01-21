@@ -3,7 +3,7 @@ from scipy.spatial.transform import Rotation
 
 # %%
 from crisp_py.robot import Pose, Robot
-from crisp_py.robot_config import IiwaConfig
+from crisp_py.robot import IiwaConfig
 
 robot = Robot(robot_config=IiwaConfig())
 robot.wait_until_ready()
@@ -25,13 +25,6 @@ params = [
     ("task.k_rot_y", 80.0),
     ("task.k_rot_z", 80.0),
     ("nullspace.stiffness", 5.0),
-    ("nullspace.weights.joint_a1.value", 5.0),
-    ("nullspace.weights.joint_a2.value", 5.0),
-    ("nullspace.weights.joint_a3.value", 5.0),
-    ("nullspace.weights.joint_a4.value", 2.0),
-    ("nullspace.weights.joint_a5.value", 2.0),
-    ("nullspace.weights.joint_a6.value", 1.0),
-    ("nullspace.weights.joint_a7.value", 1.0),
 ]
 
 robot.cartesian_controller_parameters_client.set_parameters(params)
