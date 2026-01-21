@@ -167,18 +167,18 @@ class IiwaConfig(RobotConfig):
 
     joint_names: list = field(
         default_factory=lambda: [
-            "joint_a1",
-            "joint_a2",
-            "joint_a3",
-            "joint_a4",
-            "joint_a5",
-            "joint_a6",
-            "joint_a7",
+            "lbr_A1",
+            "lbr_A2",
+            "lbr_A3",
+            "lbr_A4",
+            "lbr_A5",
+            "lbr_A6",
+            "lbr_A7",
         ]
     )
     home_config: list = field(
         default_factory=lambda: [
-            0,
+            np.pi / 2,
             -np.pi / 4,
             0,
             -3 * np.pi / 4,
@@ -187,8 +187,8 @@ class IiwaConfig(RobotConfig):
             np.pi / 4,
         ]
     )
-    base_frame: str = "iiwa_base"
-    target_frame: str = "tool0"
+    base_frame: str = "world"
+    target_frame: str = "lbr_link_ee"
 
 
 @dataclass
