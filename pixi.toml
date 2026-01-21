@@ -57,7 +57,10 @@ ros-jazzy-desktop = "*"
 ros-jazzy-ros2-control = "*"
 ros-jazzy-ros2-controllers = "*"
 colcon-common-extensions = "*"
+ros-jazzy-rmw-zenoh-cpp = "*"
+ros-jazzy-rmw-cyclonedds-cpp = "*"
 rosdep = "*"
+# scipy = "*"  # See https://github.com/utiasDSL/crisp_py/pull/63#pullrequestreview-3659019804
 
 [feature.dev.pypi-dependencies]
 ruff= "*"
