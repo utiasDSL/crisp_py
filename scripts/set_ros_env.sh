@@ -1,5 +1,8 @@
 #/usr/bin/env sh
 
+# Ensure conda libs take precedence over system libs
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+
 ROS_ENV_FILE="scripts/personal_ros_env.sh"
 
 if [ -f "$ROS_ENV_FILE" ]; then
