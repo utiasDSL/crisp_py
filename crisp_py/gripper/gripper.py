@@ -5,6 +5,8 @@ import threading
 import numpy as np
 import rclpy
 import yaml
+from control_msgs.action import GripperCommand
+from rclpy.action.client import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -61,12 +63,27 @@ class Gripper:
             self.node, stale_threshold=self.config.max_joint_delay
         )
 
-        self._command_publisher = self.node.create_publisher(
-            Float64MultiArray,
-            self.config.command_topic,
-            qos_profile_system_default,
-            callback_group=ReentrantCallbackGroup(),
+        self._command_publisher = (
+            self.node.create_publisher(
+                Float64MultiArray,
+                self.config.command_topic,
+                qos_profile_system_default,
+                callback_group=ReentrantCallbackGroup(),
+            )
+            if not self.config.use_gripper_command_action
+            else None
         )
+        self._command_action_client = (
+            ActionClient(
+                self.node,
+                GripperCommand,
+                self.config.command_topic,
+                callback_group=ReentrantCallbackGroup(),
+            )
+            if self.config.use_gripper_command_action
+            else None
+        )
+
         self._joint_subscriber = self.node.create_subscription(
             JointState,
             self.config.joint_state_topic,
@@ -216,7 +233,12 @@ class Gripper:
 
     def is_ready(self) -> bool:
         """Returns True if the gripper is fully ready to operate."""
-        return self._value is not None
+        action_client_ready = (
+            self._command_action_client.wait_for_server(timeout_sec=0.0)
+            if self._command_action_client
+            else True
+        )
+        return self._value is not None and action_client_ready
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
         """Wait until the gripper is available."""
@@ -247,6 +269,27 @@ class Gripper:
         """Publish the target command."""
         if self._target is None:
             return
+
+        if self.config.use_gripper_command_action:
+            if self._command_action_client is None:
+                raise RuntimeError("Command action client is not initialized.")
+
+            goal = GripperCommand.Goal()
+            goal.command.position = self._unnormalize(
+                self.value
+                + np.clip(
+                    self._normalize(self._target) - self.value,
+                    -self.config.max_delta,
+                    self.config.max_delta,
+                )
+            )
+            goal.command.max_effort = self.config.max_effort
+            self._command_action_client.send_goal_async(goal)
+            return
+
+        if self._command_publisher is None:
+            raise RuntimeError("Command publisher is not initialized.")
+
         msg = Float64MultiArray()
         msg.data = [
             self._unnormalize(

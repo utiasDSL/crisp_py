@@ -13,6 +13,18 @@ class GripperConfig:
     """Gripper default config.
 
     Can be extented to be used with other grippers.
+    Attributes:
+        min_value (float): Minimum gripper value (fully closed).
+        max_value (float): Maximum gripper value (fully open).
+        command_topic (str): Topic to publish gripper commands to.
+        joint_state_topic (str): Topic to subscribe for joint states.
+        reboot_service (str): Service to reboot the gripper.
+        enable_torque_service (str): Service to enable torque on the gripper.
+        index (int): Index of the gripper joint in the joint states message.
+        publish_frequency (float): Frequency to publish gripper state.
+        max_joint_delay (float): Maximum delay for joint state updates.
+        max_delta (float): Maximum change in gripper value per update.
+        use_gripper_command_action (bool): Whether to use GripperCommandAction.
     """
 
     min_value: float
@@ -25,6 +37,8 @@ class GripperConfig:
     publish_frequency: float = 30.0
     max_joint_delay: float = 1.0
     max_delta: float = 0.1
+    use_gripper_command_action: bool = False
+    max_effort: float = 10.0
 
     @classmethod
     def from_yaml(cls, path: str | Path, **overrides) -> "GripperConfig":  # noqa: ANN003
