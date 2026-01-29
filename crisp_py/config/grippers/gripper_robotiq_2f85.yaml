@@ -1,0 +1,6 @@
+  min_value: 0.8
+  max_value: 0.0
+  command_topic: "/robotiq_gripper_controller/gripper_cmd"
+  use_gripper_command_action: True
+  max_delta: 1.0
+  max_effort: 5.0
