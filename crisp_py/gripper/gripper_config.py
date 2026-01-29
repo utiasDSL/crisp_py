@@ -13,6 +13,7 @@ class GripperConfig:
     """Gripper default config.
 
     Can be extented to be used with other grippers.
+
     Attributes:
         min_value (float): Minimum gripper value (fully closed).
         max_value (float): Maximum gripper value (fully open).
