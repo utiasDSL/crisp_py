@@ -258,6 +258,38 @@ class SO101Config(RobotConfig):
     target_frame: str = "Fixed_Gripper"
 
 
+@dataclass
+class DynaArmConfig(RobotConfig):
+    """Configuration specific to DynaArm robots.
+
+    Provides default values for frame names, joint names, and home configuration
+    specifically for DynaArm robots.
+    """
+
+    joint_names: list = field(
+        default_factory=lambda: [
+            "shoulder_rotation",
+            "shoulder_flexion",
+            "elbow_flexion",
+            "forearm_rotation",
+            "wrist_flexion",
+            "wrist_rotation",
+        ]
+    )
+    home_config: list = field(
+        default_factory=lambda: [
+            0,
+            -np.pi / 4,
+            +np.pi / 4,
+            0,
+            0,
+            0,
+        ]
+    )
+    base_frame: str = "base_link"
+    target_frame: str = "flange"
+
+
 def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
     """Factory function to create robot configuration objects.
 
@@ -283,6 +315,8 @@ def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
         return IiwaConfig(**kwargs)
     elif robot_type == "so101":
         return SO101Config(**kwargs)
+    elif robot_type == "dynaarm":
+        return DynaArmConfig(**kwargs)
     else:
         raise ValueError(
             f"Unsupported robot type: {robot_type}. Supported types: franka, panda, kinova, iiwa, so101"
