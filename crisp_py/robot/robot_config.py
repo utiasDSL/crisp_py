@@ -278,16 +278,17 @@ class DynaArmConfig(RobotConfig):
     )
     home_config: list = field(
         default_factory=lambda: [
-            0,
-            -np.pi / 4,
-            +np.pi / 4,
-            0,
-            0,
-            0,
-        ]
+            2.4,
+            -0.15,
+            2.0,
+            0.0,
+            1.26,
+            0.0,
+        ],
     )
     base_frame: str = "base_link"
     target_frame: str = "flange"
+    cartesian_impedance_controller_name: str = "crisp_cartesian_controller"
 
 
 def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
