@@ -16,7 +16,7 @@ print(f"Starting joint values: {robot.joint_values}")
 #%%
 
 print("Going to home position...") 
-robot.home()  # This requirese the joint_trajectory_controller to be active
+robot.home()  # This requires the joint_trajectory_controller to be active
 homing_pose = robot.end_effector_pose.copy()
 
 print(f"Homing pose: {homing_pose}")
