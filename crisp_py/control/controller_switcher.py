@@ -135,7 +135,7 @@ class ControllerSwitcherClient:
 
         Args:
             controller_name (str): Name of the controller to switch to.
-            controllers_that_should_be_activate (list[str] | None): List of controller names to keep active while switching. Defaults to None.
+            controllers_that_should_be_active (list[str] | None): List of controller names to keep active while switching. Defaults to None.
         """
         if controllers_that_should_be_activate is None:
             controllers_that_should_be_activate = []
