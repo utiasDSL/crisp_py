@@ -123,7 +123,7 @@ class ControllerSwitcherClient:
     def switch_controller(
         self,
         controller_name: str,
-        controllers_that_should_be_activate: list[str] | None = None,
+        controllers_that_should_be_active: list[str] | None = None,
     ) -> bool | None:
         """Switch to a different ros2_controller that is already loaded using a service.
 
@@ -135,7 +135,7 @@ class ControllerSwitcherClient:
 
         Args:
             controller_name (str): Name of the controller to switch to.
-            controllers_that_should_be_active (list[str] | None): List of controller names to keep active while switching. Defaults to None.
+            controllers_that_should_be_active (list[str] | None): List of controller names to keep active or activate in the switch. Defaults to None.
         """
         if controllers_that_should_be_activate is None:
             controllers_that_should_be_activate = []
@@ -158,7 +158,7 @@ class ControllerSwitcherClient:
 
         to_deactivate = []
         for active_controller in active_controllers:
-            if active_controller in controllers_that_should_be_activate:
+            if active_controller in controllers_that_should_be_active:
                 continue  # Keep this controller active
 
             if active_controller.endswith("broadcaster"):  # Do not deactivate broadcasters
@@ -169,7 +169,7 @@ class ControllerSwitcherClient:
         to_activate = [
             inactive_controller
             for inactive_controller in inactive_controllers
-            if inactive_controller in controllers_that_should_be_activate
+            if inactive_controller in controllers_that_should_be_active
         ] + [controller_name]
 
         ok = self._switch_controller(to_deactivate, to_activate)
