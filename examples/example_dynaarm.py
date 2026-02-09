@@ -112,5 +112,5 @@ robot.shutdown()
 
 robot.controller_switcher_client.switch_controller(
     "gravity_compensation_controller",
-    controllers_that_should_be_activate=["freedrive_controller" ,"safety_monitor_controller"]
+    controllers_that_should_be_activate=["freedrive_controller", "safety_monitor_controller"]
 )
