@@ -295,7 +295,7 @@ def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
     """Factory function to create robot configuration objects.
 
     Args:
-        robot_type (str): Type of robot ('franka', 'kinova', 'iiwa', 'so101')
+        robot_type (str): Type of robot ('franka', 'kinova', 'iiwa', 'so101', 'dynaarm')
         **kwargs: Additional keyword arguments to override default configuration
 
     Returns:
@@ -320,5 +320,5 @@ def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
         return DynaArmConfig(**kwargs)
     else:
         raise ValueError(
-            f"Unsupported robot type: {robot_type}. Supported types: franka, panda, kinova, iiwa, so101"
+            f"Unsupported robot type: {robot_type}. Supported types: franka, panda, kinova, iiwa, so101, dynaarm"
         )
