@@ -1,0 +1,63 @@
+base_frame: base_link
+end_effector_frame: flange
+filter.dq: 1.0
+filter.output_torque: 1.0
+filter.q: 1.0
+filter.target_pose: 0.1
+joint_limit_repulsion.enabled: false
+joint_limit_repulsion.max_torque: 5.0
+joint_limit_repulsion.safe_range: 0.1
+
+limit_error: false
+limit_torques: true
+log.computed_torques: false
+log.control_values: false
+log.controller_parameters: true
+log.dynamic_params: false
+log.enabled: true
+log.limits: false
+log.robot_state: false
+log.timing: false
+
+max_delta_tau: 0.5
+noise.add_random_noise: false
+noise.amplitude: 0.0
+nullspace.damping: 1.0
+nullspace.max_tau: 5.0
+nullspace.projector_type: none
+nullspace.regularization: 1.0e-06
+nullspace.stiffness: 0.0
+nullspace.weights.elbow_flexion.value: 0.0
+nullspace.weights.forearm_rotation.value: 0.0
+nullspace.weights.shoulder_flexion.value: 0.0
+nullspace.weights.shoulder_rotation.value: 0.0
+nullspace.weights.wrist_flexion.value: 0.0
+nullspace.weights.wrist_rotation.value: 0.0
+operational_space_regularization: 1.0
+stop_commands: false
+
+task.d_pos_x: -1.0
+task.d_pos_y: -1.0
+task.d_pos_z: -1.0
+task.d_rot_x: -1.0
+task.d_rot_y: -1.0
+task.d_rot_z: -1.0
+task.error_clip.rx: 0.005
+task.error_clip.ry: 0.005
+task.error_clip.rz: 0.005
+task.error_clip.x: 0.005
+task.error_clip.y: 0.005
+task.error_clip.z: 0.005
+
+task.k_pos_x: 100.0
+task.k_pos_y: 100.0
+task.k_pos_z: 100.0
+task.k_rot_x: 10.0
+task.k_rot_y: 10.0
+task.k_rot_z: 10.0
+
+use_coriolis_compensation: true
+use_friction: false
+use_gravity_compensation: true
+use_local_jacobian: true
+use_operational_space: false

@@ -120,16 +120,26 @@ class ControllerSwitcherClient:
 
         return response.ok
 
-    def switch_controller(self, controller_name: str) -> bool | None:
+    def switch_controller(
+        self,
+        controller_name: str,
+        controllers_that_should_be_active: list[str] | None = None,
+    ) -> bool | None:
         """Switch to a different ros2_controller that is already loaded using a service.
 
         First we request a list of current controllers.
         If the desired controller is not loaded, then we request to load it and configure it.
-        Finally, we request to switch to the desired controller.
+        Then we prepare a list of controllers to deactivate (all active controllers except broadcasters and those that should remain active).
+        We also prepare a list of controllers to activate (the desired controller and those that should remain active).
+        Finally, we request to switch to the desired controllers.
 
         Args:
             controller_name (str): Name of the controller to switch to.
+            controllers_that_should_be_active (list[str] | None): List of controller names to keep active or activate in the switch. Defaults to None.
         """
+        if controllers_that_should_be_active is None:
+            controllers_that_should_be_active = []
+
         controllers = self.get_controller_list()
 
         active_controllers = [
@@ -144,24 +154,23 @@ class ControllerSwitcherClient:
             return True
 
         if controller_name not in inactive_controllers:
-            ok = self.load_controller(controller_name)
-            if not ok:
-                self.node.get_logger().error(
-                    f"Failed to load controller {controller_name}. Are you sure the controller exists?"
-                )
-                raise RuntimeError(f"Failed to load controller {controller_name}.")
-
-            ok = self.configure_controller(controller_name)
-            if not ok:
-                self.node.get_logger().error(f"Failed to configure controller {controller_name}.")
-                raise RuntimeError(f"Failed to configure controller {controller_name}.")
+            self._try_loading_and_configuring_controller(controller_name)
 
         to_deactivate = []
         for active_controller in active_controllers:
-            if not active_controller.endswith("broadcaster"):  # Do not deactivate broadcasters
-                to_deactivate.append(active_controller)
+            if active_controller in controllers_that_should_be_active:
+                continue  # Keep this controller active
 
-        to_activate = [controller_name]
+            if active_controller.endswith("broadcaster"):  # Do not deactivate broadcasters
+                continue
+
+            to_deactivate.append(active_controller)
+
+        to_activate = [
+            inactive_controller
+            for inactive_controller in inactive_controllers
+            if inactive_controller in controllers_that_should_be_active
+        ] + [controller_name]
 
         ok = self._switch_controller(to_deactivate, to_activate)
 
@@ -170,3 +179,21 @@ class ControllerSwitcherClient:
             raise RuntimeError(f"Failed to switch to controller {controller_name}.")
 
         return True
+
+    def _try_loading_and_configuring_controller(self, controller_name: str) -> None:
+        """Try to load and configure a controller.
+
+        Args:
+            controller_name (str): Name of the controller to load and configure.
+        """
+        ok = self.load_controller(controller_name)
+        if not ok:
+            self.node.get_logger().error(
+                f"Failed to load controller {controller_name}. Are you sure the controller exists?"
+            )
+            raise RuntimeError(f"Failed to load controller {controller_name}.")
+
+        ok = self.configure_controller(controller_name)
+        if not ok:
+            self.node.get_logger().error(f"Failed to configure controller {controller_name}.")
+            raise RuntimeError(f"Failed to configure controller {controller_name}.")
