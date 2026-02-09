@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.2.0](https://github.com/utiasDSL/crisp_py/compare/v3.1.0...v3.2.0) (2026-02-09)
+
+
+### Features
+
+* add a robotiq config and example ([#66](https://github.com/utiasDSL/crisp_py/issues/66)) ([815e09c](https://github.com/utiasDSL/crisp_py/commit/815e09cfa64d607425c6898b48aaf71147aa9d82))
+* add dynaarm config https://www.duatic.com/dynaarm ([#67](https://github.com/utiasDSL/crisp_py/issues/67)) ([83922de](https://github.com/utiasDSL/crisp_py/commit/83922de4fd5e8d42d3f0b3591e4a4fbc9624cb11))
+* add viser example to crisp_py and updated lbr config ([#64](https://github.com/utiasDSL/crisp_py/issues/64)) ([2fd04f6](https://github.com/utiasDSL/crisp_py/commit/2fd04f6edb7290bd4e666e2916366e50deaad9e2))
+
 ## [3.1.0](https://github.com/utiasDSL/crisp_py/compare/v3.0.0...v3.1.0) (2026-01-21)
 
 
