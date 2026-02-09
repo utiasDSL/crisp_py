@@ -137,8 +137,8 @@ class ControllerSwitcherClient:
             controller_name (str): Name of the controller to switch to.
             controllers_that_should_be_active (list[str] | None): List of controller names to keep active or activate in the switch. Defaults to None.
         """
-        if controllers_that_should_be_activate is None:
-            controllers_that_should_be_activate = []
+        if controllers_that_should_be_active is None:
+            controllers_that_should_be_active = []
 
         controllers = self.get_controller_list()
 
