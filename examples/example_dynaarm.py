@@ -45,7 +45,7 @@ target_pose.position[2] -= 0.1
 
 #%%
 
-# we apply a sine wave in z directoin for 10 seconds from -0.15 to 0.15 m
+# we apply a sine wave in z direction for 10 seconds from -0.15 to 0.15 m
 
 ee_poses = []
 target_poses = []
