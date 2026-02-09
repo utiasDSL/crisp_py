@@ -34,7 +34,7 @@ robot.cartesian_controller_parameters_client.load_param_config(path)
 
 robot.controller_switcher_client.switch_controller(
     "crisp_cartesian_controller", 
-    controllers_that_should_be_activate=["freedrive_controller", "safety_monitor_controller"]
+    controllers_that_should_be_active=["freedrive_controller", "safety_monitor_controller"]
 )
 
 robot.reset_targets()
@@ -110,7 +110,7 @@ robot.shutdown()
 
 # %%
 
-robot.controller_switcher_client.switch_controller(
-    "gravity_compensation_controller",
-    controllers_that_should_be_activate=["freedrive_controller", "safety_monitor_controller"]
-)
+# robot.controller_switcher_client.switch_controller(
+#     "gravity_compensation_controller",
+#     controllers_that_should_be_active=["freedrive_controller", "safety_monitor_controller"]
+# )
