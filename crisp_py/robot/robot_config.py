@@ -291,11 +291,36 @@ class DynaArmConfig(RobotConfig):
     cartesian_impedance_controller_name: str = "crisp_cartesian_controller"
 
 
+@dataclass
+class URConfig(RobotConfig):
+    """Configuration specific to Universal Robots (UR) arms.
+
+    Provides default values for frame names, joint names, and home configuration
+    specifically for UR robots.
+    """
+
+    joint_names: list = field(
+        default_factory=lambda: [
+            "shoulder_pan_joint",
+            "shoulder_lift_joint",
+            "elbow_joint",
+            "wrist_1_joint",
+            "wrist_2_joint",
+            "wrist_3_joint",
+        ]
+    )
+    home_config: list = field(
+        default_factory=lambda: [0, 0, 0, 0, 0, 0],
+    )
+    base_frame: str = "base_link"
+    target_frame: str = "tool0"
+
+
 def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
     """Factory function to create robot configuration objects.
 
     Args:
-        robot_type (str): Type of robot ('franka', 'kinova', 'iiwa', 'so101', 'dynaarm')
+        robot_type (str): Type of robot ('franka', 'kinova', 'iiwa', 'so101', 'dynaarm', 'ur')
         **kwargs: Additional keyword arguments to override default configuration
 
     Returns:
@@ -318,7 +343,9 @@ def make_robot_config(robot_type: str, **kwargs) -> RobotConfig:  # noqa: ANN003
         return SO101Config(**kwargs)
     elif robot_type == "dynaarm":
         return DynaArmConfig(**kwargs)
+    elif robot_type == "ur":
+        return URConfig(**kwargs)
     else:
         raise ValueError(
-            f"Unsupported robot type: {robot_type}. Supported types: franka, panda, kinova, iiwa, so101, dynaarm"
+            f"Unsupported robot type: {robot_type}. Supported types: franka, panda, kinova, iiwa, so101, dynaarm, ur"
         )
