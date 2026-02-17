@@ -35,16 +35,30 @@ robot.controller_switcher_client.switch_controller("cartesian_impedance_controll
 
 #%%
 
-input("Press Enter to move to a new target pose... WARNING: ONLY USE FOR UR16, CHECK THE POSITION BEFORE PRESSING! (or change the position in the code)")
-# WARNING: the folowing position has been chosen for the UR16!
-target_position = np.array([0.0, 0.24, 0.75])
-target_orientation = robot.end_effector_pose.orientation # Keep the same orientation
+# Figure eight
+input("Press Enter to start figure eight trajectory...")
 
-new_target_pose = Pose(position=target_position, orientation=target_orientation)
-robot.move_to(pose=new_target_pose, speed=0.3)
+duration = 6.0
+start_time = time.time()
+rate = 20.0
 
-# This would publish this target directly to the controller, without any interpolation. Use with care!
-# robot.set_target(pose=new_target_pose)
+while time.time() - start_time < duration:
+    t = time.time() - start_time
+
+    # Create figure eight trajectory in the XZ plane
+    x = 0.1 * np.sin(2 * np.pi * t / duration)
+    y = 0.0
+    z = 0.1 * np.sin(4 * np.pi * t / duration)
+
+    target_pose = Pose(
+        position=homing_pose.position + np.array([x, y, z]),
+        orientation=homing_pose.orientation,
+    )
+
+    robot.set_target(pose=target_pose)
+
+    time.sleep(1.0 / rate)
+
 
 # %%
 

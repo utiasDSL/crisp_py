@@ -310,7 +310,14 @@ class URConfig(RobotConfig):
         ]
     )
     home_config: list = field(
-        default_factory=lambda: [0, 0, 0, 0, 0, 0],
+        default_factory=lambda: [
+            0,
+            -np.pi / 2,
+            np.pi / 2,
+            -np.pi / 2,
+            -np.pi / 2,
+            0,
+        ],
     )
     base_frame: str = "base_link"
     target_frame: str = "tool0"
