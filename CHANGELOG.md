@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.3.0](https://github.com/utiasDSL/crisp_py/compare/v3.2.0...v3.3.0) (2026-02-23)
+
+
+### Features
+
+* **robots:** Add UR config and example ([#68](https://github.com/utiasDSL/crisp_py/issues/68)) ([b56b66d](https://github.com/utiasDSL/crisp_py/commit/b56b66d6a152dd7883c122723a43fb5a36f3c337))
+
+
+### Bug Fixes
+
+* remove unnecessary check ([#69](https://github.com/utiasDSL/crisp_py/issues/69)) ([4f4cf28](https://github.com/utiasDSL/crisp_py/commit/4f4cf287ca37a7fad6e17e1a4160e7e1437fcf91))
+
 ## [3.2.0](https://github.com/utiasDSL/crisp_py/compare/v3.1.0...v3.2.0) (2026-02-09)
 
 
