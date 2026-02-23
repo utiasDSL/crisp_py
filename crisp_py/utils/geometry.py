@@ -59,8 +59,6 @@ class Pose:
                 msg.pose.orientation.w,
             ]
         )
-        quat_x_sign = np.sign(quat[0]) if quat[0] != 0 else 1.0
-        quat *= quat_x_sign  # Ensure a consistent quaternion sign
         orientation = Rotation.from_quat(quat)
         return cls(position, orientation)
 
@@ -78,8 +76,6 @@ class Pose:
                 msg.transform.rotation.w,
             ]
         )
-        quat_x_sign = np.sign(quat[0]) if quat[0] != 0 else 1.0
-        quat *= quat_x_sign  # Ensure a consistent quaternion sign
         orientation = Rotation.from_quat(quat)
         return cls(position, orientation)
 
