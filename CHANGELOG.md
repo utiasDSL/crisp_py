@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.0](https://github.com/utiasDSL/crisp_py/compare/v3.3.0...v3.4.0) (2026-02-24)
+
+
+### Features
+
+* add joint velocities support to Robot ([#71](https://github.com/utiasDSL/crisp_py/issues/71)) ([9d6a2a2](https://github.com/utiasDSL/crisp_py/commit/9d6a2a238f75e33b6567542abf31f2b57a201ed2))
+
 ## [3.3.0](https://github.com/utiasDSL/crisp_py/compare/v3.2.0...v3.3.0) (2026-02-23)
 
 
