@@ -1,0 +1,40 @@
+# Default admittance controller parameters
+# Impedance outer loop (task stiffness/damping for the Cartesian impedance controller)
+task.k_pos_x: 600.0
+task.k_pos_y: 600.0
+task.k_pos_z: 600.0
+task.d_pos_x: 60.0
+task.d_pos_y: 60.0
+task.d_pos_z: 60.0
+task.k_rot_x: 30.0
+task.k_rot_y: 30.0
+task.k_rot_z: 30.0
+task.d_rot_x: 10.0
+task.d_rot_y: 10.0
+task.d_rot_z: 10.0
+use_gravity_compensation: false
+use_coriolis_compensation: true
+use_friction: true
+# Admittance parameters (virtual MSD)
+admittance.mass_x: 1.0
+admittance.mass_y: 1.0
+admittance.mass_z: 1.0
+admittance.mass_rx: 0.1
+admittance.mass_ry: 0.1
+admittance.mass_rz: 0.1
+admittance.stiffness_x: 200.0
+admittance.stiffness_y: 200.0
+admittance.stiffness_z: 200.0
+admittance.stiffness_rx: 10.0
+admittance.stiffness_ry: 10.0
+admittance.stiffness_rz: 10.0
+admittance.damping_x: 50.0
+admittance.damping_y: 50.0
+admittance.damping_z: 50.0
+admittance.damping_rx: 5.0
+admittance.damping_ry: 5.0
+admittance.damping_rz: 5.0
+# F/T sensor
+ft_sensor.topic: "ft_sensor_wrench"
+ft_sensor.filter_alpha: 0.1
+ft_sensor.use_static_offset: false
