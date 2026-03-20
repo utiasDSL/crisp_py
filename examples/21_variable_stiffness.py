@@ -25,14 +25,14 @@ robot.cartesian_controller_parameters_client.set_parameters(
 print("Robot ready. Maintaining current position.")
 print()
 
-# High stiffness (default-like values)
-print("Setting HIGH stiffness: translational=[600, 600, 600], rotational=[30, 30, 30]")
-robot.set_stiffness(translational=[600.0, 600.0, 600.0], rotational=[30.0, 30.0, 30.0])
+# High stiffness (current working values)
+print("Setting HIGH stiffness: translational=[900, 900, 900], rotational=[45, 45, 45]")
+robot.set_stiffness(translational=[900.0, 900.0, 900.0], rotational=[45.0, 45.0, 45.0])
 input("Press Enter to switch to MEDIUM stiffness...")
 
 # Medium stiffness
-print("Setting MEDIUM stiffness: translational=[200, 200, 200], rotational=[15, 15, 15]")
-robot.set_stiffness(translational=[200.0, 200.0, 200.0], rotational=[15.0, 15.0, 15.0])
+print("Setting MEDIUM stiffness: translational=[300, 300, 300], rotational=[15, 15, 15]")
+robot.set_stiffness(translational=[300.0, 300.0, 300.0], rotational=[15.0, 15.0, 15.0])
 input("Press Enter to switch to LOW stiffness...")
 
 # Low stiffness
