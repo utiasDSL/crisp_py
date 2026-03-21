@@ -5,7 +5,6 @@ variable stiffness topic. The robot maintains its current position while the
 stiffness is changed from high to medium to low.
 
 Requirements:
-    - variable_stiffness.enabled must be set to true in the controller parameters
     - The cartesian impedance controller must be active
 """
 
@@ -16,11 +15,6 @@ robot.wait_until_ready()
 
 # Switch to cartesian impedance controller
 robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")
-
-# Enable variable stiffness on the controller
-robot.cartesian_controller_parameters_client.set_parameters(
-    [("variable_stiffness.enabled", True)]
-)
 
 print("Robot ready. Maintaining current position.")
 print()
