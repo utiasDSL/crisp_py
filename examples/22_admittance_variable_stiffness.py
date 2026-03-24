@@ -18,10 +18,10 @@ robot.wait_until_ready()
 # Switch to admittance controller
 robot.controller_switcher_client.switch_controller("cartesian_admittance_controller")
 
-# Load default admittance parameters
-robot.admittance_controller_parameters_client.load_param_config(
-    "config/control/default_admittance.yaml"
-)
+# # Load default admittance parameters
+# robot.admittance_controller_parameters_client.load_param_config(
+#     "config/control/default_admittance.yaml"
+# )
 
 # Enable variable admittance stiffness
 robot.admittance_controller_parameters_client.set_parameters(
