@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0](https://github.com/utiasDSL/crisp_py/compare/v3.4.0...v3.5.0) (2026-04-02)
+
+
+### Features
+
+* Variable Impedance Controller ([#74](https://github.com/utiasDSL/crisp_py/issues/74)) ([1809015](https://github.com/utiasDSL/crisp_py/commit/1809015da55c52f058ea829ad67d6340eb1504bd))
+
 ## [3.4.0](https://github.com/utiasDSL/crisp_py/compare/v3.3.0...v3.4.0) (2026-02-24)
 
 
