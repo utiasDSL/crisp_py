@@ -23,6 +23,7 @@ class RobotConfig:
         cartesian_impedance_controller_name (str): Name of the Cartesian impedance controller
         target_pose_topic (str): Topic name for publishing target poses
         target_joint_topic (str): Topic name for publishing target joint states
+        target_stiffness_topic (str): Topic name for publishing target stiffness
         current_pose_topic (str): Topic name for subscribing to current poses
         current_joint_topic (str): Topic name for subscribing to current joint states
         publish_frequency (float): Frequency for publishing control commands
@@ -46,6 +47,7 @@ class RobotConfig:
 
     target_pose_topic: str = "target_pose"
     target_joint_topic: str = "target_joint"
+    target_stiffness_topic: str = "target_stiffness"
     current_pose_topic: str = "current_pose"
     current_joint_topic: str = "joint_states"
     current_twist_topic: str = "current_twist"
