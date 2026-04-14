@@ -22,6 +22,8 @@ class CameraConfig:
     crop_width: list[int | float, int | float] | None = None
     crop_height: list[int | float, int | float] | None = None
 
+    is_depth_camera: bool = False
+
     @classmethod
     def from_yaml(cls, yaml_path: Path, **overrides) -> "CameraConfig":  # noqa: ANN003
         """Load config from YAML file with optional overrides.

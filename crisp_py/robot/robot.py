@@ -18,7 +18,9 @@ from sensor_msgs.msg import JointState
 
 from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.control.controller_switcher import ControllerSwitcherClient
-from crisp_py.control.joint_trajectory_controller_client import JointTrajectoryControllerClient
+from crisp_py.control.joint_trajectory_controller_client import (
+    JointTrajectoryControllerClient,
+)
 from crisp_py.control.parameters_client import ParametersClient
 from crisp_py.robot.robot_config import FrankaConfig, RobotConfig, make_robot_config
 from crisp_py.utils.callback_monitor import CallbackMonitor
@@ -119,7 +121,8 @@ class Robot:
                 PoseStamped,
                 self.config.current_pose_topic,
                 self._callback_monitor.monitor(
-                    f"{namespace.capitalize()} Current Pose", self._callback_current_pose
+                    f"{namespace.capitalize()} Current Pose",
+                    self._callback_current_pose,
                 ),
                 qos_profile_sensor_data,
                 callback_group=ReentrantCallbackGroup(),
@@ -148,7 +151,8 @@ class Robot:
             self.node.create_timer(
                 1.0 / self.config.publish_frequency,
                 self._callback_monitor.monitor(
-                    f"{namespace.capitalize()} Target Pose", self._callback_publish_target_pose
+                    f"{namespace.capitalize()} Target Pose",
+                    self._callback_publish_target_pose,
                 ),
                 ReentrantCallbackGroup(),
             )
@@ -161,7 +165,8 @@ class Robot:
         self.node.create_timer(
             1.0 / self.config.publish_frequency,
             self._callback_monitor.monitor(
-                f"{namespace.capitalize()} Target Joint", self._callback_publish_target_joint
+                f"{namespace.capitalize()} Target Joint",
+                self._callback_publish_target_joint,
             ),
             ReentrantCallbackGroup(),
         )
@@ -420,9 +425,10 @@ class Robot:
         This callback is triggered periodically to publish the target joint values
         to the ROS topic for the robot controller.
         """
-        if self._target_joint is None or not rclpy.ok():
+        target_joint = copy.deepcopy(self._target_joint)
+        if target_joint is None or not rclpy.ok():
             return
-        self._target_joint_publisher.publish(self._joint_to_joint_msg(self._target_joint))
+        self._target_joint_publisher.publish(self._joint_to_joint_msg(target_joint))
 
     def _callback_publish_target_wrench(self):
         """Publish the target wrench if one exists.
@@ -430,9 +436,10 @@ class Robot:
         This callback is triggered periodically to publish the target wrench (force/torque)
         to the ROS topic for the robot controller.
         """
-        if self._target_wrench is None or not rclpy.ok():
+        target_wrench = copy.deepcopy(self._target_wrench)
+        if target_wrench is None or not rclpy.ok():
             return
-        self._target_wrench_publisher.publish(self._wrench_to_wrench_msg(self._target_wrench))
+        self._target_wrench_publisher.publish(self._wrench_to_wrench_msg(target_wrench))
 
     def set_target_wrench(
         self, force: List | NDArray | None = None, torque: List | NDArray | None = None
@@ -515,7 +522,10 @@ class Robot:
             self._target_joint = self._current_joint.copy()
 
     def move_to(
-        self, position: List | NDArray | None = None, pose: Pose | None = None, speed: float = 0.05
+        self,
+        position: List | NDArray | None = None,
+        pose: Pose | None = None,
+        speed: float = 0.05,
     ):
         """Move the end-effector to a given pose by interpolating linearly between the poses.
 
@@ -538,7 +548,8 @@ class Robot:
         rate = self.node.create_rate(self.config.publish_frequency)
 
         slerp = Slerp(
-            [0, 1], Rotation.concatenate([start_pose.orientation, desired_pose.orientation])
+            [0, 1],
+            Rotation.concatenate([start_pose.orientation, desired_pose.orientation]),
         )
 
         for t in np.linspace(0.0, 1.0, N):

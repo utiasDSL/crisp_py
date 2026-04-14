@@ -69,8 +69,8 @@ class Camera:
 
         if self.config.is_depth_camera:
             self._camera_subscriber = self.node.create_subscription(
-                Image,
-                self.config.camera_color_image_topic,
+                CompressedImage,
+                f"{self.config.camera_color_image_topic}/compressedDepth",
                 self._callback_monitor.monitor(
                     f"{self._namespace.capitalize()} Camera {self.config.camera_name} Image".strip(),
                     self._callback_current_color_image,
@@ -90,9 +90,13 @@ class Camera:
                 callback_group=ReentrantCallbackGroup(),
             )
         assert (
-            self.config.camera_color_info_topic is not None or self.config.resolution is not None
+            self.config.camera_color_info_topic is not None
+            or self.config.resolution is not None
         ), "You have to set resolution or camera info topic"
-        if self.config.camera_color_info_topic is None or self.config.resolution is None:
+        if (
+            self.config.camera_color_info_topic is None
+            or self.config.resolution is None
+        ):
             print(
                 "[Camera warning] You have set resolution and camera info topic, camera info topic will be ignored"
             )
@@ -169,18 +173,33 @@ class Camera:
     def _spin_node(self):
         if not rclpy.ok():
             rclpy.init()
-        executor = rclpy.executors.MultiThreadedExecutor(num_threads=self.THREADS_REQUIRED)
+        executor = rclpy.executors.MultiThreadedExecutor(
+            num_threads=self.THREADS_REQUIRED
+        )
         executor.add_node(self.node)
         while rclpy.ok():
             executor.spin_once(timeout_sec=0.1)
 
     def _uncompress(self, compressed_image: CompressedImage) -> Image:
         """Uncompress a CompressedImage message to an Image message."""
+        if self.config.is_depth_camera:
+            # print(
+            #     f"Uncompressing depth image, format: {compressed_image.format}, data size: {len(compressed_image.data)}"
+            # )
+            # print("first 16 bytes:", compressed_image.data[:16])
+            buf = np.frombuffer(
+                compressed_image.data[12:],
+                dtype=np.uint8,
+            )
+            uncompressed_depth = cv2.imdecode(buf, cv2.IMREAD_UNCHANGED)
+            # print("Uncompressed depth image:", uncompressed_depth)
+            # print(uncompressed_depth.dtype, uncompressed_depth.shape)
+            return np.asarray(uncompressed_depth)
 
         return np.asarray(
-            self.cv_bridge.imgmsg_to_cv2(compressed_image, "passthrough")
-            if self.config.is_depth_camera is True
-            else self.cv_bridge.compressed_imgmsg_to_cv2(compressed_image, desired_encoding="rgb8")
+            self.cv_bridge.compressed_imgmsg_to_cv2(
+                compressed_image, desired_encoding="rgb8"
+            )
         )
 
     def has_image_changed_since_last_retrieval(self) -> bool:
@@ -207,7 +226,9 @@ class Camera:
                     and self.config.camera_name in callback_name
                     and "Image" in callback_name
                 ):
-                    image_callback_data = self._callback_monitor.get_callback_data(callback_name)
+                    image_callback_data = self._callback_monitor.get_callback_data(
+                        callback_name
+                    )
                     if image_callback_data and image_callback_data.is_stale:
                         self.node.get_logger().warn(
                             f"Camera {self.config.camera_name} image data is stale"
@@ -234,16 +255,13 @@ class Camera:
             rate.sleep()
             timeout -= 1.0 / check_frequency
             if timeout <= 0:
-                error_msg = (
-                    f"Timeout waiting for camera ({self.config.camera_name}) to become ready."
-                )
-                error_msg += (
-                    f"Is the camera publishing to the topic {self._camera_subscriber.topic_name}?"
-                )
+                error_msg = f"Timeout waiting for camera ({self.config.camera_name}) to become ready."
+                error_msg += f"Is the camera publishing to the topic {self._camera_subscriber.topic_name}?"
                 raise TimeoutError(error_msg)
 
     def _callback_current_color_image(self, msg: CompressedImage):
         """Receive and store the current image."""
+        # print(f"[Camera] Received image from camera '{self.config.camera_name}'")
         self._image_has_changed = True
         self._current_image = self._resize_with_aspect_ratio(
             self._uncompress(msg),
@@ -285,7 +303,9 @@ class Camera:
         start_x = (new_w - target_w) // 2
         start_y = (new_h - target_h) // 2
 
-        cropped_image = resized[start_y : start_y + target_h, start_x : start_x + target_w]
+        cropped_image = resized[
+            start_y : start_y + target_h, start_x : start_x + target_w
+        ]
 
         return cropped_image
 
@@ -328,7 +348,9 @@ class Camera:
                         f"Float crop_height values must be between 0.0 and 1.0. Got: {crop_height}"
                     )
                 if crop_height[0] >= crop_height[1]:
-                    raise ValueError(f"crop_height start must be less than end. Got: {crop_height}")
+                    raise ValueError(
+                        f"crop_height start must be less than end. Got: {crop_height}"
+                    )
 
                 crop_start = int(crop_height[0] * h)
                 crop_end = int(crop_height[1] * h)
@@ -363,7 +385,9 @@ class Camera:
                         f"Float crop_width values must be between 0.0 and 1.0. Got: {crop_width}"
                     )
                 if crop_width[0] >= crop_width[1]:
-                    raise ValueError(f"crop_width start must be less than end. Got: {crop_width}")
+                    raise ValueError(
+                        f"crop_width start must be less than end. Got: {crop_width}"
+                    )
 
                 crop_start = int(crop_width[0] * w)
                 crop_end = int(crop_width[1] * w)
@@ -409,7 +433,9 @@ def make_camera(
         FileNotFoundError: If the config file is not found
     """
     if not ((not config_name and camera_config) or (config_name and not camera_config)):
-        raise ValueError("Either config_name or camera_config must be provided, but not both.")
+        raise ValueError(
+            "Either config_name or camera_config must be provided, but not both."
+        )
 
     if config_name is not None:
         return Camera.from_yaml(

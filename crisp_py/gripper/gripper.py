@@ -245,6 +245,10 @@ class Gripper:
         """Open the gripper."""
         self.set_target(target=1.0)
 
+    def home(self):
+        """Move the gripper to the home position."""
+        self.set_target(target=self.config.home_position)
+
     def _callback_publish_target(self):
         """Publish the target command."""
         if self._target is None:

@@ -25,6 +25,7 @@ class GripperConfig:
     publish_frequency: float = 30.0
     max_joint_delay: float = 1.0
     max_delta: float = 0.1
+    home_position: float = 1.0
 
     @classmethod
     def from_yaml(cls, path: str | Path, **overrides) -> "GripperConfig":  # noqa: ANN003
@@ -53,6 +54,11 @@ class GripperConfig:
         with open(full_path, "r") as file:
             config = yaml.safe_load(file) or {}
 
+            if "home_position" in config:
+                assert 0.0 <= config["home_position"] <= 1.0, (
+                    "Home position must be within min and max values. [0.0; 1.0]"
+                )
+
             config_data = {
                 "min_value": config.get("min_value", 0.0),
                 "max_value": config.get("max_value", 1.0),
@@ -68,6 +74,7 @@ class GripperConfig:
                 "publish_frequency": config.get("publish_frequency", 30.0),
                 "max_delta": config.get("max_delta", 0.1),
                 "max_joint_delay": config.get("max_joint_delay", 1.0),
+                "home_position": config.get("home_position", 1.0),
             }
 
             config_data.update(overrides)
