@@ -488,11 +488,27 @@ class Robot:
 
         self._target_wrench = {"force": np.array(force), "torque": np.array(torque)}
 
-    def set_stiffness(
-        self,
-        translational: List | NDArray | None = None,
-        rotational: List | NDArray | None = None,
-    ) -> None:
+    @staticmethod
+    def _stiffness_to_flat_matrix(stiffness: List | NDArray) -> list:
+        """Build a row-major flattened 6x6 stiffness matrix from a 6x1 or 6x6 input.
+
+        Args:
+            stiffness: Either a length-6 vector (interpreted as the diagonal of the
+                stiffness matrix) or a 6x6 matrix used as-is.
+
+        Returns:
+            list: 36 float values in row-major order.
+        """
+        arr = np.asarray(stiffness, dtype=float)
+        if arr.shape == (6,):
+            arr = np.diag(arr)
+        elif arr.shape != (6, 6):
+            raise ValueError(
+                f"Stiffness must be shape (6,) or (6, 6), got {arr.shape}"
+            )
+        return arr.flatten().tolist()
+
+    def set_stiffness(self, stiffness: List | NDArray) -> None:
         """Set the Cartesian stiffness for the impedance controller via topic.
 
         This publishes a stiffness update to the controller's variable stiffness topic.
@@ -500,26 +516,15 @@ class Robot:
         Requires the controller parameter variable_stiffness.enabled to be true.
 
         Args:
-            translational: Stiffness values [kx, ky, kz] for position. If None, zeros are used.
-            rotational: Stiffness values [krx, kry, krz] for orientation. If None, zeros are used.
+            stiffness: Either a 6-element vector (used as the diagonal of the 6x6
+                stiffness matrix) or a full 6x6 matrix. 36 values are published in
+                row-major order.
         """
-        if translational is None:
-            translational = [0.0, 0.0, 0.0]
-        if rotational is None:
-            rotational = [0.0, 0.0, 0.0]
-
-        assert len(translational) == 3, "Translational stiffness must be a 3D vector"
-        assert len(rotational) == 3, "Rotational stiffness must be a 3D vector"
-
         msg = Float64MultiArray()
-        msg.data = list(translational) + list(rotational)
+        msg.data = self._stiffness_to_flat_matrix(stiffness)
         self._target_stiffness_publisher.publish(msg)
 
-    def set_admittance_stiffness(
-        self,
-        translational: List | NDArray | None = None,
-        rotational: List | NDArray | None = None,
-    ) -> None:
+    def set_admittance_stiffness(self, stiffness: List | NDArray) -> None:
         """Set the admittance stiffness for the admittance controller via topic.
 
         This publishes an admittance stiffness update to the controller's variable
@@ -527,24 +532,17 @@ class Robot:
         Requires the controller parameter variable_admittance_stiffness.enabled to be true.
 
         Args:
-            translational: Stiffness values [kx, ky, kz] for position. If None, zeros are used.
-            rotational: Stiffness values [krx, kry, krz] for orientation. If None, zeros are used.
+            stiffness: Either a 6-element vector (used as the diagonal of the 6x6
+                stiffness matrix) or a full 6x6 matrix. 36 values are published in
+                row-major order.
         """
         if self._target_admittance_stiffness_publisher is None:
             raise RuntimeError(
                 "Admittance stiffness publishing is not enabled. "
                 "Set use_admittance_controller=true in the robot config."
             )
-        if translational is None:
-            translational = [0.0, 0.0, 0.0]
-        if rotational is None:
-            rotational = [0.0, 0.0, 0.0]
-
-        assert len(translational) == 3, "Translational stiffness must be a 3D vector"
-        assert len(rotational) == 3, "Rotational stiffness must be a 3D vector"
-
         msg = Float64MultiArray()
-        msg.data = list(translational) + list(rotational)
+        msg.data = self._stiffness_to_flat_matrix(stiffness)
         self._target_admittance_stiffness_publisher.publish(msg)
 
     def _wrench_to_wrench_msg(self, wrench: dict) -> WrenchStamped:
