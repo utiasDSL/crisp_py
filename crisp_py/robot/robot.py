@@ -488,8 +488,61 @@ class Robot:
 
         self._target_wrench = {"force": np.array(force), "torque": np.array(torque)}
 
+    @staticmethod
+    def _stiffness_to_flat_matrix(stiffness: List | NDArray) -> list:
+        """Build a row-major flattened 6x6 stiffness matrix from a 6x1 or 6x6 input.
+
+        Args:
+            stiffness: Either a length-6 vector (interpreted as the diagonal of the
+                stiffness matrix) or a 6x6 matrix used as-is.
+
+        Returns:
+            list: 36 float values in row-major order.
+        """
+        arr = np.asarray(stiffness, dtype=float)
+        if arr.shape == (6,):
+            arr = np.diag(arr)
+        elif arr.shape != (6, 6):
+            raise ValueError(
+                f"Stiffness must be shape (6,) or (6, 6), got {arr.shape}"
+            )
+        return arr.flatten().tolist()
+
+    @staticmethod
+    def _resolve_stiffness(
+        stiffness: List | NDArray | None,
+        translational: List | NDArray | None,
+        rotational: List | NDArray | None,
+    ) -> NDArray:
+        """Resolve the stiffness argument from either the combined or split form.
+
+        Either ``stiffness`` or at least one of ``translational`` / ``rotational``
+        must be provided, but not both forms at once.
+        """
+        split_form = translational is not None or rotational is not None
+        if stiffness is not None and split_form:
+            raise ValueError(
+                "Provide either `stiffness` or `translational`/`rotational`, not both."
+            )
+        if stiffness is None and not split_form:
+            raise ValueError(
+                "Either `stiffness` or `translational`/`rotational` must be provided."
+            )
+
+        if split_form:
+            if translational is None:
+                translational = [0.0, 0.0, 0.0]
+            if rotational is None:
+                rotational = [0.0, 0.0, 0.0]
+            assert len(translational) == 3, "Translational stiffness must be a 3D vector"
+            assert len(rotational) == 3, "Rotational stiffness must be a 3D vector"
+            return np.concatenate([np.asarray(translational), np.asarray(rotational)])
+
+        return np.asarray(stiffness)
+
     def set_stiffness(
         self,
+        stiffness: List | NDArray | None = None,
         translational: List | NDArray | None = None,
         rotational: List | NDArray | None = None,
     ) -> None:
@@ -500,23 +553,24 @@ class Robot:
         Requires the controller parameter variable_stiffness.enabled to be true.
 
         Args:
-            translational: Stiffness values [kx, ky, kz] for position. If None, zeros are used.
-            rotational: Stiffness values [krx, kry, krz] for orientation. If None, zeros are used.
+            stiffness: Either a 6-element vector (used as the diagonal of the 6x6
+                stiffness matrix) or a full 6x6 matrix. 36 values are published in
+                row-major order.
+            translational: Optional translational stiffness [kx, ky, kz]. Provided
+                alongside ``rotational`` as a backwards-compatible alternative to
+                ``stiffness``.
+            rotational: Optional rotational stiffness [krx, kry, krz]. Provided
+                alongside ``translational`` as a backwards-compatible alternative to
+                ``stiffness``.
         """
-        if translational is None:
-            translational = [0.0, 0.0, 0.0]
-        if rotational is None:
-            rotational = [0.0, 0.0, 0.0]
-
-        assert len(translational) == 3, "Translational stiffness must be a 3D vector"
-        assert len(rotational) == 3, "Rotational stiffness must be a 3D vector"
-
+        resolved = self._resolve_stiffness(stiffness, translational, rotational)
         msg = Float64MultiArray()
-        msg.data = list(translational) + list(rotational)
+        msg.data = self._stiffness_to_flat_matrix(resolved)
         self._target_stiffness_publisher.publish(msg)
 
     def set_admittance_stiffness(
         self,
+        stiffness: List | NDArray | None = None,
         translational: List | NDArray | None = None,
         rotational: List | NDArray | None = None,
     ) -> None:
@@ -527,24 +581,24 @@ class Robot:
         Requires the controller parameter variable_admittance_stiffness.enabled to be true.
 
         Args:
-            translational: Stiffness values [kx, ky, kz] for position. If None, zeros are used.
-            rotational: Stiffness values [krx, kry, krz] for orientation. If None, zeros are used.
+            stiffness: Either a 6-element vector (used as the diagonal of the 6x6
+                stiffness matrix) or a full 6x6 matrix. 36 values are published in
+                row-major order.
+            translational: Optional translational stiffness [kx, ky, kz]. Provided
+                alongside ``rotational`` as a backwards-compatible alternative to
+                ``stiffness``.
+            rotational: Optional rotational stiffness [krx, kry, krz]. Provided
+                alongside ``translational`` as a backwards-compatible alternative to
+                ``stiffness``.
         """
         if self._target_admittance_stiffness_publisher is None:
             raise RuntimeError(
                 "Admittance stiffness publishing is not enabled. "
                 "Set use_admittance_controller=true in the robot config."
             )
-        if translational is None:
-            translational = [0.0, 0.0, 0.0]
-        if rotational is None:
-            rotational = [0.0, 0.0, 0.0]
-
-        assert len(translational) == 3, "Translational stiffness must be a 3D vector"
-        assert len(rotational) == 3, "Rotational stiffness must be a 3D vector"
-
+        resolved = self._resolve_stiffness(stiffness, translational, rotational)
         msg = Float64MultiArray()
-        msg.data = list(translational) + list(rotational)
+        msg.data = self._stiffness_to_flat_matrix(resolved)
         self._target_admittance_stiffness_publisher.publish(msg)
 
     def _wrench_to_wrench_msg(self, wrench: dict) -> WrenchStamped:
