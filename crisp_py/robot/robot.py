@@ -508,7 +508,44 @@ class Robot:
             )
         return arr.flatten().tolist()
 
-    def set_stiffness(self, stiffness: List | NDArray) -> None:
+    @staticmethod
+    def _resolve_stiffness(
+        stiffness: List | NDArray | None,
+        translational: List | NDArray | None,
+        rotational: List | NDArray | None,
+    ) -> NDArray:
+        """Resolve the stiffness argument from either the combined or split form.
+
+        Either ``stiffness`` or at least one of ``translational`` / ``rotational``
+        must be provided, but not both forms at once.
+        """
+        split_form = translational is not None or rotational is not None
+        if stiffness is not None and split_form:
+            raise ValueError(
+                "Provide either `stiffness` or `translational`/`rotational`, not both."
+            )
+        if stiffness is None and not split_form:
+            raise ValueError(
+                "Either `stiffness` or `translational`/`rotational` must be provided."
+            )
+
+        if split_form:
+            if translational is None:
+                translational = [0.0, 0.0, 0.0]
+            if rotational is None:
+                rotational = [0.0, 0.0, 0.0]
+            assert len(translational) == 3, "Translational stiffness must be a 3D vector"
+            assert len(rotational) == 3, "Rotational stiffness must be a 3D vector"
+            return np.concatenate([np.asarray(translational), np.asarray(rotational)])
+
+        return np.asarray(stiffness)
+
+    def set_stiffness(
+        self,
+        stiffness: List | NDArray | None = None,
+        translational: List | NDArray | None = None,
+        rotational: List | NDArray | None = None,
+    ) -> None:
         """Set the Cartesian stiffness for the impedance controller via topic.
 
         This publishes a stiffness update to the controller's variable stiffness topic.
@@ -519,12 +556,24 @@ class Robot:
             stiffness: Either a 6-element vector (used as the diagonal of the 6x6
                 stiffness matrix) or a full 6x6 matrix. 36 values are published in
                 row-major order.
+            translational: Optional translational stiffness [kx, ky, kz]. Provided
+                alongside ``rotational`` as a backwards-compatible alternative to
+                ``stiffness``.
+            rotational: Optional rotational stiffness [krx, kry, krz]. Provided
+                alongside ``translational`` as a backwards-compatible alternative to
+                ``stiffness``.
         """
+        resolved = self._resolve_stiffness(stiffness, translational, rotational)
         msg = Float64MultiArray()
-        msg.data = self._stiffness_to_flat_matrix(stiffness)
+        msg.data = self._stiffness_to_flat_matrix(resolved)
         self._target_stiffness_publisher.publish(msg)
 
-    def set_admittance_stiffness(self, stiffness: List | NDArray) -> None:
+    def set_admittance_stiffness(
+        self,
+        stiffness: List | NDArray | None = None,
+        translational: List | NDArray | None = None,
+        rotational: List | NDArray | None = None,
+    ) -> None:
         """Set the admittance stiffness for the admittance controller via topic.
 
         This publishes an admittance stiffness update to the controller's variable
@@ -535,14 +584,21 @@ class Robot:
             stiffness: Either a 6-element vector (used as the diagonal of the 6x6
                 stiffness matrix) or a full 6x6 matrix. 36 values are published in
                 row-major order.
+            translational: Optional translational stiffness [kx, ky, kz]. Provided
+                alongside ``rotational`` as a backwards-compatible alternative to
+                ``stiffness``.
+            rotational: Optional rotational stiffness [krx, kry, krz]. Provided
+                alongside ``translational`` as a backwards-compatible alternative to
+                ``stiffness``.
         """
         if self._target_admittance_stiffness_publisher is None:
             raise RuntimeError(
                 "Admittance stiffness publishing is not enabled. "
                 "Set use_admittance_controller=true in the robot config."
             )
+        resolved = self._resolve_stiffness(stiffness, translational, rotational)
         msg = Float64MultiArray()
-        msg.data = self._stiffness_to_flat_matrix(stiffness)
+        msg.data = self._stiffness_to_flat_matrix(resolved)
         self._target_admittance_stiffness_publisher.publish(msg)
 
     def _wrench_to_wrench_msg(self, wrench: dict) -> WrenchStamped:
