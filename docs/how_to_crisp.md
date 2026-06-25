@@ -39,7 +39,7 @@ This will display a list of available controllers and their state:
 cartesian_impedance_controller: inactive
 gravity_compensation: inactive
 joint_state_broadcaster: active
-pose_broadcaster: active
+state_broadcaster: active
 joint_trajectory_controller: active
 ```
 
@@ -56,7 +56,7 @@ If you list the available controllers again you will see:
 cartesian_impedance_controller: active
 gravity_compensation: inactive
 joint_state_broadcaster: active
-pose_broadcaster: active
+state_broadcaster: active
 joint_trajectory_controller: inactive
 ```
 
