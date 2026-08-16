@@ -9,11 +9,11 @@ log.enabled: false
 
 max_delta_tau: 0.5
 
-nullspace.damping: -1.0
-nullspace.max_tau: 5.0
+nullspace.damping: [-1.0]
+nullspace.max_tau: [5.0]
 nullspace.projector_type: none
 nullspace.regularization: 1.0e-06
-nullspace.stiffness: 0.0
+nullspace.stiffness: [0.0]
 
 operational_space_regularization: 1.0
 stop_commands: false

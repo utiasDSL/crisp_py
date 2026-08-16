@@ -24,7 +24,7 @@ params = [
     ("task.k_rot_x", 80.0),
     ("task.k_rot_y", 80.0),
     ("task.k_rot_z", 80.0),
-    ("nullspace.stiffness", 5.0),
+    ("nullspace.stiffness", [5.0]),
 ]
 
 robot.cartesian_controller_parameters_client.set_parameters(params)

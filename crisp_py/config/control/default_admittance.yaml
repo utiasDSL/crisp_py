@@ -4,7 +4,7 @@
 limit_error: true
 limit_torques: true
 max_delta_tau: 2.0
-nullspace.stiffness: 5.0
+nullspace.stiffness: [5.0]
 stop_commands: false
 
 task.k_pos_x: 900.0

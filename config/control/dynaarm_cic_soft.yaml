@@ -22,17 +22,11 @@ log.timing: false
 max_delta_tau: 0.5
 noise.add_random_noise: false
 noise.amplitude: 0.0
-nullspace.damping: 1.0
-nullspace.max_tau: 5.0
+nullspace.damping: [0.0]
+nullspace.max_tau: [5.0]
 nullspace.projector_type: none
 nullspace.regularization: 1.0e-06
-nullspace.stiffness: 0.0
-nullspace.weights.elbow_flexion.value: 0.0
-nullspace.weights.forearm_rotation.value: 0.0
-nullspace.weights.shoulder_flexion.value: 0.0
-nullspace.weights.shoulder_rotation.value: 0.0
-nullspace.weights.wrist_flexion.value: 0.0
-nullspace.weights.wrist_rotation.value: 0.0
+nullspace.stiffness: [0.0]
 operational_space_regularization: 1.0
 stop_commands: false
 
