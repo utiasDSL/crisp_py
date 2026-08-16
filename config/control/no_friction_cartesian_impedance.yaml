@@ -33,7 +33,7 @@ limit_torques: true
 
 max_delta_tau: 0.5
 
-nullspace.stiffness: 5.0
+nullspace.stiffness: [5.0]
 
 stop_commands: false
 
