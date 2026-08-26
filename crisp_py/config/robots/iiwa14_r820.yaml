@@ -1,0 +1,25 @@
+# KUKA LBR iiwa 14 R820 driven through lbr_fri_ros2_stack.
+#
+# The stack's default robot_name is "lbr", which is both the ROS namespace and the
+# prefix on every joint and link name. Change all of them together if the bringup
+# uses a different robot_name.
+#
+# Note for anyone driving this arm through KUKA's Fast Robot Interface: FRI's torque
+# mode expects a joint position command and a torque overlay in the same packet, so a
+# controller claiming only the effort interfaces is not sufficient on its own. The
+# position half has to be supplied by another active controller.
+namespace: lbr
+
+robot_config:
+  robot_type: iiwa
+  base_frame: lbr_link_0
+  target_frame: lbr_link_ee
+
+  # Torque overlays are written by the Cartesian controller; the joint-space one is
+  # a CartesianController with zero task gains, so it is named separately.
+  default_controller: cartesian_impedance_controller
+  cartesian_impedance_controller_name: cartesian_impedance_controller
+  joint_trajectory_controller_name: joint_impedance_controller
+
+  publish_frequency: 50.0
+  time_to_home: 10.0
