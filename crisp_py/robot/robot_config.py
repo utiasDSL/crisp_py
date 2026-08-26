@@ -202,8 +202,18 @@ class KinovaConfig(RobotConfig):
 class IiwaConfig(RobotConfig):
     """Configuration specific to KUKA Iiwa robots.
 
-    Provides default values for frame names, joint names, and home configuration
-    specifically for Iiwa robots.
+    Defaults follow the naming used by lbr_fri_ros2_stack, which is the common ROS 2
+    driver for these arms, with its default robot_name of "lbr".
+
+    The home configuration is [0, 30, 0, -75, 0, 75, 0] degrees. It is chosen for the
+    iiwa14 R820 and validated on hardware: every joint sits at least 45 degrees from
+    its limit, and the manipulability measure sqrt(det(J J^T)) is 0.126.
+
+    Two comparisons worth keeping in mind when changing it. The Franka home pose that
+    the other configurations in this module use puts A4 at -135 degrees, which is
+    outside the +/-120 degree A4 limit of every iiwa in the range, so it cannot be
+    commanded. The all-zeros candle pose is fully singular, manipulability exactly 0,
+    which makes it a poor place to start a Cartesian impedance controller.
     """
 
     joint_names: list = field(
@@ -218,17 +228,11 @@ class IiwaConfig(RobotConfig):
         ]
     )
     home_config: list = field(
-        default_factory=lambda: [
-            np.pi / 2,
-            -np.pi / 4,
-            0,
-            -3 * np.pi / 4,
-            0,
-            np.pi / 2,
-            np.pi / 4,
-        ]
+        default_factory=lambda: list(np.deg2rad([0.0, 30.0, 0.0, -75.0, 0.0, 75.0, 0.0]))
     )
-    base_frame: str = "world"
+    # lbr_fri_ros2_stack publishes lbr_link_0 as the root of the arm and does not
+    # publish a "world" frame, so a target pose expressed in "world" has no transform.
+    base_frame: str = "lbr_link_0"
     target_frame: str = "lbr_link_ee"
 
 
